@@ -7,28 +7,85 @@ import { requireUser } from "@/lib/session";
 import { hashPassword, generateStartPassword } from "@/lib/passwords";
 import { generateGroupCode, generateSlug } from "@/lib/codes";
 import { audit } from "@/lib/audit";
+import { testeVerbindung } from "@/lib/llm";
 
 export type ActionState = {
   ok: boolean;
   error?: string;
+  hinweis?: string;
   startPassword?: string;
   username?: string;
 };
 
-const IDLE: ActionState = { ok: false };
+const verbindungSchema = z.object({
+  label: z.string().trim().min(1).max(60),
+  secret: z.string().trim().min(8).max(500),
+  protocol: z.enum(["anthropic", "openai"]),
+  baseUrl: z.union([z.literal(""), z.string().trim().url().max(300)]),
+  modelKid: z.string().trim().min(1).max(120),
+  modelDirector: z.string().trim().min(1).max(120),
+});
+
+function verbindungAusForm(formData: FormData) {
+  return verbindungSchema.safeParse({
+    label: formData.get("label"),
+    secret: formData.get("secret"),
+    protocol: formData.get("protocol"),
+    baseUrl: (formData.get("baseUrl") ?? "") as string,
+    modelKid: formData.get("modelKid"),
+    modelDirector: formData.get("modelDirector"),
+  });
+}
 
 export async function createApiKeyAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await requireUser("ADMIN");
-  const schema = z.object({
-    label: z.string().trim().min(1).max(60),
-    secret: z.string().trim().min(20).max(300),
-  });
-  const parsed = schema.safeParse({ label: formData.get("label"), secret: formData.get("secret") });
-  if (!parsed.success) return { ok: false, error: "Bitte Bezeichnung und einen gültigen Key angeben." };
+  const parsed = verbindungAusForm(formData);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Bitte alle Felder prüfen (URL muss vollständig sein)." };
+  }
   await db.apiKey.create({ data: parsed.data });
-  await audit(admin.id, "apikey.created", parsed.data.label);
+  await audit(admin.id, "verbindung.created", `${parsed.data.label} (${parsed.data.protocol})`);
   revalidatePath("/admin");
   return { ok: true };
+}
+
+export async function updateApiKeyAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireUser("ADMIN");
+  const id = String(formData.get("id") ?? "");
+  const vorhanden = await db.apiKey.findUnique({ where: { id } });
+  if (!vorhanden) return { ok: false, error: "Verbindung nicht gefunden." };
+
+  // Leeres Schlüsselfeld = Schlüssel unverändert lassen
+  const geheimnis = String(formData.get("secret") ?? "").trim();
+  const daten = new FormData();
+  for (const [k, v] of formData.entries()) daten.set(k, v);
+  if (!geheimnis) daten.set("secret", vorhanden.secret);
+
+  const parsed = verbindungAusForm(daten);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Bitte alle Felder prüfen." };
+  }
+  await db.apiKey.update({ where: { id }, data: parsed.data });
+  await audit(admin.id, "verbindung.updated", parsed.data.label);
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+/** Prüft eine gespeicherte Verbindung mit einem winzigen Testaufruf. */
+export async function testApiKeyAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireUser("ADMIN");
+  const id = String(formData.get("id") ?? "");
+  const v = await db.apiKey.findUnique({ where: { id } });
+  if (!v) return { ok: false, error: "Verbindung nicht gefunden." };
+
+  const ergebnis = await testeVerbindung(
+    { protocol: v.protocol, secret: v.secret, baseUrl: v.baseUrl },
+    v.modelKid
+  );
+  await audit(admin.id, "verbindung.tested", `${v.label}: ${ergebnis.ok ? "ok" : "Fehler"}`);
+  return ergebnis.ok
+    ? { ok: true, hinweis: ergebnis.detail }
+    : { ok: false, error: ergebnis.detail };
 }
 
 export async function deleteApiKeyAction(formData: FormData): Promise<void> {

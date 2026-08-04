@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
-import { buildFromSpec, distillSpec } from "@/lib/anthropic";
+import { buildFromSpec, distillSpec } from "@/lib/llm";
 import { verifyGameHtml } from "@/lib/verify";
 import { publishGame, readPlayHtml } from "@/lib/games";
 
@@ -42,8 +42,11 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lehrer/[gid]/di
 
   const studioName = group.studioName || `Gruppe ${group.index}`;
   const common = {
-    apiKey: w.apiKey.secret,
-    baseUrl: w.apiBaseUrl || undefined,
+    verbindung: {
+      protocol: w.apiKey.protocol,
+      secret: w.apiKey.secret,
+      baseUrl: w.apiKey.baseUrl,
+    },
     learningGoal: w.learningGoal,
     studioName,
   };
@@ -53,7 +56,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lehrer/[gid]/di
     if (prompts.length === 0) {
       return NextResponse.json({ error: "Diese Gruppe hat noch keine Wünsche geäußert." }, { status: 400 });
     }
-    const out = await distillSpec({ ...common, model: w.modelDirector, prompts });
+    const out = await distillSpec({ ...common, model: w.apiKey.modelDirector, prompts });
     await db.workshop.update({
       where: { id: w.id },
       data: { tokensUsed: { increment: out.tokensIn + out.tokensOut } },
@@ -69,7 +72,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lehrer/[gid]/di
 
   const result = await buildFromSpec({
     ...common,
-    model: w.modelDirector,
+    model: w.apiKey.modelDirector,
     spec,
     engine3d: Boolean(body.data.engine3d),
   });

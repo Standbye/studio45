@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { buildOrEditGame } from "@/lib/anthropic";
+import { buildOrEditGame } from "@/lib/llm";
 import { verifyGameHtml } from "@/lib/verify";
 import { publishGame, readPlayHtml } from "@/lib/games";
 
@@ -61,9 +61,12 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
   try {
     const currentHtml = readPlayHtml(groupId);
     const params = {
-      apiKey: w.apiKey.secret,
-      baseUrl: w.apiBaseUrl || undefined,
-      model: w.modelKid,
+      verbindung: {
+        protocol: w.apiKey.protocol,
+        secret: w.apiKey.secret,
+        baseUrl: w.apiKey.baseUrl,
+      },
+      model: w.apiKey.modelKid,
       day: w.currentDay,
       totalDays: w.totalDays,
       studioName: group.studioName || `Gruppe ${group.index}`,

@@ -15,7 +15,7 @@ Ergebnisse prüfen, iterieren — und **einschätzen, was eine KI ist und wo sie
 ## Schnellstart (Docker)
 
 ```bash
-git clone https://github.com/sapitvet/studio45.git && cd studio45 && docker compose up -d --build
+git clone https://github.com/Standbye/studio45.git && cd studio45 && docker compose up -d --build
 ```
 
 Danach `http://localhost:3000` öffnen — die **Ersteinrichtung** legt das Admin-Konto an.
@@ -87,9 +87,32 @@ zeigen, sonst führen die QR-Codes der Gruppen ins Leere.
 
 | Ebene | Zugang | Aufgaben |
 |---|---|---|
-| **Admin** (einer pro Instanz) | `/admin` | Workshops anlegen, Lehrkräfte anlegen (mit Startpasswort zur Übergabe), API-Keys hinterlegen, Budgets vorgeben, Protokoll einsehen |
+| **Admin** (einer pro Instanz) | `/admin` | Workshops anlegen, Lehrkräfte anlegen (mit Startpasswort zur Übergabe), KI-Verbindungen pflegen, Budgets vorgeben, Protokoll einsehen |
 | **Lehrkraft** | `/lehrer` | Tag & Phase steuern, Lernziel und Führungslevel setzen, Limits, Branding (Farben + Logo), Gruppen verwalten, Prompt-Verlauf, Zeitreise |
 | **Gruppe (Kinder)** | `/g/<code>` per QR | Sprechen, bauen, testen — **kein Login, keine Namen, keine personenbezogenen Daten** |
+
+## KI-Anbieter
+
+Studio45 ist nicht an einen Anbieter gebunden. Der Admin legt unter *KI-Verbindungen*
+beliebig viele Zugänge an — jede Verbindung besteht aus **Protokoll, Endpunkt, Zugangsschlüssel
+und zwei Modellen** (eines für die Kinder-Änderungen, ein stärkeres für den Director's Cut).
+Ein Knopf *Testen* schickt einen winzigen Probeaufruf und meldet Fehler im Klartext zurück.
+
+Es gibt genau zwei Protokolle:
+
+| Protokoll | Passt zu | Besonderheit |
+|---|---|---|
+| **Anthropic** (Messages-API) | Anthropic direkt, Anthropic-kompatible Gateways | Prompt-Caching für den langen Systemprompt — spart bei jedem Aufruf |
+| **OpenAI** (`chat/completions`) | OpenAI, OpenRouter, Langdock, Azure OpenAI, Groq, Together, Ollama, LM Studio … | Der De-facto-Standard; praktisch jeder Dienst spricht ihn |
+
+Für die bekannten Anbieter gibt es Vorlagen, die Endpunkt und übliche Modellnamen vorausfüllen
+(`src/lib/providers.ts`) — beides bleibt frei überschreibbar, damit neue Dienste und Modelle
+ohne Code-Änderung nutzbar sind. Bei **Azure** wird der Deployment-Name als Modell eingetragen,
+bei **Ollama** zeigt der Endpunkt auf die lokale Instanz.
+
+> Hinweis zur Modellwahl: Ein komplettes Spiel ist eine große, zusammenhängende Datei. Kleine
+> oder stark quantisierte Modelle brechen dabei oft mittendrin ab — die eingebaute Verifikation
+> erkennt das zwar und der Versuch wird den Kindern nicht angerechnet, aber der Spaß leidet.
 
 Beamer-/Startseite eines Workshops: `/w/<slug>` — zeigt die QR-Codes aller Gruppen,
 den Tagesfokus und den Merksatz des Tages.
@@ -108,7 +131,7 @@ den Tagesfokus und den Merksatz des Tages.
   `sandbox="allow-scripts"`-iframe **ohne** `allow-same-origin` und mit strikter CSP
   (`default-src 'none'`, keine Netzwerkzugriffe). Im Spiel-Kontext existieren keine Tokens.
 - Gruppen-Codes sind lange Zufallswerte (kein `g1`-Schema), Fehlversuche werden begrenzt.
-- API-Keys bleiben serverseitig und werden in der Oberfläche maskiert.
+- Zugangsschlüssel der KI-Verbindungen bleiben serverseitig und werden maskiert angezeigt.
 - Alle Limits und Budgets werden **serverseitig** durchgesetzt; die Pause im Frontend ist nur UX.
 - Ratenbegrenzung **pro Gerät statt pro IP** — im Schul-WLAN teilen sich alle iPads eine IP.
 - Logo-Uploads werden serverseitig neu kodiert; **SVG ist nicht erlaubt**.
@@ -127,7 +150,7 @@ Optional Demo-Daten (Workshop mit drei Gruppen):
 npx tsx scripts/seed-demo.ts
 ```
 
-**Stack:** Next.js 16 (App Router) · Prisma 7 + SQLite · Tailwind 4 + shadcn/ui · Anthropic SDK.
+**Stack:** Next.js 16 (App Router) · Prisma 7 + SQLite · Tailwind 4 + shadcn/ui · Anthropic- und OpenAI-SDK.
 
 ### Eigenheiten, über die man sonst stolpert
 
@@ -143,6 +166,9 @@ npx tsx scripts/seed-demo.ts
   ohne Code zurück; der Runner probiert deshalb mehrere Pfade durch.
 - **Prisma 7** braucht `prisma.config.ts` für die Datenbank-URL (im Schema ist `url` nicht
   mehr erlaubt) und einen Driver-Adapter im `PrismaClient`-Konstruktor.
+- **Anbieter-Anbindung** liegt komplett in `src/lib/llm.ts` — eine Funktion `rufeModell()`
+  kapselt beide Protokolle, alles andere (Spiel bauen, Destillat, Director's Cut) ist
+  protokollunabhängig. Ein dritter Anbietertyp wäre dort ein weiterer Zweig.
 - **`scripts/` ist von der Typprüfung ausgenommen** (`tsconfig.json`), weil die Skripte den
   generierten Prisma-Client per `.ts`-Pfad importieren und mit `tsx` laufen.
 - **Dev-CSP** enthält `'unsafe-eval'`, Produktion nicht — React braucht es nur im

@@ -2,7 +2,14 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { BASE_URL } from "@/lib/env";
 import { archiveWorkshopAction, deleteApiKeyAction, deleteTeacherAction } from "./actions";
-import { CreateApiKeyDialog, CreateTeacherDialog, CreateWorkshopDialog, ResetTeacherPasswordDialog } from "./forms";
+import {
+  CreateApiKeyDialog,
+  CreateTeacherDialog,
+  CreateWorkshopDialog,
+  EditApiKeyDialog,
+  ResetTeacherPasswordDialog,
+  TestApiKeyButton,
+} from "./forms";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +34,7 @@ export default async function AdminPage() {
       <TabsList>
         <TabsTrigger value="workshops">Workshops ({workshops.filter((w) => !w.archived).length})</TabsTrigger>
         <TabsTrigger value="teachers">Lehrkräfte ({teachers.length})</TabsTrigger>
-        <TabsTrigger value="keys">API-Keys ({apiKeys.length})</TabsTrigger>
+        <TabsTrigger value="keys">KI-Verbindungen ({apiKeys.length})</TabsTrigger>
         <TabsTrigger value="audit">Protokoll</TabsTrigger>
       </TabsList>
 
@@ -41,7 +48,7 @@ export default async function AdminPage() {
         </div>
         {workshops.length === 0 && (
           <Card><CardContent className="py-10 text-center text-muted-foreground">
-            Noch keine Workshops. Lege zuerst eine Lehrkraft und einen API-Key an, dann den ersten Workshop.
+            Noch keine Workshops. Lege zuerst eine Lehrkraft und eine KI-Verbindung an, dann den ersten Workshop.
           </CardContent></Card>
         )}
         {workshops.map((w) => (
@@ -63,7 +70,7 @@ export default async function AdminPage() {
             </CardHeader>
             <CardContent className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <div><span className="text-muted-foreground">Lehrkraft:</span> {w.teacher?.displayName ?? "—"}</div>
-              <div><span className="text-muted-foreground">API-Key:</span> {w.apiKey?.label ?? "—"}</div>
+              <div><span className="text-muted-foreground">Verbindung:</span> {w.apiKey?.label ?? "—"}</div>
               <div><span className="text-muted-foreground">Gruppen:</span> {w.groups.length} · Tag {w.currentDay}/{w.totalDays} · {w.phase}</div>
               <div>
                 <span className="text-muted-foreground">Budget:</span>{" "}
@@ -119,8 +126,11 @@ export default async function AdminPage() {
       <TabsContent value="keys" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">API-Keys</h2>
-            <p className="text-sm text-muted-foreground">Keys bleiben serverseitig — hier nur maskiert sichtbar.</p>
+            <h2 className="text-lg font-semibold">KI-Verbindungen</h2>
+            <p className="text-sm text-muted-foreground">
+              Anthropic, OpenAI, OpenRouter, Langdock, Azure, lokale Modelle — Schlüssel bleiben serverseitig
+              und sind hier nur maskiert sichtbar.
+            </p>
           </div>
           <CreateApiKeyDialog />
         </div>
@@ -129,7 +139,9 @@ export default async function AdminPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Bezeichnung</TableHead>
-                <TableHead>Key</TableHead>
+                <TableHead>Protokoll / Endpunkt</TableHead>
+                <TableHead>Modelle</TableHead>
+                <TableHead>Schlüssel</TableHead>
                 <TableHead>Genutzt von</TableHead>
                 <TableHead className="text-right">Aktionen</TableHead>
               </TableRow>
@@ -138,9 +150,28 @@ export default async function AdminPage() {
               {apiKeys.map((k) => (
                 <TableRow key={k.id}>
                   <TableCell className="font-medium">{k.label}</TableCell>
+                  <TableCell className="text-sm">
+                    <Badge variant="secondary">{k.protocol === "openai" ? "OpenAI" : "Anthropic"}</Badge>
+                    <span className="ml-2 text-xs text-muted-foreground">{k.baseUrl || "Standard-Endpunkt"}</span>
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    <div>👧 {k.modelKid}</div>
+                    <div className="text-muted-foreground">🎬 {k.modelDirector}</div>
+                  </TableCell>
                   <TableCell className="font-mono text-sm">••••{k.secret.slice(-4)}</TableCell>
-                  <TableCell>{k.workshops.map((w) => w.name).join(", ") || "—"}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-sm">{k.workshops.map((w) => w.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="space-x-1 text-right">
+                    <TestApiKeyButton id={k.id} />
+                    <EditApiKeyDialog
+                      verbindung={{
+                        id: k.id,
+                        label: k.label,
+                        protocol: k.protocol,
+                        baseUrl: k.baseUrl,
+                        modelKid: k.modelKid,
+                        modelDirector: k.modelDirector,
+                      }}
+                    />
                     <form action={deleteApiKeyAction} className="inline">
                       <input type="hidden" name="id" value={k.id} />
                       <Button variant="ghost" size="sm" type="submit" disabled={k.workshops.length > 0}>
@@ -151,7 +182,9 @@ export default async function AdminPage() {
                 </TableRow>
               ))}
               {apiKeys.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="py-8 text-center text-muted-foreground">Noch keine API-Keys.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                  Noch keine Verbindung. Ohne Verbindung kann kein Workshop generieren.
+                </TableCell></TableRow>
               )}
             </TableBody>
           </Table>

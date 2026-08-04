@@ -6,8 +6,11 @@ import {
   createTeacherAction,
   createWorkshopAction,
   resetTeacherPasswordAction,
+  testApiKeyAction,
+  updateApiKeyAction,
   type ActionState,
 } from "./actions";
+import { ANBIETER, anbieterVorlage } from "@/lib/providers";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,32 +106,145 @@ export function ResetTeacherPasswordDialog({ id, name }: { id: string; name: str
   );
 }
 
+/** Gemeinsames Formular für neue und bestehende Verbindungen. */
+function VerbindungsFelder({
+  vorhanden,
+}: {
+  vorhanden?: {
+    label: string;
+    protocol: string;
+    baseUrl: string;
+    modelKid: string;
+    modelDirector: string;
+  };
+}) {
+  const start =
+    ANBIETER.find(
+      (a) => a.protocol === vorhanden?.protocol && a.baseUrl === vorhanden?.baseUrl
+    )?.id ?? (vorhanden ? "custom" : "anthropic");
+
+  const [anbieterId, setAnbieterId] = useState(start);
+  const [protocol, setProtocol] = useState(vorhanden?.protocol ?? "anthropic");
+  const [baseUrl, setBaseUrl] = useState(vorhanden?.baseUrl ?? "");
+  const [modelKid, setModelKid] = useState(vorhanden?.modelKid ?? "claude-sonnet-5");
+  const [modelDirector, setModelDirector] = useState(vorhanden?.modelDirector ?? "claude-opus-5");
+
+  const anbieter = anbieterVorlage(anbieterId);
+
+  function waehleAnbieter(id: string) {
+    setAnbieterId(id);
+    const a = anbieterVorlage(id);
+    if (!a) return;
+    setProtocol(a.protocol);
+    setBaseUrl(a.baseUrl);
+    if (a.modelle.kinder[0]) setModelKid(a.modelle.kinder[0]);
+    if (a.modelle.director[0]) setModelDirector(a.modelle.director[0]);
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="k-anbieter">Anbieter</Label>
+        <select
+          id="k-anbieter"
+          value={anbieterId}
+          onChange={(e) => waehleAnbieter(e.target.value)}
+          className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+        >
+          {ANBIETER.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
+        {anbieter && <p className="text-xs text-muted-foreground">{anbieter.hinweis}</p>}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="k-protocol">Protokoll</Label>
+          <select
+            id="k-protocol"
+            name="protocol"
+            value={protocol}
+            onChange={(e) => setProtocol(e.target.value)}
+            className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+          >
+            <option value="anthropic">Anthropic (Messages)</option>
+            <option value="openai">OpenAI (chat/completions)</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="k-label">Bezeichnung</Label>
+          <Input id="k-label" name="label" defaultValue={vorhanden?.label} placeholder="z. B. Schulbudget" required />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="k-baseUrl">Endpunkt (leer = Standard des Protokolls)</Label>
+        <Input
+          id="k-baseUrl"
+          name="baseUrl"
+          value={baseUrl}
+          onChange={(e) => setBaseUrl(e.target.value)}
+          placeholder="https://…/v1"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="k-modelKid">Modell für die Kinder</Label>
+          <Input
+            id="k-modelKid"
+            name="modelKid"
+            value={modelKid}
+            onChange={(e) => setModelKid(e.target.value)}
+            list="modelle-kinder"
+            required
+          />
+          <datalist id="modelle-kinder">
+            {anbieter?.modelle.kinder.map((m) => <option key={m} value={m} />)}
+          </datalist>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="k-modelDirector">Modell für Director&apos;s Cut</Label>
+          <Input
+            id="k-modelDirector"
+            name="modelDirector"
+            value={modelDirector}
+            onChange={(e) => setModelDirector(e.target.value)}
+            list="modelle-director"
+            required
+          />
+          <datalist id="modelle-director">
+            {anbieter?.modelle.director.map((m) => <option key={m} value={m} />)}
+          </datalist>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function CreateApiKeyDialog() {
   const [state, action, pending] = useActionState(createApiKeyAction, IDLE);
   return (
     <Dialog>
-      <DialogTrigger className={buttonVariants({ size: "sm" })}>+ API-Key</DialogTrigger>
-      <DialogContent>
+      <DialogTrigger className={buttonVariants({ size: "sm" })}>+ Verbindung</DialogTrigger>
+      <DialogContent className="max-h-[90svh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>API-Key hinterlegen</DialogTitle>
+          <DialogTitle>KI-Verbindung anlegen</DialogTitle>
           <DialogDescription>
-            Der Key wird nur serverseitig gespeichert und in der Oberfläche maskiert angezeigt.
+            Anbieter, Endpunkt, Zugangsschlüssel und Modelle. Der Schlüssel bleibt serverseitig und
+            wird in der Oberfläche nur maskiert angezeigt.
           </DialogDescription>
         </DialogHeader>
         <form action={action} className="space-y-4">
           {state.error && (
             <Alert variant="destructive"><AlertDescription>{state.error}</AlertDescription></Alert>
           )}
-          {state.ok && (
-            <Alert><AlertDescription>API-Key gespeichert.</AlertDescription></Alert>
-          )}
+          {state.ok && <Alert><AlertDescription>Verbindung gespeichert.</AlertDescription></Alert>}
+          <VerbindungsFelder />
           <div className="space-y-2">
-            <Label htmlFor="k-label">Bezeichnung</Label>
-            <Input id="k-label" name="label" placeholder="z. B. Anthropic Schulbudget" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="k-secret">Key</Label>
-            <Input id="k-secret" name="secret" type="password" placeholder="sk-ant-…" required autoComplete="off" />
+            <Label htmlFor="k-secret">Zugangsschlüssel</Label>
+            <Input id="k-secret" name="secret" type="password" placeholder="sk-…" required autoComplete="off" />
           </div>
           <Button type="submit" disabled={pending} className="w-full">
             {pending ? "Wird gespeichert …" : "Speichern"}
@@ -136,6 +252,56 @@ export function CreateApiKeyDialog() {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function EditApiKeyDialog({
+  verbindung,
+}: {
+  verbindung: { id: string; label: string; protocol: string; baseUrl: string; modelKid: string; modelDirector: string };
+}) {
+  const [state, action, pending] = useActionState(updateApiKeyAction, IDLE);
+  return (
+    <Dialog>
+      <DialogTrigger className={buttonVariants({ variant: "outline", size: "sm" })}>Bearbeiten</DialogTrigger>
+      <DialogContent className="max-h-[90svh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Verbindung bearbeiten</DialogTitle>
+          <DialogDescription>
+            Schlüsselfeld leer lassen, um den gespeicherten Schlüssel zu behalten.
+          </DialogDescription>
+        </DialogHeader>
+        <form action={action} className="space-y-4">
+          <input type="hidden" name="id" value={verbindung.id} />
+          {state.error && (
+            <Alert variant="destructive"><AlertDescription>{state.error}</AlertDescription></Alert>
+          )}
+          {state.ok && <Alert><AlertDescription>Gespeichert.</AlertDescription></Alert>}
+          <VerbindungsFelder vorhanden={verbindung} />
+          <div className="space-y-2">
+            <Label htmlFor="k-secret-edit">Neuer Zugangsschlüssel (optional)</Label>
+            <Input id="k-secret-edit" name="secret" type="password" placeholder="unverändert lassen" autoComplete="off" />
+          </div>
+          <Button type="submit" disabled={pending} className="w-full">
+            {pending ? "Wird gespeichert …" : "Speichern"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function TestApiKeyButton({ id }: { id: string }) {
+  const [state, action, pending] = useActionState(testApiKeyAction, IDLE);
+  return (
+    <form action={action} className="inline-flex items-center gap-2">
+      <input type="hidden" name="id" value={id} />
+      <Button type="submit" size="sm" variant="ghost" disabled={pending}>
+        {pending ? "testet …" : "Testen"}
+      </Button>
+      {state.hinweis && <span className="text-xs text-emerald-600">✓ {state.hinweis}</span>}
+      {state.error && <span className="text-xs text-destructive" title={state.error}>✗ {state.error.slice(0, 60)}</span>}
+    </form>
   );
 }
 
@@ -163,7 +329,7 @@ export function CreateWorkshopDialog({
             <AlertDescription>
               Bitte zuerst {teachers.length === 0 ? "eine Lehrkraft" : ""}
               {teachers.length === 0 && apiKeys.length === 0 ? " und " : ""}
-              {apiKeys.length === 0 ? "einen API-Key" : ""} anlegen.
+              {apiKeys.length === 0 ? "eine KI-Verbindung" : ""} anlegen.
             </AlertDescription>
           </Alert>
         ) : (
@@ -206,7 +372,7 @@ export function CreateWorkshopDialog({
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="w-key">API-Key</Label>
+              <Label htmlFor="w-key">KI-Verbindung</Label>
               <select id="w-key" name="apiKeyId" required className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
                 {apiKeys.map((k) => (
                   <option key={k.id} value={k.id}>{k.label}</option>

@@ -38,10 +38,20 @@ model User {
   auditLogs          AuditLog[]
 }
 
+/// Eine KI-Verbindung: Protokoll, Endpunkt, Zugangsschlüssel und Standardmodelle.
+/// Der Admin pflegt sie zentral; Lehrkräfte wählen nur noch aus.
 model ApiKey {
-  id        String     @id @default(cuid())
-  label     String
-  secret    String
+  id       String @id @default(cuid())
+  label    String
+  secret   String
+  /// "anthropic" (Messages-API) oder "openai" (chat/completions — auch OpenRouter, Langdock, Groq, Ollama …)
+  protocol String @default("anthropic")
+  /// Leer = Standard-Endpunkt des jeweiligen Protokolls
+  baseUrl  String @default("")
+  /// Standardmodelle dieser Verbindung
+  modelKid      String @default("claude-sonnet-5")
+  modelDirector String @default("claude-opus-5")
+
   createdAt DateTime   @default(now())
   workshops Workshop[]
 }
@@ -67,10 +77,8 @@ model Workshop {
   learningGoal  String        @default("") // Lernziel/Preprompt der Lehrkraft
   presetLabel   String        @default("")
 
-  // KI-Konfiguration (API-Key kommt vom Admin, Rest von der Lehrkraft)
-  apiBaseUrl    String @default("") // leer = Anthropic-Standard
-  modelKid      String @default("claude-sonnet-5")
-  modelDirector String @default("claude-opus-5")
+  // KI-Konfiguration liegt vollständig bei der Verbindung (ApiKey) — die
+  // Lehrkraft wählt nur aus, was der Admin bereitgestellt hat.
 
   // Limits & Budget (Admin gibt Obergrenzen vor, Lehrkraft nutzt sie)
   genLimitPerLesson Int @default(4)   // Generierungen pro Gruppe pro Schulstunde

@@ -35,7 +35,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
     where: { id, teacherId: user.id },
     include: {
       groups: { orderBy: { index: "asc" }, include: { _count: { select: { prompts: true } } } },
-      apiKey: { select: { label: true } },
+      apiKey: { select: { label: true, protocol: true, modelKid: true, modelDirector: true } },
     },
   });
   if (!w) notFound();
@@ -215,19 +215,22 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     <Input id="cooldown" name="cooldownSeconds" type="number" min={0} max={1800} defaultValue={w.cooldownSeconds} />
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="modelKid">Modell (Kinder-Edits)</Label>
-                    <Input id="modelKid" name="modelKid" defaultValue={w.modelKid} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="modelDirector">Modell (Director&apos;s Cut)</Label>
-                    <Input id="modelDirector" name="modelDirector" defaultValue={w.modelDirector} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="apiBaseUrl">API-URL (leer = Anthropic)</Label>
-                    <Input id="apiBaseUrl" name="apiBaseUrl" defaultValue={w.apiBaseUrl} placeholder="https://…" />
-                  </div>
+                <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+                  <span className="font-medium">KI-Verbindung: </span>
+                  {w.apiKey ? (
+                    <>
+                      {w.apiKey.label}{" "}
+                      <span className="text-muted-foreground">
+                        ({w.apiKey.protocol === "openai" ? "OpenAI-Protokoll" : "Anthropic-Protokoll"} ·{" "}
+                        {w.apiKey.modelKid} für die Kinder, {w.apiKey.modelDirector} für den Director&apos;s Cut)
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-destructive">keine hinterlegt</span>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Anbieter, Endpunkt und Modelle pflegt der Admin — so bleiben Zugangsdaten an einer Stelle.
+                  </p>
                 </div>
                 <Button type="submit">Speichern</Button>
               </form>
