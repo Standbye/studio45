@@ -11,10 +11,14 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   const existing = request.cookies.get(DEVICE_COOKIE)?.value;
   if (!existing || !/^[a-f0-9]{32}$/.test(existing)) {
+    // Secure nur bei echtem HTTPS — sonst verwirft der Browser das Cookie
+    // stillschweigend und jedes Gerät zählt bei jedem Aufruf als neu.
+    const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const https = proto ? proto === "https" : request.nextUrl.protocol === "https:";
     response.cookies.set(DEVICE_COOKIE, crypto.randomBytes(16).toString("hex"), {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: https,
       path: "/",
       maxAge: 60 * 60 * 24 * 90,
     });
