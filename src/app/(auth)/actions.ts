@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/passwords";
 import { createSession, destroySession, currentUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
+import { DEVICE_COOKIE, deviceIdFrom, rateLimit } from "@/lib/rate-limit";
 
 const LOCKOUT_AFTER = 8;
 const LOCKOUT_MINUTES = 5;
@@ -40,6 +42,11 @@ export async function setupAction(formData: FormData): Promise<void> {
 }
 
 export async function loginAction(formData: FormData): Promise<void> {
+  // Bremse gegen Bruteforce zusätzlich zur Konto-Sperre
+  const jar = await cookies();
+  const device = deviceIdFrom(jar.get(DEVICE_COOKIE)?.value);
+  if (!rateLimit(`login:${device}`, 20, 300).allowed) redirect("/login?fehler=zuviele");
+
   const parsed = credentialsSchema.safeParse({
     username: formData.get("username"),
     password: formData.get("password"),

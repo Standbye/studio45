@@ -9,7 +9,7 @@ export const BASE_URL = (process.env.BASE_URL ?? "http://localhost:3000").replac
 export const DATA_DIR = path.resolve(process.env.DATA_DIR ?? "./data");
 
 export function dataPath(...segments: string[]): string {
-  const p = path.join(DATA_DIR, ...segments);
+  const p = path.join(/*turbopackIgnore: true*/ DATA_DIR, ...segments);
   fs.mkdirSync(path.dirname(p), { recursive: true });
   return p;
 }

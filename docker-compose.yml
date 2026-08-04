@@ -1,0 +1,19 @@
+services:
+  studio45:
+    build: .
+    # Alternativ ein fertiges Image:
+    # image: ghcr.io/sapitvet/studio45:latest
+    container_name: studio45
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Öffentliche Adresse der Instanz — steuert die QR-Code-Generierung!
+      BASE_URL: "http://localhost:3000"
+      # Optional: eigenes Session-Secret (sonst wird eins im Volume erzeugt)
+      # SESSION_SECRET: "bitte-mindestens-32-zeichen-lang-eintragen"
+    volumes:
+      - studio45-data:/data
+
+volumes:
+  studio45-data:

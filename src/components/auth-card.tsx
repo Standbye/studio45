@@ -7,6 +7,7 @@ const FEHLER_TEXTE: Record<string, string> = {
   zugangsdaten: "Benutzername oder Passwort ist falsch.",
   gesperrt: "Zu viele Fehlversuche — Konto ist kurzzeitig gesperrt. Bitte in 5 Minuten erneut versuchen.",
   aktuell: "Das aktuelle Passwort ist falsch.",
+  zuviele: "Zu viele Anmeldeversuche von diesem Gerät. Bitte ein paar Minuten warten.",
 };
 
 export function AuthShell({
