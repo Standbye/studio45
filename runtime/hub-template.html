@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>__STUDIO45_TITEL__</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #7ec850;
+    font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none; touch-action: none; }
+  #welt { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ── HUD ── */
+  .hud { position: absolute; z-index: 10; }
+  #hud-links { top: max(10px, env(safe-area-inset-top)); left: 12px;
+    background: rgba(255,255,255,.9); border-radius: 999px; padding: 8px 16px;
+    font-weight: 800; font-size: 17px; color: #2d5016; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    display: flex; gap: 8px; align-items: center; }
+  #hud-rechts { top: max(10px, env(safe-area-inset-top)); right: 12px; display: flex; gap: 8px; }
+  .hud-btn { width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255,255,255,.9); font-size: 22px; box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+  .hud-btn:active { transform: scale(.93); }
+
+  /* ── Sprechblase / Dialog ── */
+  #dialog {
+    position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom));
+    transform: translateX(-50%); width: min(560px, calc(100vw - 32px));
+    background: #fff; border-radius: 18px; padding: 16px 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index: 20; display: none; }
+  #dialog.zeigen { display: block; animation: hoch .18s ease-out; }
+  @keyframes hoch { from { transform: translateX(-50%) translateY(14px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+  #dialog .wer { font-weight: 900; color: #2563eb; font-size: 15px; margin-bottom: 4px; }
+  #dialog .text { font-size: 16px; line-height: 1.35; color: #1f2937; }
+  #dialog .knoepfe { margin-top: 12px; display: flex; gap: 10px; }
+  #dialog .knoepfe:empty { display: none; }
+  .spiel-knopf { flex: 1; border: 0; border-radius: 12px; padding: 13px 16px;
+    font-size: 17px; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #7c3aed, #c026d3); box-shadow: 0 4px 0 #5b21b6; }
+  .spiel-knopf:active { transform: translateY(3px); box-shadow: 0 1px 0 #5b21b6; }
+
+  /* ── Joystick ── */
+  #stick-zone { position: absolute; left: 0; bottom: 0; width: 45%; height: 45%; z-index: 5; }
+  #stick { position: absolute; width: 110px; height: 110px; border-radius: 50%;
+    background: rgba(255,255,255,.25); border: 2px solid rgba(255,255,255,.5);
+    display: none; pointer-events: none; }
+  #stick .knubbel { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px;
+    border-radius: 50%; background: rgba(255,255,255,.85); transform: translate(-50%,-50%);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+
+  /* ── Spiel-Overlay ── */
+  #overlay { position: fixed; inset: 0; z-index: 100; background: #000; display: none; }
+  #overlay.zeigen { display: block; }
+  #overlay iframe { width: 100%; height: 100%; border: 0; }
+  #zurueck { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 12px; z-index: 110;
+    border: 0; border-radius: 999px; padding: 10px 18px; font-size: 15px; font-weight: 800;
+    background: rgba(255,255,255,.95); color: #1f2937; cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,.4); display: none; }
+  #overlay.zeigen ~ #zurueck, #zurueck.zeigen { display: block; }
+
+  /* Hinweis-Toast */
+  #toast { position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    background: rgba(45,80,22,.92); color: #fff; padding: 10px 20px; border-radius: 999px;
+    font-weight: 700; font-size: 15px; z-index: 30; display: none; }
+
+  /* Intro / Titelbildschirm (auch: erste Nutzer-Geste für Audio+Fullscreen) */
+  #intro { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 24px;
+    background: linear-gradient(160deg, #9ccc65, #558b2f); color: #fff; }
+  #intro h1 { font-size: clamp(30px, 7vw, 52px); font-weight: 900; margin-bottom: 6px;
+    text-shadow: 0 3px 0 rgba(0,0,0,.15); }
+  #intro .unter { font-size: clamp(15px, 3vw, 20px); opacity: .92; margin-bottom: 20px; }
+  #intro .karte { background: #fff; color: #1f2937; border-radius: 20px; padding: 20px 22px;
+    max-width: 520px; box-shadow: 0 12px 40px rgba(0,0,0,.3); }
+  #intro .karte .direktor { font-weight: 900; color: #2563eb; margin-bottom: 6px; }
+  #intro .karte p { font-size: 16px; line-height: 1.4; }
+  #intro .los { margin-top: 22px; border: 0; border-radius: 16px; padding: 16px 40px;
+    font-size: 21px; font-weight: 900; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #7c3aed, #c026d3); box-shadow: 0 6px 0 #5b21b6; }
+  #intro .los:active { transform: translateY(3px); box-shadow: 0 3px 0 #5b21b6; }
+</style>
+</head>
+<body>
+<canvas id="welt"></canvas>
+
+<div id="hud-links" class="hud">🍃 <span id="blatt-zaehler">0</span>/10 <span id="stern" style="display:none">⭐</span></div>
+<div id="hud-rechts" class="hud">
+  <button id="ton-knopf" class="hud-btn" type="button" title="Ton an/aus">🔊</button>
+  <button id="voll-knopf" class="hud-btn" type="button" title="Vollbild">⛶</button>
+</div>
+
+<div id="stick-zone"></div>
+<div id="stick"><div class="knubbel"></div></div>
+
+<div id="dialog">
+  <div class="wer"></div>
+  <div class="text"></div>
+  <div class="knoepfe"></div>
+</div>
+
+<div id="toast"></div>
+
+<div id="overlay"><iframe id="spiel-frame" sandbox="allow-scripts" allow="fullscreen" allowfullscreen title="Gruppen-Spiel"></iframe></div>
+<button id="zurueck" type="button">← Zurück zur Schule</button>
+
+<div id="intro">
+  <h1>__STUDIO45_TITEL__</h1>
+  <div class="unter">__STUDIO45_UNTERTITEL__</div>
+  <div class="karte">
+    <div class="direktor">__STUDIO45_GASTGEBER__</div>
+    <p>__STUDIO45_BEGRUESSUNG__<br><br>
+    <b>Laufen:</b> Finger/Maus aufs Ziel tippen, Joystick unten links, oder Pfeiltasten.</p>
+  </div>
+  <button class="los" id="los-knopf" type="button">Los geht's! 🎒</button>
+</div>
+
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   DIE LINDENSCHULE — begehbares Portal zu den Gruppen-Spielen.
+   Handgebaut. Alle Stellschrauben stehen hier oben in CONFIG.
+   ════════════════════════════════════════════════════════════════ */
+const CONFIG = __STUDIO45_CONFIG__;
+
+/* ── Grund-Setup ─────────────────────────────────────────────── */
+const canvas = document.getElementById("welt");
+const ctx = canvas.getContext("2d");
+const TILE_W = 72, TILE_H = 36; // iso-Raute
+let W = 0, H = 0, DPR = 1;
+
+function groesse() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener("resize", groesse);
+groesse();
+
+function isoX(gx, gy) { return (gx - gy) * (TILE_W / 2); }
+function isoY(gx, gy) { return (gx + gy) * (TILE_H / 2); }
+
+/* ── Spielzustand ────────────────────────────────────────────── */
+const spieler = {
+  gx: CONFIG.spielerStart.gx, gy: CONFIG.spielerStart.gy,
+  dx: 0, dy: 0, schritt: 0, blick: 1, // blick: 1 = rechts, -1 = links
+  ziel: null, // {gx,gy} für Tap-to-walk
+};
+const TEMPO = 3.4; // Kacheln pro Sekunde
+let blaetter = [];      // { gx, gy, luftHoehe (px, >0 = fällt noch), sway, gesammelt }
+let gesammelt = 0;
+let sternVerdient = false;
+let konfetti = [];      // { x, y, vx, vy, farbe, leben }
+let aktiverNpc = null;
+let tonAn = true;
+
+/* Hindernisse als Kreise (gx, gy, radius) — simpel & robust */
+const hindernisse = [
+  { gx: CONFIG.baum.gx, gy: CONFIG.baum.gy, r: 1.5 },           // Baum + Bank
+  ...CONFIG.staende.map(s => ({ gx: s.gx, gy: s.gy, r: 1.2 })), // Stände
+  ...CONFIG.personen.map(p => ({ gx: p.gx, gy: p.gy, r: 0.55 })),
+];
+const RAND = { minX: 1.2, maxX: CONFIG.welt.breite - 1.2, minY: 5.2, maxY: CONFIG.welt.hoehe - 1.2 };
+
+
+/* ── Sounds (WebAudio, winzig & optional) ────────────────────── */
+let audio = null;
+function ton(freq, dauer = 0.09, typ = "sine", lautst = 0.12) {
+  if (!tonAn) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = typ; o.frequency.value = freq;
+    g.gain.setValueAtTime(lautst, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + dauer);
+    o.connect(g).connect(audio.destination);
+    o.start(); o.stop(audio.currentTime + dauer);
+  } catch { /* Audio nicht verfügbar */ }
+}
+function tonPling()   { ton(880, .12, "sine", .15); ton(1320, .18, "sine", .08); }
+function tonDialog()  { ton(520, .07, "triangle", .10); }
+function tonFanfare() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => ton(f, .22, "triangle", .16), i * 130)); }
+
+/* ── HUD-Knöpfe ──────────────────────────────────────────────── */
+document.getElementById("ton-knopf").addEventListener("click", (e) => {
+  tonAn = !tonAn;
+  e.currentTarget.textContent = tonAn ? "🔊" : "🔇";
+});
+document.getElementById("voll-knopf").addEventListener("click", () => {
+  const el = document.documentElement;
+  if (document.fullscreenElement) { document.exitFullscreen?.(); }
+  else { (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el); }
+});
+
+/* ── Dialog / Sprechblase ────────────────────────────────────── */
+const dialogEl = document.getElementById("dialog");
+function zeigeDialog(person) {
+  const werEl = dialogEl.querySelector(".wer");
+  const textEl = dialogEl.querySelector(".text");
+  const knoepfeEl = dialogEl.querySelector(".knoepfe");
+  const spiel = person.spiel ? CONFIG.spiele[person.spiel] : null;
+  werEl.textContent = `${person.name} · ${person.rolle}`;
+  textEl.textContent = person.text.replace("{studio}", spiel ? spiel.studio : "");
+  knoepfeEl.innerHTML = "";
+  if (spiel) {
+    const b = document.createElement("button");
+    b.className = "spiel-knopf";
+    b.type = "button";
+    b.textContent = `🎮 "${spiel.titel}" spielen`;
+    b.addEventListener("click", () => oeffneSpiel(spiel.url));
+    knoepfeEl.appendChild(b);
+  }
+  if (!dialogEl.classList.contains("zeigen")) tonDialog();
+  dialogEl.classList.add("zeigen");
+}
+function versteckeDialog() { dialogEl.classList.remove("zeigen"); }
+
+/* ── Spiel-Overlay ───────────────────────────────────────────── */
+const overlayEl = document.getElementById("overlay");
+const frameEl = document.getElementById("spiel-frame");
+const zurueckEl = document.getElementById("zurueck");
+function oeffneSpiel(url) {
+  frameEl.src = url;
+  overlayEl.classList.add("zeigen");
+  zurueckEl.classList.add("zeigen");
+}
+zurueckEl.addEventListener("click", () => {
+  overlayEl.classList.remove("zeigen");
+  zurueckEl.classList.remove("zeigen");
+  frameEl.src = "about:blank";
+});
+
+/* ── Steuerung: Tastatur ─────────────────────────────────────── */
+const tasten = {};
+window.addEventListener("keydown", (e) => {
+  tasten[e.key.toLowerCase()] = true;
+  if (["arrowup","arrowdown","arrowleft","arrowright"," "].includes(e.key.toLowerCase())) e.preventDefault();
+});
+window.addEventListener("keyup", (e) => { tasten[e.key.toLowerCase()] = false; });
+
+/* ── Steuerung: Joystick (Touch) ─────────────────────────────── */
+const stickZone = document.getElementById("stick-zone");
+const stickEl = document.getElementById("stick");
+let stick = null; // { id, x0, y0, dx, dy }
+stickZone.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  stick = { id: t.identifier, x0: t.clientX, y0: t.clientY, dx: 0, dy: 0 };
+  stickEl.style.display = "block";
+  stickEl.style.left = (t.clientX - 55) + "px";
+  stickEl.style.top = (t.clientY - 55) + "px";
+}, { passive: false });
+window.addEventListener("touchmove", (e) => {
+  if (!stick) return;
+  for (const t of e.changedTouches) {
+    if (t.identifier !== stick.id) continue;
+    const dx = t.clientX - stick.x0, dy = t.clientY - stick.y0;
+    const len = Math.hypot(dx, dy) || 1;
+    const cap = Math.min(len, 44);
+    stick.dx = (dx / len) * (cap / 44);
+    stick.dy = (dy / len) * (cap / 44);
+    const kn = stickEl.querySelector(".knubbel");
+    kn.style.transform = `translate(calc(-50% + ${stick.dx * 32}px), calc(-50% + ${stick.dy * 32}px))`;
+  }
+}, { passive: false });
+window.addEventListener("touchend", (e) => {
+  if (!stick) return;
+  for (const t of e.changedTouches) {
+    if (t.identifier === stick.id) { stick = null; stickEl.style.display = "none"; }
+  }
+});
+
+/* ── Steuerung: Tippen/Klicken aufs Ziel ─────────────────────── */
+let kamX = 0, kamY = 0; // Kamera-Offset (Screen-Koordinaten)
+function screenZuGrid(sx, sy) {
+  const ix = sx - kamX, iy = sy - kamY;
+  const gx = (ix / (TILE_W / 2) + iy / (TILE_H / 2)) / 2;
+  const gy = (iy / (TILE_H / 2) - ix / (TILE_W / 2)) / 2;
+  return { gx, gy };
+}
+canvas.addEventListener("pointerdown", (e) => {
+  // Joystick-Zone dem Joystick überlassen (Touch), Maus darf überall
+  if (e.pointerType === "touch" && e.clientX < W * 0.45 && e.clientY > H * 0.55) return;
+  const z = screenZuGrid(e.clientX, e.clientY);
+  z.gx = Math.max(RAND.minX, Math.min(RAND.maxX, z.gx));
+  z.gy = Math.max(RAND.minY, Math.min(RAND.maxY, z.gy));
+  spieler.ziel = z;
+});
+
+/* ── Bewegung + Kollision ────────────────────────────────────── */
+function blockiert(gx, gy) {
+  if (gx < RAND.minX || gx > RAND.maxX || gy < RAND.minY || gy > RAND.maxY) return true;
+  for (const h of hindernisse) {
+    if (Math.hypot(gx - h.gx, gy - h.gy) < h.r + 0.35) return true;
+  }
+  return false;
+}
+function bewege(dt) {
+  let vx = 0, vy = 0; // Bildschirm-Richtung (rechts/runter positiv)
+  if (tasten["arrowleft"] || tasten["a"]) vx -= 1;
+  if (tasten["arrowright"] || tasten["d"]) vx += 1;
+  if (tasten["arrowup"] || tasten["w"]) vy -= 1;
+  if (tasten["arrowdown"] || tasten["s"]) vy += 1;
+  if (stick) { vx += stick.dx; vy += stick.dy; }
+
+  let gvx, gvy;
+  if (vx !== 0 || vy !== 0) {
+    spieler.ziel = null;
+    // Bildschirm-Richtung → Grid-Richtung (Iso-Entzerrung)
+    gvx = vx / TILE_W + vy / TILE_H;
+    gvy = vy / TILE_H - vx / TILE_W;
+    const l = Math.hypot(gvx, gvy) || 1;
+    gvx /= l; gvy /= l;
+  } else if (spieler.ziel) {
+    gvx = spieler.ziel.gx - spieler.gx;
+    gvy = spieler.ziel.gy - spieler.gy;
+    const dist = Math.hypot(gvx, gvy);
+    if (dist < 0.15) { spieler.ziel = null; gvx = gvy = 0; }
+    else { gvx /= dist; gvy /= dist; }
+  } else { gvx = gvy = 0; }
+
+  if (gvx !== 0 || gvy !== 0) {
+    const nx = spieler.gx + gvx * TEMPO * dt;
+    const ny = spieler.gy + gvy * TEMPO * dt;
+    let bewegt = false;
+    if (!blockiert(nx, ny)) { spieler.gx = nx; spieler.gy = ny; bewegt = true; }
+    else if (!blockiert(nx, spieler.gy)) { spieler.gx = nx; bewegt = true; }
+    else if (!blockiert(spieler.gx, ny)) { spieler.gy = ny; bewegt = true; }
+    if (!bewegt) spieler.ziel = null; // festgelaufen → Ziel verwerfen
+    spieler.schritt += dt * 11;
+    const sx = isoX(gvx, gvy);
+    if (Math.abs(sx) > 0.02) spieler.blick = sx > 0 ? 1 : -1;
+  } else {
+    spieler.schritt = 0;
+  }
+}
+
+/* ── NPC-Nähe → Dialog ───────────────────────────────────────── */
+function pruefeNaehe() {
+  let nah = null;
+  for (const p of CONFIG.personen) {
+    if (Math.hypot(spieler.gx - p.gx, spieler.gy - p.gy) < 2.0) { nah = p; break; }
+  }
+  if (nah !== aktiverNpc) {
+    aktiverNpc = nah;
+    if (nah) zeigeDialog(nah); else versteckeDialog();
+  }
+}
+
+/* ── Lindenblätter ───────────────────────────────────────────── */
+let blattTimer = 2;
+function aktualisiereBlaetter(dt) {
+  blattTimer -= dt;
+  const aktiv = blaetter.filter(b => !b.gesammelt).length;
+  if (blattTimer <= 0 && blaetter.length < CONFIG.blaetterZiel && aktiv < 6) {
+    blattTimer = 2.6;
+    const wink = Math.random() * Math.PI * 2, abst = 1.6 + Math.random() * 2.6;
+    let bx = CONFIG.baum.gx + Math.cos(wink) * abst;
+    let by = CONFIG.baum.gy + Math.sin(wink) * abst;
+    bx = Math.max(RAND.minX + 0.3, Math.min(RAND.maxX - 0.3, bx));
+    by = Math.max(RAND.minY + 0.3, Math.min(RAND.maxY - 0.3, by));
+    blaetter.push({ gx: bx, gy: by, luftHoehe: 130, sway: Math.random() * Math.PI * 2, gesammelt: false });
+  }
+  for (const b of blaetter) {
+    if (b.gesammelt) continue;
+    if (b.luftHoehe > 0) {
+      b.luftHoehe -= dt * 42;
+      b.sway += dt * 3;
+    } else if (Math.hypot(spieler.gx - b.gx, spieler.gy - b.gy) < 0.75) {
+      b.gesammelt = true;
+      gesammelt++;
+      document.getElementById("blatt-zaehler").textContent = gesammelt;
+      tonPling();
+      if (gesammelt >= CONFIG.blaetterZiel && !sternVerdient) {
+        sternVerdient = true;
+        document.getElementById("stern").style.display = "inline";
+        tonFanfare();
+        zeigeToast("⭐ Alle Lindenblätter gesammelt — du bist ein Linden-Star!");
+        const p0 = { x: W / 2, y: H / 3 };
+        for (let i = 0; i < 120; i++) {
+          konfetti.push({ x: p0.x, y: p0.y,
+            vx: (Math.random() - .5) * 420, vy: -Math.random() * 380 - 60,
+            farbe: `hsl(${Math.random() * 360},90%,60%)`, leben: 1.6 + Math.random() });
+        }
+      }
+    }
+  }
+}
+function zeigeToast(text) {
+  const t = document.getElementById("toast");
+  t.textContent = text;
+  t.style.display = "block";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = "none"; }, 3500);
+}
+
+/* ════════════════ ZEICHNEN ════════════════ */
+function zeichne(dt) {
+  // Kamera: Spieler mittig, leicht nach oben versetzt
+  kamX = W / 2 - isoX(spieler.gx, spieler.gy);
+  kamY = H * 0.55 - isoY(spieler.gx, spieler.gy);
+
+  // Himmel/Wiese hinter allem
+  ctx.fillStyle = "#7ec850";
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.translate(kamX, kamY);
+
+  zeichneHof();
+  zeichneGebaeude();
+
+  // Entities nach Tiefe sortieren (gx+gy)
+  const dinge = [];
+  dinge.push({ tiefe: CONFIG.baum.gx + CONFIG.baum.gy, mal: zeichneBaum });
+  for (const s of CONFIG.staende) dinge.push({ tiefe: s.gx + s.gy, mal: () => zeichneStand(s) });
+  for (const p of CONFIG.personen) dinge.push({ tiefe: p.gx + p.gy, mal: () => zeichneFigur(p.gx, p.gy, p, false) });
+  dinge.push({ tiefe: spieler.gx + spieler.gy, mal: () => zeichneFigur(spieler.gx, spieler.gy, null, true) });
+  for (const b of blaetter) if (!b.gesammelt) dinge.push({ tiefe: b.gx + b.gy - 0.4, mal: () => zeichneBlatt(b) });
+  dinge.sort((a, b) => a.tiefe - b.tiefe);
+  for (const d of dinge) d.mal();
+
+  ctx.restore();
+
+  // Konfetti (Screen-Space)
+  for (let i = konfetti.length - 1; i >= 0; i--) {
+    const k = konfetti[i];
+    k.leben -= dt; if (k.leben <= 0) { konfetti.splice(i, 1); continue; }
+    k.vy += 500 * dt; k.x += k.vx * dt; k.y += k.vy * dt;
+    ctx.fillStyle = k.farbe;
+    ctx.fillRect(k.x, k.y, 7, 10);
+  }
+}
+
+function zeichneHof() {
+  const { breite, hoehe } = CONFIG.welt;
+  for (let gx = 0; gx < breite; gx++) {
+    for (let gy = 4; gy < hoehe; gy++) {
+      const x = isoX(gx + .5, gy + .5), y = isoY(gx + .5, gy + .5);
+      ctx.beginPath();
+      ctx.moveTo(x, y - TILE_H / 2);
+      ctx.lineTo(x + TILE_W / 2, y);
+      ctx.lineTo(x, y + TILE_H / 2);
+      ctx.lineTo(x - TILE_W / 2, y);
+      ctx.closePath();
+      ctx.fillStyle = (gx + gy) % 2 === 0 ? "#d7c9b8" : "#cbbba8"; // Pflaster
+      ctx.fill();
+    }
+  }
+  // Grasstreifen vor dem Gebäude
+  for (let gx = 0; gx < breite; gx++) {
+    const x = isoX(gx + .5, 3.5), y = isoY(gx + .5, 3.5);
+    ctx.beginPath();
+    ctx.moveTo(x, y - TILE_H / 2); ctx.lineTo(x + TILE_W / 2, y);
+    ctx.lineTo(x, y + TILE_H / 2); ctx.lineTo(x - TILE_W / 2, y);
+    ctx.closePath();
+    ctx.fillStyle = (gx % 2 === 0) ? "#8bc34a" : "#7cb342";
+    ctx.fill();
+  }
+}
+
+function zeichneGebaeude() {
+  // Fassade als freundliches "Sprite" hinter dem Grasstreifen
+  const midX = isoX(CONFIG.welt.breite / 2, 1.5);
+  const bodenY = isoY(CONFIG.welt.breite / 2, 3.2);
+  const bw = 720, bh = 210;
+  const x0 = midX - bw / 2, y0 = bodenY - bh;
+  // Wand
+  ctx.fillStyle = "#f5e6c8";
+  ctx.fillRect(x0, y0, bw, bh);
+  // Dach
+  ctx.fillStyle = "#b3552e";
+  ctx.beginPath();
+  ctx.moveTo(x0 - 22, y0); ctx.lineTo(x0 + bw + 22, y0);
+  ctx.lineTo(x0 + bw - 8, y0 - 46); ctx.lineTo(x0 + 8, y0 - 46);
+  ctx.closePath(); ctx.fill();
+  // Fenster (2 Reihen)
+  ctx.fillStyle = "#90caf9";
+  for (let reihe = 0; reihe < 2; reihe++) {
+    for (let i = 0; i < 8; i++) {
+      const fx = x0 + 34 + i * 88, fy = y0 + 26 + reihe * 82;
+      if (i === 3 || i === 4) continue; // Platz für Tür/Uhr
+      ctx.fillRect(fx, fy, 52, 56);
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+      ctx.strokeRect(fx, fy, 52, 56);
+      ctx.beginPath(); ctx.moveTo(fx + 26, fy); ctx.lineTo(fx + 26, fy + 56);
+      ctx.moveTo(fx, fy + 28); ctx.lineTo(fx + 52, fy + 28); ctx.stroke();
+    }
+  }
+  // Tür mittig + Treppe
+  const tx = midX - 44, ty = y0 + bh - 96;
+  ctx.fillStyle = "#6d4c41"; ctx.fillRect(tx, ty, 88, 96);
+  ctx.fillStyle = "#8d6e63"; ctx.fillRect(tx + 8, ty + 8, 34, 88); ctx.fillRect(tx + 46, ty + 8, 34, 88);
+  ctx.fillStyle = "#bdaf9c"; ctx.fillRect(tx - 16, ty + 96 - 8, 120, 10);
+  // Uhr über der Tür
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, y0 + 44, 24, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#37474f"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(midX, y0 + 44); ctx.lineTo(midX, y0 + 28);
+  ctx.moveTo(midX, y0 + 44); ctx.lineTo(midX + 12, y0 + 48); ctx.stroke();
+  // Schriftzug
+  ctx.fillStyle = "#2d5016";
+  ctx.textAlign = "center";
+  // Schriftgröße an die Fassadenbreite anpassen — Schulnamen sind unterschiedlich lang
+  let schriftGroesse = 30;
+  do {
+    ctx.font = "900 " + schriftGroesse + "px -apple-system, system-ui, sans-serif";
+    if (ctx.measureText(CONFIG.schulname).width <= bw * 0.86) break;
+    schriftGroesse -= 2;
+  } while (schriftGroesse > 12);
+  ctx.fillText(CONFIG.schulname, midX, y0 + bh - 110);
+}
+
+function zeichneBaum() {
+  const { gx, gy } = CONFIG.baum;
+  const x = isoX(gx, gy), y = isoY(gx, gy);
+  // Schatten
+  ctx.fillStyle = "rgba(0,0,0,.18)";
+  ctx.beginPath(); ctx.ellipse(x, y + 6, 96, 34, 0, 0, 7); ctx.fill();
+  // Bank rund um den Stamm
+  ctx.fillStyle = "#a1887f";
+  ctx.beginPath(); ctx.ellipse(x, y - 2, 58, 22, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#8d6e63";
+  ctx.beginPath(); ctx.ellipse(x, y - 8, 58, 22, 0, 0, 7); ctx.fill();
+  // Stamm
+  ctx.fillStyle = "#6d4c41";
+  ctx.fillRect(x - 14, y - 118, 28, 112);
+  ctx.beginPath(); ctx.ellipse(x, y - 6, 14, 7, 0, 0, 7); ctx.fill();
+  // Krone (Lindenform: herzlich-rund, mehrere Bäusche)
+  const gruen = ["#66bb6a", "#4caf50", "#43a047"];
+  const bausche = [ [0,-210,86], [-62,-172,60], [64,-172,62], [-30,-238,52], [36,-236,50], [0,-160,58] ];
+  bausche.forEach((b, i) => {
+    ctx.fillStyle = gruen[i % 3];
+    ctx.beginPath(); ctx.arc(x + b[0], y + b[1], b[2], 0, 7); ctx.fill();
+  });
+  // ein paar helle Lichter in der Krone
+  ctx.fillStyle = "rgba(255,255,255,.18)";
+  ctx.beginPath(); ctx.arc(x - 28, y - 226, 26, 0, 7); ctx.fill();
+}
+
+function zeichneStand(s) {
+  const spiel = CONFIG.spiele[s.spiel];
+  const x = isoX(s.gx, s.gy), y = isoY(s.gx, s.gy);
+  // Schatten
+  ctx.fillStyle = "rgba(0,0,0,.15)";
+  ctx.beginPath(); ctx.ellipse(x, y + 4, 62, 20, 0, 0, 7); ctx.fill();
+  // Pfosten
+  ctx.fillStyle = "#8d6e63";
+  ctx.fillRect(x - 52, y - 92, 9, 92); ctx.fillRect(x + 43, y - 92, 9, 92);
+  // Theke
+  ctx.fillStyle = "#a1887f"; ctx.fillRect(x - 56, y - 38, 112, 34);
+  ctx.fillStyle = "#8d6e63"; ctx.fillRect(x - 56, y - 42, 112, 8);
+  // Markise
+  ctx.fillStyle = s.farbe;
+  ctx.beginPath();
+  ctx.moveTo(x - 62, y - 92); ctx.lineTo(x + 62, y - 92);
+  ctx.lineTo(x + 54, y - 118); ctx.lineTo(x - 54, y - 118);
+  ctx.closePath(); ctx.fill();
+  // Zacken
+  for (let i = 0; i < 6; i++) {
+    ctx.beginPath();
+    const zx = x - 62 + i * 21;
+    ctx.moveTo(zx, y - 92); ctx.lineTo(zx + 21, y - 92); ctx.lineTo(zx + 10.5, y - 78);
+    ctx.closePath();
+    ctx.fillStyle = i % 2 === 0 ? s.farbe : "#fff";
+    ctx.fill();
+  }
+  // Schild: Studio + Spieltitel
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fff";
+  const schildY = y - 132;
+  const sw = Math.max(150, ctx.measureText(spiel.studio).width + 60);
+  rund(x - sw / 2, schildY - 22, sw, 46, 10, "#fff", "#00000022");
+  ctx.fillStyle = "#1f2937";
+  ctx.font = "900 17px -apple-system, system-ui, sans-serif";
+  ctx.fillText(spiel.studio, x, schildY - 2);
+  ctx.font = "600 12px -apple-system, system-ui, sans-serif";
+  ctx.fillStyle = "#6b7280";
+  ctx.fillText(spiel.titel, x, schildY + 16);
+}
+
+function rund(x, y, w, h, r, farbe, schatten) {
+  if (schatten) { ctx.fillStyle = schatten; ctx.beginPath(); ctx.roundRect(x + 2, y + 3, w, h, r); ctx.fill(); }
+  ctx.fillStyle = farbe;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
+}
+
+function zeichneFigur(gx, gy, person, istSpieler) {
+  const x = isoX(gx, gy), y = isoY(gx, gy);
+  const hop = istSpieler ? Math.abs(Math.sin(spieler.schritt)) * 5 : 0;
+  const koerper = person ? person.koerper : "#f9a825";
+  const haar = person ? person.haar : "#5d4037";
+  // Schatten
+  ctx.fillStyle = "rgba(0,0,0,.22)";
+  ctx.beginPath(); ctx.ellipse(x, y + 3, 17, 8, 0, 0, 7); ctx.fill();
+  const by = y - hop;
+  // Beine
+  const beinSchwung = istSpieler ? Math.sin(spieler.schritt) * 5 : 0;
+  ctx.fillStyle = "#37474f";
+  ctx.fillRect(x - 9, by - 26 , 7, 26 + beinSchwung * 0.4);
+  ctx.fillRect(x + 2, by - 26, 7, 26 - beinSchwung * 0.4);
+  // Körper
+  ctx.fillStyle = koerper;
+  ctx.beginPath(); ctx.roundRect(x - 14, by - 58, 28, 36, 9); ctx.fill();
+  // Rucksack beim Spieler-Kind
+  if (istSpieler) {
+    ctx.fillStyle = "#e53935";
+    ctx.beginPath(); ctx.roundRect(x - 22 * spieler.blick - (spieler.blick > 0 ? 0 : -14), by - 54, 9, 24, 4); ctx.fill();
+  }
+  // Krawatte (Direktor)
+  if (person && person.krawatte) {
+    ctx.fillStyle = "#c62828";
+    ctx.beginPath();
+    ctx.moveTo(x, by - 58); ctx.lineTo(x + 4, by - 46); ctx.lineTo(x, by - 34); ctx.lineTo(x - 4, by - 46);
+    ctx.closePath(); ctx.fill();
+  }
+  // Kopf
+  ctx.fillStyle = "#ffe0b2";
+  ctx.beginPath(); ctx.arc(x, by - 72, 13, 0, 7); ctx.fill();
+  // Haare
+  ctx.fillStyle = haar;
+  ctx.beginPath(); ctx.arc(x, by - 77, 12, Math.PI, 2 * Math.PI); ctx.fill();
+  if (person && !person.krawatte) { // Lehrerinnen: etwas längeres Haar
+    ctx.fillRect(x - 12, by - 77, 5, 16); ctx.fillRect(x + 7, by - 77, 5, 16);
+  }
+  // Augen
+  ctx.fillStyle = "#263238";
+  ctx.beginPath(); ctx.arc(x - 4, by - 72, 1.8, 0, 7); ctx.arc(x + 4, by - 72, 1.8, 0, 7); ctx.fill();
+  // Mund
+  ctx.strokeStyle = "#8d6e63"; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.arc(x, by - 68, 4.5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+  // Namensschild
+  if (person) {
+    ctx.font = "800 13px -apple-system, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    const tw = ctx.measureText(person.name).width + 18;
+    rund(x - tw / 2, y + 10, tw, 22, 7, "#ffffffee", "#00000022");
+    ctx.fillStyle = "#1f2937";
+    ctx.fillText(person.name, x, y + 25);
+    // "Sprich mit mir"-Hinweis wenn in der Nähe
+    if (aktiverNpc === person) {
+      ctx.font = "900 20px -apple-system, system-ui, sans-serif";
+      ctx.fillStyle = "#2563eb";
+      ctx.fillText("💬", x, by - 96);
+    }
+  }
+}
+
+function zeichneBlatt(b) {
+  const x = isoX(b.gx, b.gy) + (b.luftHoehe > 0 ? Math.sin(b.sway) * 14 : 0);
+  const y = isoY(b.gx, b.gy) - b.luftHoehe;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(b.luftHoehe > 0 ? Math.sin(b.sway * 1.4) * 0.6 : 0.35);
+  // Lindenblatt: Herzform
+  ctx.fillStyle = "#7cb342";
+  ctx.beginPath();
+  ctx.moveTo(0, 8);
+  ctx.bezierCurveTo(-11, -2, -7, -12, 0, -6);
+  ctx.bezierCurveTo(7, -12, 11, -2, 0, 8);
+  ctx.fill();
+  ctx.strokeStyle = "#558b2f"; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 7); ctx.stroke();
+  ctx.restore();
+  // Funkeln, wenn es liegt
+  if (b.luftHoehe <= 0 && Math.floor(performance.now() / 400) % 2 === 0) {
+    ctx.fillStyle = "#fff59d";
+    ctx.beginPath(); ctx.arc(x + 9, y - 9, 2.2, 0, 7); ctx.fill();
+  }
+}
+
+/* ── Game-Loop ───────────────────────────────────────────────── */
+let laeuft = false;
+let vorher = performance.now();
+function schleife(jetzt) {
+  const dt = Math.min((jetzt - vorher) / 1000, 0.05);
+  vorher = jetzt;
+  if (laeuft) {
+    bewege(dt);
+    pruefeNaehe();
+    aktualisiereBlaetter(dt);
+  }
+  zeichne(dt);
+  requestAnimationFrame(schleife);
+}
+requestAnimationFrame(schleife);
+
+/* ── Intro / Start ───────────────────────────────────────────── */
+document.getElementById("los-knopf").addEventListener("click", () => {
+  // Erste Nutzer-Geste: AudioContext aufwecken (Browser-Policy)
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    audio.resume?.();
+  } catch { /* egal */ }
+  const intro = document.getElementById("intro");
+  intro.style.transition = "opacity .35s";
+  intro.style.opacity = "0";
+  setTimeout(() => { intro.style.display = "none"; }, 350);
+  laeuft = true;
+  vorher = performance.now();
+  tonFanfare();
+});
+</script>
+</body>
+</html>

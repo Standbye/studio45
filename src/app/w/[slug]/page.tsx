@@ -71,9 +71,17 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
         ))}
       </div>
 
-      <footer className="mt-10 text-center text-sm opacity-70">
-        {w.phase === "STUDIO" ? "🎮 Studio-Phase läuft — baut los!" : w.phase === "PAUSE" ? "⏸️ Pause" : "🗣️ Plenum — Blick nach vorne!"}
-        <span className="mx-3">·</span> Studio45
+      <footer className="mt-10 flex flex-col items-center gap-4 text-sm opacity-90">
+        <a
+          href={`/w/${w.slug}/hub`}
+          className="rounded-full bg-white/15 px-6 py-3 text-lg font-bold backdrop-blur transition hover:bg-white/25"
+        >
+          🌳 Zur begehbaren Schule
+        </a>
+        <span className="opacity-70">
+          {w.phase === "STUDIO" ? "🎮 Studio-Phase läuft — baut los!" : w.phase === "PAUSE" ? "⏸️ Pause" : "🗣️ Plenum — Blick nach vorne!"}
+          <span className="mx-3">·</span> Studio45
+        </span>
       </footer>
     </main>
   );
