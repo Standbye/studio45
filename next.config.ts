@@ -9,7 +9,8 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // 'unsafe-eval' nur im Dev-Modus — React braucht es für Debugging-Features
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "media-src 'self' data: blob:",
@@ -28,7 +29,15 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["better-sqlite3", "@node-rs/argon2", "sharp", "@prisma/adapter-better-sqlite3"],
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      // Generierte Spiele bringen ihre eigene, strengere CSP im Route-Handler mit
+      // (keine externen Requests) — hier nur die restlichen Header.
+      {
+        source: "/g/:code/play",
+        headers: securityHeaders.filter((h) => h.key !== "Content-Security-Policy"),
+      },
+      { source: "/((?!g/[^/]+/play).*)", headers: securityHeaders },
+    ];
   },
 };
 
