@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/session";
+import { requireUserPage } from "@/lib/session";
 import { BASE_URL } from "@/lib/env";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import {
@@ -28,7 +28,7 @@ function fett(text: string) {
 }
 
 export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[blatt]">) {
-  const user = await requireUser("TEACHER");
+  const user = await requireUserPage("TEACHER");
   const { id, blatt } = await params;
   const w = await db.workshop.findFirst({
     where: { id, teacherId: user.id },

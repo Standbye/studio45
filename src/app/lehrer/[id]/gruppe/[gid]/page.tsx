@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/session";
+import { requireUserPage } from "@/lib/session";
 import { restoreSnapshotAction } from "@/app/lehrer/actions";
 import { DirectorCutDialog } from "./director-cut";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const dynamic = "force-dynamic";
 
 export default async function GroupDetail({ params }: PageProps<"/lehrer/[id]/gruppe/[gid]">) {
-  const user = await requireUser("TEACHER");
+  const user = await requireUserPage("TEACHER");
   const { id, gid } = await params;
   const group = await db.group.findFirst({
     where: { id: gid, workshopId: id, workshop: { teacherId: user.id } },

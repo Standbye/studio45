@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/session";
+import { requireUserPage } from "@/lib/session";
 import { BASE_URL } from "@/lib/env";
 import { dayTitle, dayMotto } from "@/lib/prompts";
 import { attemptsLeft } from "@/lib/generate";
@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 export const dynamic = "force-dynamic";
 
 export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[id]">) {
-  const user = await requireUser("TEACHER");
+  const user = await requireUserPage("TEACHER");
   const { id } = await params;
   const w = await db.workshop.findFirst({
     where: { id, teacherId: user.id },

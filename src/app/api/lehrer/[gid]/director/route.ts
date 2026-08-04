@@ -17,7 +17,12 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request, ctx: RouteContext<"/api/lehrer/[gid]/director">) {
-  const user = await requireUser("TEACHER");
+  let user;
+  try {
+    user = await requireUser("TEACHER");
+  } catch {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
   const { gid } = await ctx.params;
 
   const group = await db.group.findFirst({

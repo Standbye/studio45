@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/session";
+import { requireUserPage } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
 export default async function LehrerIndex() {
-  const user = await requireUser("TEACHER");
+  const user = await requireUserPage("TEACHER");
   const workshops = await db.workshop.findMany({
     where: { teacherId: user.id, archived: false },
     include: { groups: true },

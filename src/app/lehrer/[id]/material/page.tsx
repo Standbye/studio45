@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { requireUser } from "@/lib/session";
+import { requireUserPage } from "@/lib/session";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ const BLAETTER = [
 ];
 
 export default async function MaterialIndex({ params }: PageProps<"/lehrer/[id]/material">) {
-  const user = await requireUser("TEACHER");
+  const user = await requireUserPage("TEACHER");
   const { id } = await params;
   const w = await db.workshop.findFirst({ where: { id, teacherId: user.id } });
   if (!w) notFound();

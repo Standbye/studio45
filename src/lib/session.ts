@@ -1,6 +1,7 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { sessionSecret } from "@/lib/env";
@@ -60,9 +61,22 @@ export const currentUser = cache(async (): Promise<SessionUser | null> => {
   }
 });
 
+/** Für API-Routen und Server-Actions: wirft, wenn nicht berechtigt. */
 export async function requireUser(role?: Role): Promise<SessionUser> {
   const user = await currentUser();
   if (!user) throw new Error("UNAUTHORIZED");
   if (role && user.role !== role) throw new Error("FORBIDDEN");
+  return user;
+}
+
+/**
+ * Für Seiten: leitet zum Login um, statt einen 500er zu erzeugen.
+ * Nötig für Seiten außerhalb der geschützten Layouts (z. B. Druckansichten).
+ */
+export async function requireUserPage(role?: Role): Promise<SessionUser> {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  if (user.mustChangePassword) redirect("/passwort");
+  if (role && user.role !== role) redirect(user.role === "ADMIN" ? "/admin" : "/lehrer");
   return user;
 }
