@@ -17,6 +17,8 @@ type KidState = {
   cooldownRemaining: number;
   cooldownSeconds: number;
   generating: boolean;
+  laufSekunden: number;
+  dauerSchaetzung: number;
   gameVersion: number;
   branding: { colorPrimary: string; colorAccent: string; hasLogo: boolean };
 };
@@ -48,6 +50,7 @@ export function KidStudio({ code }: { code: string }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [busyMsg, setBusyMsg] = useState(WARTE_SPRUECHE[0]);
+  const [bauSekunden, setBauSekunden] = useState(0);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [iframeKey, setIframeKey] = useState(0);
@@ -58,6 +61,7 @@ export function KidStudio({ code }: { code: string }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recRef = useRef<any>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const abbruchRef = useRef<AbortController | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -87,15 +91,27 @@ export function KidStudio({ code }: { code: string }) {
     return () => clearInterval(t);
   }, [cooldown > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const baut = busy || Boolean(state?.generating);
+
   useEffect(() => {
-    if (!busy) return;
+    if (!baut) return;
     let i = 0;
     const t = setInterval(() => {
       i = (i + 1) % WARTE_SPRUECHE.length;
       setBusyMsg(WARTE_SPRUECHE[i]);
     }, 6000);
     return () => clearInterval(t);
-  }, [busy]);
+  }, [baut]);
+
+  // Sekundenzähler während des Bauens — Grundlage für Balken und Restzeit
+  useEffect(() => {
+    if (!baut) {
+      setBauSekunden(0);
+      return;
+    }
+    const t = setInterval(() => setBauSekunden((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [baut]);
 
   function toggleMic() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,11 +165,18 @@ export function KidStudio({ code }: { code: string }) {
     setBusy(true);
     setBusyMsg(WARTE_SPRUECHE[0]);
     setFeedback(null);
+
+    // Nicht ewig hängen bleiben, wenn die Antwort nie kommt
+    const abbruch = new AbortController();
+    abbruchRef.current = abbruch;
+    const notbremse = setTimeout(() => abbruch.abort(), 12 * 60 * 1000);
+
     try {
       const res = await fetch(`/api/g/${code}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: text.replace(/⏳.*$/, "").trim() }),
+        signal: abbruch.signal,
       });
       const out = await res.json();
       if (out.ok) {
@@ -164,11 +187,31 @@ export function KidStudio({ code }: { code: string }) {
         setFeedback(`💡 ${out.reason ?? "Das hat nicht geklappt — probiert es nochmal."}`);
         await refresh();
       }
-    } catch {
-      setFeedback("💡 Verbindungsproblem — probiert es gleich nochmal.");
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") {
+        setFeedback("⏹️ Warten beendet. Falls die KI doch noch fertig wird, erscheint euer Spiel von selbst.");
+      } else {
+        setFeedback("💡 Verbindungsproblem — probiert es gleich nochmal.");
+      }
+      await refresh();
     } finally {
+      clearTimeout(notbremse);
+      abbruchRef.current = null;
       setBusy(false);
     }
+  }
+
+  /** Warten abbrechen: gibt die Gruppe wieder frei, damit sie nicht festhängt. */
+  async function abbrechen() {
+    abbruchRef.current?.abort();
+    setBusy(false);
+    try {
+      await fetch(`/api/g/${code}/abbrechen`, { method: "POST" });
+    } catch {
+      /* egal — der Serverlauf gibt sich spätestens per Timeout selbst frei */
+    }
+    setFeedback("⏹️ Warten beendet. Ihr könnt es gleich noch einmal versuchen.");
+    await refresh();
   }
 
   if (!state) {
@@ -185,7 +228,12 @@ export function KidStudio({ code }: { code: string }) {
   } as React.CSSProperties;
 
   const promptText = text.replace(/⏳.*$/, "").trim();
-  const canSend = !busy && promptText.length >= 3 && cooldown === 0 && state.attemptsLeft > 0 && !state.generating && !state.locked;
+  const canSend = !baut && promptText.length >= 3 && cooldown === 0 && state.attemptsLeft > 0 && !state.locked;
+
+  // „Zu lang" heißt: doppelte Schätzung, mindestens aber zwei Minuten.
+  // Der Serverlauf zählt mit, damit auch ein neu geladener Tab den Knopf sieht.
+  const wartezeit = Math.max(bauSekunden, state.laufSekunden);
+  const wartetZuLang = baut && wartezeit > Math.max(120, state.dauerSchaetzung * 2);
 
   // Plenum-/Pause-Sperre: Kinder sehen Wartebildschirm mit Merksatz
   if (state.phase !== "STUDIO") {
@@ -248,11 +296,44 @@ export function KidStudio({ code }: { code: string }) {
           className="absolute inset-0 h-full w-full border-0 bg-white"
           title="Euer Spiel"
         />
-        {(busy || state.generating) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 text-white">
+        {baut && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 px-6 text-white">
             <div className="text-6xl animate-bounce">🛠️</div>
             <p className="text-2xl font-bold">{busyMsg}</p>
-            <p className="text-sm opacity-80">Das dauert ungefähr eine Minute — besprecht schon mal den nächsten Schritt!</p>
+            {/* Fortschritt: Schätzung aus den bisherigen Bauzeiten dieses Workshops */}
+            <div className="w-full max-w-sm">
+              <div className="h-3 overflow-hidden rounded-full bg-white/25">
+                <div
+                  className="h-full rounded-full transition-all duration-1000 ease-linear"
+                  style={{
+                    width: `${Math.min(97, (wartezeit / Math.max(10, state.dauerSchaetzung)) * 100)}%`,
+                    background: "var(--s45-accent)",
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-center text-lg font-bold">
+                {wartezeit < state.dauerSchaetzung
+                  ? `noch ungefähr ${Math.max(1, state.dauerSchaetzung - wartezeit)} Sekunden`
+                  : "gleich fertig …"}
+              </p>
+            </div>
+            <p className="text-center text-sm opacity-80">
+              Besprecht in der Zwischenzeit, was ihr als Nächstes ändern wollt!
+            </p>
+            {/* Nach deutlicher Überschreitung: Notausgang, damit niemand festhängt */}
+            {wartetZuLang && (
+              <div className="mt-2 flex flex-col items-center gap-2">
+                <p className="text-center text-sm">
+                  Das dauert länger als sonst. Ihr könnt das Warten beenden und es neu versuchen.
+                </p>
+                <button
+                  onClick={abbrechen}
+                  className="rounded-xl bg-white/90 px-5 py-2 text-base font-bold text-slate-900"
+                >
+                  ⏹️ Warten beenden
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -271,7 +352,8 @@ export function KidStudio({ code }: { code: string }) {
               <button
                 key={chip}
                 onClick={() => setText((t) => (t ? t.replace(/⏳.*$/, "").trim() + " — " + chip : chip))}
-                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold"
+                disabled={baut}
+                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
                 style={{ borderColor: "var(--s45-primary)", color: "var(--s45-primary)" }}
               >
                 {chip}
@@ -282,9 +364,10 @@ export function KidStudio({ code }: { code: string }) {
         <div className="flex items-end gap-2">
           <button
             onClick={toggleMic}
-            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white shadow ${listening ? "animate-pulse" : ""}`}
+            disabled={baut}
+            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
             style={{ background: listening ? "#dc2626" : "var(--s45-primary)" }}
-            title={listening ? "Aufnahme stoppen" : "Sprechen"}
+            title={baut ? "Die KI baut gerade" : listening ? "Aufnahme stoppen" : "Sprechen"}
           >
             {listening ? "⏹" : "🎤"}
           </button>
@@ -293,9 +376,16 @@ export function KidStudio({ code }: { code: string }) {
             onChange={(e) => setText(e.target.value)}
             rows={2}
             maxLength={4000}
-            placeholder={listening ? "Sprecht jetzt …" : "Was soll die KI bauen oder ändern?"}
-            className="min-h-14 flex-1 resize-none rounded-xl border-2 border-slate-200 p-3 text-base focus:outline-none"
-            style={{ borderColor: promptText ? "var(--s45-primary)" : undefined }}
+            disabled={baut}
+            placeholder={
+              baut
+                ? "Die KI baut gerade euer Spiel …"
+                : listening
+                  ? "Sprecht jetzt …"
+                  : "Was soll die KI bauen oder ändern?"
+            }
+            className="min-h-14 flex-1 resize-none rounded-xl border-2 border-slate-200 p-3 text-base focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+            style={{ borderColor: !baut && promptText ? "var(--s45-primary)" : undefined }}
           />
           <button
             onClick={submit}
@@ -303,7 +393,7 @@ export function KidStudio({ code }: { code: string }) {
             className="h-14 shrink-0 rounded-xl px-5 text-lg font-black text-white shadow disabled:opacity-40"
             style={{ background: "var(--s45-accent)", color: "#1f2430" }}
           >
-            {busy ? "…" : "Bauen!"}
+            {baut ? "…" : "Bauen!"}
           </button>
         </div>
         {state.guidance === "IMPULSE" && (

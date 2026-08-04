@@ -21,6 +21,46 @@ export function cooldownRemaining(
   return Math.max(0, Math.ceil(cooldownSeconds - elapsed));
 }
 
+const SCHAETZUNG_OHNE_DATEN = 75; // Sekunden, bis eigene Messwerte vorliegen
+
+/**
+ * Nach dieser Zeit gilt eine Generierung als hängengeblieben. Ein Serverneustart
+ * mitten im Bau würde sonst `generating` für immer stehen lassen — die Gruppe
+ * käme nie wieder zum Zug.
+ */
+export const LAUF_TIMEOUT_MS = 10 * 60 * 1000;
+
+export function laufHaengt(g: { generating: boolean; generatingSince: Date | null }): boolean {
+  if (!g.generating) return false;
+  if (!g.generatingSince) return true; // Altbestand ohne Zeitstempel
+  return Date.now() - g.generatingSince.getTime() > LAUF_TIMEOUT_MS;
+}
+
+/** Läuft gerade wirklich eine Generierung (also nicht nur ein hängender Eintrag)? */
+export function laeuftGerade(g: { generating: boolean; generatingSince: Date | null }): boolean {
+  return g.generating && !laufHaengt(g);
+}
+
+/**
+ * Wie lange dauert eine Generierung in diesem Workshop?
+ *
+ * Statt aus Token-Zahlen zu rechnen (die Ausgabelänge kennt man vorher nicht,
+ * und jeder Anbieter ist anders schnell) nehmen wir den Median der letzten
+ * echten Läufe — das kalibriert sich von selbst auf Modell, Anbieter und Tageszeit.
+ */
+export async function schaetzeDauerSekunden(workshopId: string): Promise<number> {
+  const letzte = await db.promptLog.findMany({
+    where: { group: { workshopId }, ok: true, durationMs: { gt: 0 } },
+    orderBy: { createdAt: "desc" },
+    take: 15,
+    select: { durationMs: true },
+  });
+  if (letzte.length < 3) return SCHAETZUNG_OHNE_DATEN;
+  const sortiert = letzte.map((l) => l.durationMs).sort((a, b) => a - b);
+  const median = sortiert[Math.floor(sortiert.length / 2)];
+  return Math.max(20, Math.round(median / 1000));
+}
+
 /**
  * Führt eine Kinder-Generierung aus — alle Limits werden HIER serverseitig
  * durchgesetzt (die Frontend-Pause ist nur UX):
@@ -51,13 +91,23 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
     return { ok: false, reason: `Kurze Denkpause — in ${wait} Sekunden geht es weiter.`, attemptsLeft: left };
   }
 
-  // Atomarer Lock gegen Doppel-Generierung derselben Gruppe
+  // Atomarer Lock gegen Doppel-Generierung derselben Gruppe. Ein hängender
+  // Lauf (Serverneustart o. ä.) darf dabei übernommen werden.
+  const grenze = new Date(Date.now() - LAUF_TIMEOUT_MS);
   const locked = await db.group.updateMany({
-    where: { id: groupId, generating: false },
-    data: { generating: true },
+    where: {
+      id: groupId,
+      OR: [
+        { generating: false },
+        { generating: true, generatingSince: null },
+        { generating: true, generatingSince: { lt: grenze } },
+      ],
+    },
+    data: { generating: true, generatingSince: new Date() },
   });
   if (locked.count === 0) return { ok: false, reason: "Es läuft schon eine Generierung — kurz warten!" };
 
+  const startzeit = Date.now();
   try {
     const currentHtml = readPlayHtml(groupId);
     const params = {
@@ -112,6 +162,7 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
         error: success ? "" : verify.detail.slice(0, 400),
         tokensIn,
         tokensOut,
+        durationMs: Date.now() - startzeit,
       },
     });
 
@@ -127,6 +178,6 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
     });
     return { ok: true, attemptsLeft: left - 1 };
   } finally {
-    await db.group.update({ where: { id: groupId }, data: { generating: false } });
+    await db.group.update({ where: { id: groupId }, data: { generating: false, generatingSince: null } });
   }
 }

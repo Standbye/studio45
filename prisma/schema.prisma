@@ -110,6 +110,9 @@ model Group {
   genBonus       Int       @default(0)
   lastGenAt      DateTime?
   generating     Boolean   @default(false)
+  /// Seit wann läuft die Generierung — daran erkennen wir hängengebliebene Läufe
+  /// (Serverneustart mitten im Bau lässt sonst die Gruppe für immer gesperrt).
+  generatingSince DateTime?
 
   createdAt DateTime    @default(now())
   prompts   PromptLog[]
@@ -129,6 +132,8 @@ model PromptLog {
   error     String   @default("")
   tokensIn  Int      @default(0)
   tokensOut Int      @default(0)
+  /// Gemessene Dauer — daraus schätzen wir den Kindern die Wartezeit
+  durationMs Int     @default(0)
   createdAt DateTime @default(now())
 }
 

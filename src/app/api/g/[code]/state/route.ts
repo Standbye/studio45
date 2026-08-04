@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { attemptsLeft, cooldownRemaining } from "@/lib/generate";
+import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
 import { playVersion } from "@/lib/games";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 
@@ -16,6 +16,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     return NextResponse.json({ error: "unbekannt" }, { status: 404 });
   }
   const w = group.workshop;
+  const dauerSchaetzung = await schaetzeDauerSekunden(w.id);
   return NextResponse.json({
     studioName: group.studioName || `Gruppe ${group.index}`,
     groupIndex: group.index,
@@ -30,7 +31,12 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     attemptsLeft: attemptsLeft(group, w.genLimitPerLesson),
     cooldownRemaining: cooldownRemaining(group, w.cooldownSeconds),
     cooldownSeconds: w.cooldownSeconds,
-    generating: group.generating,
+    // Hängengebliebene Läufe gelten als beendet, sonst wartet die Gruppe ewig
+    generating: laeuftGerade(group),
+    laufSekunden: group.generatingSince
+      ? Math.floor((Date.now() - group.generatingSince.getTime()) / 1000)
+      : 0,
+    dauerSchaetzung,
     gameVersion: playVersion(group.id),
     branding: {
       colorPrimary: w.colorPrimary,
