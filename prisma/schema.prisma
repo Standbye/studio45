@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+}
+
+enum Phase {
+  PLENUM
+  STUDIO
+  PAUSE
+}
+
+enum GuidanceLevel {
+  FREI
+  IMPULSE
+  GEFUEHRT
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  username           String    @unique
+  displayName        String
+  passwordHash       String
+  role               Role
+  mustChangePassword Boolean   @default(false)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime?
+  createdAt          DateTime  @default(now())
+  workshops          Workshop[]
+  auditLogs          AuditLog[]
+}
+
+model ApiKey {
+  id        String     @id @default(cuid())
+  label     String
+  secret    String
+  createdAt DateTime   @default(now())
+  workshops Workshop[]
+}
+
+model Workshop {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  name      String
+  className String  @default("")
+
+  teacher   User?   @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  teacherId String?
+  apiKey    ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  apiKeyId  String?
+
+  // Ablauf
+  totalDays  Int    @default(3)
+  currentDay Int    @default(1)
+  phase      Phase  @default(PLENUM)
+
+  // Didaktik
+  guidance      GuidanceLevel @default(IMPULSE)
+  learningGoal  String        @default("") // Lernziel/Preprompt der Lehrkraft
+  presetLabel   String        @default("")
+
+  // KI-Konfiguration (API-Key kommt vom Admin, Rest von der Lehrkraft)
+  apiBaseUrl    String @default("") // leer = Anthropic-Standard
+  modelKid      String @default("claude-sonnet-5")
+  modelDirector String @default("claude-opus-5")
+
+  // Limits & Budget (Admin gibt Obergrenzen vor, Lehrkraft nutzt sie)
+  genLimitPerLesson Int @default(4)   // Generierungen pro Gruppe pro Schulstunde
+  cooldownSeconds   Int @default(120) // Frontend-Pause zwischen Generierungen
+  tokenBudget       Int @default(2000000) // harte Obergrenze (Input+Output-Tokens)
+  tokensUsed        Int @default(0)
+
+  // Branding
+  colorPrimary String @default("#1d4e89")
+  colorAccent  String @default("#c9a24b")
+  logoPath     String @default("")
+
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  groups    Group[]
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  workshopId String
+  index      Int
+  studioName String   @default("")
+  code       String   @unique // langer Zufalls-Token, nicht ratbar
+  locked     Boolean  @default(false)
+
+  // Generierungs-Kontingent (pro Schulstunde, von Lehrkraft zurücksetzbar)
+  genUsed        Int       @default(0)
+  genBonus       Int       @default(0)
+  lastGenAt      DateTime?
+  generating     Boolean   @default(false)
+
+  createdAt DateTime    @default(now())
+  prompts   PromptLog[]
+  snapshots Snapshot[]
+
+  @@unique([workshopId, index])
+}
+
+model PromptLog {
+  id        String   @id @default(cuid())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  day       Int
+  source    String   @default("child") // child | director-cut
+  prompt    String
+  ok        Boolean  @default(false)
+  error     String   @default("")
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Snapshot {
+  id        String   @id @default(cuid())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  day       Int
+  label     String   @default("")
+  fileName  String
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  action    String
+  detail    String   @default("")
+  createdAt DateTime @default(now())
+}
