@@ -33,13 +33,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl \
 COPY --from=builder --chown=studio45:studio45 /app/.next/standalone ./
 COPY --from=builder --chown=studio45:studio45 /app/.next/static ./.next/static
 COPY --from=builder --chown=studio45:studio45 /app/public ./public
-# Laufzeit-Ressourcen: Systemprompts, DOM-Stub-Verifikation, Migrationen
+# Laufzeit-Ressourcen: Systemprompts, Three.js, Verifikations- und Migrations-Runner,
+# Migrations-SQL. Die Prisma-CLI wird nicht mitgeliefert — runtime/migrate.mjs wendet
+# die Migrationen direkt an (siehe Kommentar dort).
 COPY --from=builder --chown=studio45:studio45 /app/prompts ./prompts
 COPY --from=builder --chown=studio45:studio45 /app/runtime ./runtime
-COPY --from=builder --chown=studio45:studio45 /app/prisma ./prisma
-COPY --from=builder --chown=studio45:studio45 /app/prisma.config.ts ./prisma.config.ts
-COPY --from=builder --chown=studio45:studio45 /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=studio45:studio45 /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=studio45:studio45 /app/vendor ./vendor
+COPY --from=builder --chown=studio45:studio45 /app/prisma/migrations ./prisma/migrations
 COPY --chown=studio45:studio45 docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
