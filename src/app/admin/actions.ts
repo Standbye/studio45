@@ -198,6 +198,19 @@ export async function createWorkshopAction(_prev: ActionState, formData: FormDat
   return { ok: true };
 }
 
+/** Budget nachträglich anpassen — sonst steht ein Workshop still, wenn es aufgebraucht ist. */
+export async function updateBudgetAction(formData: FormData): Promise<void> {
+  const admin = await requireUser("ADMIN");
+  const id = String(formData.get("id") ?? "");
+  const parsed = z.coerce.number().int().min(10_000).max(100_000_000).safeParse(formData.get("tokenBudget"));
+  if (!parsed.success) return;
+  const w = await db.workshop.findUnique({ where: { id } });
+  if (!w) return;
+  await db.workshop.update({ where: { id }, data: { tokenBudget: parsed.data } });
+  await audit(admin.id, "workshop.budget", `${w.name}: ${w.tokenBudget} → ${parsed.data}`);
+  revalidatePath("/admin");
+}
+
 export async function archiveWorkshopAction(formData: FormData): Promise<void> {
   const admin = await requireUser("ADMIN");
   const id = String(formData.get("id") ?? "");

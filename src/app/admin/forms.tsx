@@ -26,6 +26,18 @@ import {
 
 const IDLE: ActionState = { ok: false };
 
+/**
+ * Budget-Stufen statt roher Token-Zahl: „Wie viele Tokens?" kann niemand
+ * beantworten, „reicht für einen Workshop" schon. Eine Spiel-Generierung kostet
+ * je nach Größe des Spiels grob 20.000–60.000 Tokens (Ein- und Ausgabe zusammen).
+ */
+const BUDGET_STUFEN = [
+  { tokens: 500_000, label: "Klein — Schnuppern" },
+  { tokens: 2_000_000, label: "Standard — ein Workshop mit 5 Gruppen" },
+  { tokens: 5_000_000, label: "Groß — mehrere Klassen oder 5 Termine" },
+  { tokens: 20_000_000, label: "Sehr groß — Dauerbetrieb" },
+];
+
 function StartPasswordNote({ state }: { state: ActionState }) {
   if (!state.startPassword) return null;
   return (
@@ -360,7 +372,26 @@ export function CreateWorkshopDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="w-budget">Token-Budget</Label>
-                <Input id="w-budget" name="tokenBudget" type="number" min={10000} step={100000} defaultValue={2000000} required />
+                <Input
+                  id="w-budget"
+                  name="tokenBudget"
+                  type="number"
+                  min={10_000}
+                  max={100_000_000}
+                  step={10_000}
+                  defaultValue={2_000_000}
+                  list="budget-stufen"
+                  required
+                />
+                <datalist id="budget-stufen">
+                  {BUDGET_STUFEN.map((b) => (
+                    <option key={b.tokens} value={b.tokens} label={b.label} />
+                  ))}
+                </datalist>
+                <p className="text-xs text-muted-foreground">
+                  Eine Generierung kostet grob 20.000–60.000 Tokens. 2 Mio. reichen für einen
+                  Workshop mit fünf Gruppen.
+                </p>
               </div>
             </div>
             <div className="space-y-2">

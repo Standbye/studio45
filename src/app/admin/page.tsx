@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { BASE_URL } from "@/lib/env";
-import { archiveWorkshopAction, deleteApiKeyAction, deleteTeacherAction } from "./actions";
+import { archiveWorkshopAction, deleteApiKeyAction, deleteTeacherAction, updateBudgetAction } from "./actions";
 import {
   CreateApiKeyDialog,
   CreateTeacherDialog,
@@ -12,6 +12,7 @@ import {
 } from "./forms";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,10 +73,22 @@ export default async function AdminPage() {
               <div><span className="text-muted-foreground">Lehrkraft:</span> {w.teacher?.displayName ?? "—"}</div>
               <div><span className="text-muted-foreground">Verbindung:</span> {w.apiKey?.label ?? "—"}</div>
               <div><span className="text-muted-foreground">Gruppen:</span> {w.groups.length} · Tag {w.currentDay}/{w.totalDays} · {w.phase}</div>
-              <div>
-                <span className="text-muted-foreground">Budget:</span>{" "}
-                {Math.round((w.tokensUsed / w.tokenBudget) * 100)}% verbraucht
-              </div>
+              <form action={updateBudgetAction} className="flex items-center gap-2">
+                <input type="hidden" name="id" value={w.id} />
+                <span className="whitespace-nowrap text-muted-foreground">
+                  Budget ({Math.round((w.tokensUsed / w.tokenBudget) * 100)}% weg):
+                </span>
+                <Input
+                  name="tokenBudget"
+                  type="number"
+                  min={10_000}
+                  max={100_000_000}
+                  step={10_000}
+                  defaultValue={w.tokenBudget}
+                  className="h-8 w-32 text-sm"
+                />
+                <Button type="submit" size="sm" variant="outline">OK</Button>
+              </form>
             </CardContent>
           </Card>
         ))}
