@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { restoreSnapshotAction } from "@/app/lehrer/actions";
+import { DirectorCutDialog } from "./director-cut";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,9 +37,12 @@ export default async function GroupDetail({ params }: PageProps<"/lehrer/[id]/gr
           Gruppe {group.index}
           {group.studioName && <span className="text-muted-foreground"> · „{group.studioName}"</span>}
         </h1>
-        <a href={`/g/${group.code}`} target="_blank" className="ml-auto text-sm text-primary underline-offset-2 hover:underline">
-          Kinder-Ansicht öffnen ↗
-        </a>
+        <div className="ml-auto flex items-center gap-3">
+          <DirectorCutDialog groupId={group.id} studioName={group.studioName || `Gruppe ${group.index}`} />
+          <a href={`/g/${group.code}`} target="_blank" className="text-sm text-primary underline-offset-2 hover:underline">
+            Kinder-Ansicht öffnen ↗
+          </a>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

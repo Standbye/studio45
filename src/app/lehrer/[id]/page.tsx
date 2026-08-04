@@ -59,6 +59,9 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
         <Link href={`/w/${w.slug}`} target="_blank" className="text-sm text-primary underline-offset-2 hover:underline">
           Beamer-Seite ↗
         </Link>
+        <Link href={`/lehrer/${w.id}/material`} className="text-sm text-primary underline-offset-2 hover:underline">
+          Materialien 🖨️
+        </Link>
       </div>
 
       {/* Steuerung */}
