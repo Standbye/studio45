@@ -12,7 +12,26 @@ type KidState = {
   motto: string;
   phase: "PLENUM" | "STUDIO" | "PAUSE";
   locked: boolean;
-  guidance: "FREI" | "IMPULSE" | "GEFUEHRT";
+  ageGroup: "GRUNDSCHULE" | "MITTELSTUFE" | "OBERSTUFE";
+  supportLevel: number;
+  optik: {
+    verspielt: boolean;
+    radius: string;
+    grundschrift: string;
+    knopfHoehe: string;
+    emojiImKopf: boolean;
+    animationen: boolean;
+  };
+  texte: {
+    eingabeHinweis: string;
+    bauKnopf: string;
+    wartenTitel: string;
+    fertig: string;
+    plenum: string;
+    tipp: string;
+  };
+  chips: string[];
+  hilfen: { chips: boolean; teamCheck: boolean; coachAbZeichen: number };
   attemptsLeft: number;
   cooldownRemaining: number;
   cooldownSeconds: number;
@@ -21,14 +40,6 @@ type KidState = {
   dauerSchaetzung: number;
   gameVersion: number;
   branding: { colorPrimary: string; colorAccent: string; hasLogo: boolean };
-};
-
-const CHIPS: Record<number, string[]> = {
-  1: ["Unser Spiel heißt …", "Die Hauptfigur ist …", "Die Farben sollen … sein", "Wenn man die Figur antippt, soll …"],
-  2: ["Man muss … sammeln", "Man muss … ausweichen", "Man gewinnt, wenn …", "Man verliert, wenn …"],
-  3: ["Der Hintergrund soll …", "Die Figur soll sich bewegen, wenn …", "Bei einem Treffer soll ein Geräusch …", "Baut Sterne/Konfetti ein, wenn …"],
-  4: ["Es soll Punkte geben für …", "Nach … wird es schwerer", "Baut ein zweites Level ein mit …", "Es soll einen Endgegner geben, der …"],
-  5: ["Ein Startbildschirm mit unserem Studio-Namen", "Eine Sieger-Urkunde am Ende", "Macht den Anfang leichter", "Der beste Punktestand soll gespeichert werden"],
 };
 
 const CHECKFRAGEN = [
@@ -57,6 +68,9 @@ export function KidStudio({ code }: { code: string }) {
   const [listening, setListening] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
   const [checks, setChecks] = useState<boolean[]>([false, false, false]);
+  const [coachVorschlag, setCoachVorschlag] = useState<string | null>(null);
+  const [coachGezeigt, setCoachGezeigt] = useState(false);
+  const [coachLaeuft, setCoachLaeuft] = useState(false);
   const gameVersionRef = useRef(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recRef = useRef<any>(null);
@@ -154,14 +168,45 @@ export function KidStudio({ code }: { code: string }) {
     rec.start();
   }
 
+  /** Formulierungshilfe: zeigt eine genauere Fassung des Wunsches zur Auswahl. */
+  async function holeCoachVorschlag(): Promise<boolean> {
+    if (!state || state.hilfen.coachAbZeichen === 0) return false;
+    const roh = text.replace(/⏳.*$/, "").trim();
+    if (roh.length === 0 || roh.length > state.hilfen.coachAbZeichen) return false;
+    setCoachLaeuft(true);
+    try {
+      const res = await fetch(`/api/g/${code}/coach`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: roh }),
+      });
+      if (!res.ok) return false;
+      const out = await res.json();
+      if (!out.vorschlag) return false;
+      setCoachVorschlag(out.vorschlag);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setCoachLaeuft(false);
+    }
+  }
+
   async function submit() {
     if (!state) return;
-    if (state.guidance === "GEFUEHRT" && !showCheck) {
+    // Erst die Formulierungshilfe, dann der Team-Check, dann bauen
+    if (!coachGezeigt && (await holeCoachVorschlag())) {
+      setCoachGezeigt(true);
+      return;
+    }
+    if (state.hilfen.teamCheck && !showCheck) {
       setChecks([false, false, false]);
       setShowCheck(true);
       return;
     }
     setShowCheck(false);
+    setCoachVorschlag(null);
+    setCoachGezeigt(false);
     setBusy(true);
     setBusyMsg(WARTE_SPRUECHE[0]);
     setFeedback(null);
@@ -181,7 +226,7 @@ export function KidStudio({ code }: { code: string }) {
       const out = await res.json();
       if (out.ok) {
         setText("");
-        setFeedback("✅ Fertig! Testet euer Spiel — was wollt ihr als Nächstes ändern?");
+        setFeedback(state.texte.fertig);
         await refresh();
       } else {
         setFeedback(`💡 ${out.reason ?? "Das hat nicht geklappt — probiert es nochmal."}`);
@@ -225,6 +270,9 @@ export function KidStudio({ code }: { code: string }) {
   const vars = {
     "--s45-primary": state.branding.colorPrimary,
     "--s45-accent": state.branding.colorAccent,
+    "--s45-radius": state.optik.radius,
+    "--s45-schrift": state.optik.grundschrift,
+    "--s45-knopf": state.optik.knopfHoehe,
   } as React.CSSProperties;
 
   const promptText = text.replace(/⏳.*$/, "").trim();
@@ -298,8 +346,8 @@ export function KidStudio({ code }: { code: string }) {
         />
         {baut && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/70 px-6 text-white">
-            <div className="text-6xl animate-bounce">🛠️</div>
-            <p className="text-2xl font-bold">{busyMsg}</p>
+            <div className={`text-6xl ${state.optik.animationen ? "animate-bounce" : ""}`}>🛠️</div>
+            <p className="text-2xl font-bold">{state.optik.verspielt ? busyMsg : state.texte.wartenTitel}</p>
             {/* Fortschritt: Schätzung aus den bisherigen Bauzeiten dieses Workshops */}
             <div className="w-full max-w-sm">
               <div className="h-3 overflow-hidden rounded-full bg-white/25">
@@ -346,9 +394,9 @@ export function KidStudio({ code }: { code: string }) {
             ⏸️ Denkpause: Testet euer Spiel und besprecht den nächsten Schritt — weiter in {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, "0")}
           </p>
         )}
-        {state.guidance !== "FREI" && (
+        {state.hilfen.chips && (
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {(CHIPS[Math.min(state.day, 5)] ?? CHIPS[1]).map((chip) => (
+            {state.chips.map((chip) => (
               <button
                 key={chip}
                 onClick={() => setText((t) => (t ? t.replace(/⏳.*$/, "").trim() + " — " + chip : chip))}
@@ -365,8 +413,8 @@ export function KidStudio({ code }: { code: string }) {
           <button
             onClick={toggleMic}
             disabled={baut}
-            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
-            style={{ background: listening ? "#dc2626" : "var(--s45-primary)" }}
+            className={`flex w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
+            style={{ background: listening ? "#dc2626" : "var(--s45-primary)", height: "var(--s45-knopf)" }}
             title={baut ? "Die KI baut gerade" : listening ? "Aufnahme stoppen" : "Sprechen"}
           >
             {listening ? "⏹" : "🎤"}
@@ -379,29 +427,95 @@ export function KidStudio({ code }: { code: string }) {
             disabled={baut}
             placeholder={
               baut
-                ? "Die KI baut gerade euer Spiel …"
+                ? `${state.texte.wartenTitel} …`
                 : listening
                   ? "Sprecht jetzt …"
-                  : "Was soll die KI bauen oder ändern?"
+                  : state.texte.eingabeHinweis
             }
-            className="min-h-14 flex-1 resize-none rounded-xl border-2 border-slate-200 p-3 text-base focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
-            style={{ borderColor: !baut && promptText ? "var(--s45-primary)" : undefined }}
+            className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+            style={{
+              borderColor: !baut && promptText ? "var(--s45-primary)" : undefined,
+              borderRadius: "var(--s45-radius)",
+              fontSize: "var(--s45-schrift)",
+              minHeight: "var(--s45-knopf)",
+            }}
           />
           <button
             onClick={submit}
             disabled={!canSend}
-            className="h-14 shrink-0 rounded-xl px-5 text-lg font-black text-white shadow disabled:opacity-40"
-            style={{ background: "var(--s45-accent)", color: "#1f2430" }}
+            className="shrink-0 px-5 text-lg font-black shadow disabled:opacity-40"
+            style={{ background: "var(--s45-accent)", color: "#1f2430", height: "var(--s45-knopf)", borderRadius: "var(--s45-radius)" }}
           >
-            {baut ? "…" : "Bauen!"}
+            {baut || coachLaeuft ? "…" : state.texte.bauKnopf}
           </button>
         </div>
-        {state.guidance === "IMPULSE" && (
-          <p className="text-center text-xs text-slate-400">
-            💡 Gute Wünsche sagen WAS passieren soll und WIE es aussehen soll.
-          </p>
+        {state.hilfen.chips && (
+          <p className="text-center text-xs text-slate-400">{state.texte.tipp}</p>
         )}
       </footer>
+
+      {/* Formulierungshilfe: der eigene Wunsch und eine genauere Fassung im Vergleich */}
+      {coachVorschlag && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            className="w-full max-w-lg space-y-4 bg-white p-6"
+            style={{ borderRadius: "var(--s45-radius)" }}
+          >
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary)" }}>
+              So könnte man es genauer sagen
+            </h2>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Euer Wunsch</p>
+              <p className="rounded-lg bg-slate-100 p-3 text-sm">{promptText}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Genauer gesagt</p>
+              <p
+                className="p-3 text-base"
+                style={{ background: "var(--s45-accent)", borderRadius: "var(--s45-radius)", color: "#1f2430" }}
+              >
+                {coachVorschlag}
+              </p>
+            </div>
+            <p className="text-xs text-slate-500">
+              Je genauer der Auftrag, desto näher kommt das Spiel an eure Idee. Ihr entscheidet.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                onClick={() => {
+                  setText(coachVorschlag);
+                  setCoachVorschlag(null);
+                  setCoachGezeigt(true);
+                }}
+                className="flex-1 py-3 font-bold text-slate-900"
+                style={{ background: "var(--s45-accent)", borderRadius: "var(--s45-radius)" }}
+              >
+                Übernehmen und bearbeiten
+              </button>
+              <button
+                onClick={() => {
+                  setCoachVorschlag(null);
+                  setCoachGezeigt(true);
+                  void submit();
+                }}
+                className="flex-1 py-3 font-bold text-white"
+                style={{ background: "var(--s45-primary)", borderRadius: "var(--s45-radius)" }}
+              >
+                So bauen
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setCoachVorschlag(null);
+                setCoachGezeigt(true);
+              }}
+              className="w-full text-center text-sm text-slate-500 underline"
+            >
+              Bei unserem Satz bleiben
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Geführter Modus: Checkfragen vor dem Senden */}
       {showCheck && (

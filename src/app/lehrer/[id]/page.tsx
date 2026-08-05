@@ -24,6 +24,10 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ALTERSSTUFEN } from "@/lib/audience";
+import { promptBloecke, didaktikStandard } from "@/lib/prompts";
+import { SupportLevelWahl } from "./support-level";
+import { PromptVorschau } from "./prompt-vorschau";
 import { Textarea } from "@/components/ui/textarea";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +54,17 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
   ) as Record<string, string>;
 
   const budgetPct = Math.min(100, Math.round((w.tokensUsed / w.tokenBudget) * 100));
+
+  const promptKontext = {
+    ageGroup: w.ageGroup,
+    supportLevel: w.supportLevel,
+    learningGoal: w.learningGoal,
+    promptDidactic: w.promptDidactic,
+    day: w.currentDay,
+    totalDays: w.totalDays,
+  };
+  const bloecke = promptBloecke(promptKontext);
+  const standardDidaktik = didaktikStandard({ ...promptKontext, promptDidactic: "" });
 
   return (
     <div className="space-y-6">
@@ -118,6 +133,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
         <TabsList>
           <TabsTrigger value="gruppen">Gruppen ({w.groups.length})</TabsTrigger>
           <TabsTrigger value="einstellungen">Einstellungen</TabsTrigger>
+          <TabsTrigger value="prompt">KI-Anweisung</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
         </TabsList>
 
@@ -182,7 +198,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Workshop-Einstellungen</CardTitle>
-              <CardDescription>Lernziel, Führung der Kinder, Limits und Modellwahl.</CardDescription>
+              <CardDescription>Zielgruppe, Unterstützung durch die KI, Lernziel und Limits.</CardDescription>
             </CardHeader>
             <CardContent>
               <form action={updateSettingsAction} className="space-y-4">
@@ -197,15 +213,21 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     placeholder="z. B.: Baue Mathe-Aufgaben der 4. Klasse (Einmaleins, schriftliche Addition) als Hindernisse ins Spiel ein."
                   />
                 </div>
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="guidance">Führung der Kinder</Label>
-                    <select id="guidance" name="guidance" defaultValue={w.guidance} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
-                      <option value="FREI">Frei (keine Hilfen)</option>
-                      <option value="IMPULSE">Impulse (Vorschläge + Tipps)</option>
-                      <option value="GEFUEHRT">Geführt (Team-Check vor jedem Bauen)</option>
+                    <Label htmlFor="ageGroup">Zielgruppe</Label>
+                    <select id="ageGroup" name="ageGroup" defaultValue={w.ageGroup} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
+                      {Object.values(ALTERSSTUFEN).map((a) => (
+                        <option key={a.id} value={a.id}>{a.name} · {a.klassen}</option>
+                      ))}
                     </select>
+                    <p className="text-xs text-muted-foreground">
+                      Steuert Optik und Ansprache der Schüler-Seite — und wie die KI baut.
+                    </p>
                   </div>
+                  <SupportLevelWahl standard={w.supportLevel} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="genLimit">Versuche pro Stunde/Gruppe</Label>
                     <Input id="genLimit" name="genLimitPerLesson" type="number" min={1} max={20} defaultValue={w.genLimitPerLesson} />
@@ -233,6 +255,30 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                   </p>
                 </div>
                 <Button type="submit">Speichern</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="prompt">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Was die KI liest</CardTitle>
+              <CardDescription>
+                Der vollständige Auftrag, aus dem die Spiele entstehen — zusammengesetzt aus festem
+                Kern, Tagesfokus und der didaktischen Zone. Letztere kannst du anpassen.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action={updateSettingsAction} className="space-y-4">
+                <input type="hidden" name="workshopId" value={w.id} />
+                <input type="hidden" name="nurPrompt" value="1" />
+                <PromptVorschau
+                  bloecke={bloecke}
+                  eigeneFassung={w.promptDidactic}
+                  standardFassung={standardDidaktik}
+                />
+                <Button type="submit">KI-Anweisung speichern</Button>
               </form>
             </CardContent>
           </Card>

@@ -117,10 +117,15 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
         baseUrl: w.apiKey.baseUrl,
       },
       model: w.apiKey.modelKid,
-      day: w.currentDay,
-      totalDays: w.totalDays,
       studioName: group.studioName || `Gruppe ${group.index}`,
-      learningGoal: w.learningGoal,
+      kontext: {
+        ageGroup: w.ageGroup,
+        supportLevel: w.supportLevel,
+        learningGoal: w.learningGoal,
+        promptDidactic: w.promptDidactic,
+        day: w.currentDay,
+        totalDays: w.totalDays,
+      },
     };
 
     let result = await buildOrEditGame({ ...params, currentHtml, userPrompt: prompt });

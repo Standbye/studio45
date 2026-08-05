@@ -85,23 +85,42 @@ export async function renameStudioAction(formData: FormData): Promise<void> {
 }
 
 export async function updateSettingsAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+
+  // Der Reiter „KI-Anweisung" schickt nur die didaktische Zone
+  if (formData.get("nurPrompt") === "1") {
+    const eigene = z.string().max(20000).parse(formData.get("promptDidactic") ?? "");
+    await db.workshop.update({
+      where: { id: workshop.id },
+      data: { promptDidactic: eigene.trim() },
+    });
+    await audit(
+      user.id,
+      "workshop.prompt",
+      eigene.trim() ? `${workshop.name}: eigene Fassung` : `${workshop.name}: auf Standard zurückgesetzt`
+    );
+    revalidatePath(`/lehrer/${workshop.id}`);
+    return;
+  }
+
   // KI-Zugang (Protokoll, URL, Modelle) gehört zur Verbindung und wird vom
-  // Admin gepflegt — die Lehrkraft stellt hier nur Didaktik und Limits ein.
+  // Admin gepflegt — die Lehrkraft stellt hier Didaktik und Limits ein.
   const schema = z.object({
     learningGoal: z.string().trim().max(4000),
-    guidance: z.enum(["FREI", "IMPULSE", "GEFUEHRT"]),
+    ageGroup: z.enum(["GRUNDSCHULE", "MITTELSTUFE", "OBERSTUFE"]),
+    supportLevel: z.coerce.number().int().min(1).max(5),
     genLimitPerLesson: z.coerce.number().int().min(1).max(20),
     cooldownSeconds: z.coerce.number().int().min(0).max(1800),
   });
   const parsed = schema.parse({
     learningGoal: formData.get("learningGoal") ?? "",
-    guidance: formData.get("guidance"),
+    ageGroup: formData.get("ageGroup"),
+    supportLevel: formData.get("supportLevel"),
     genLimitPerLesson: formData.get("genLimitPerLesson"),
     cooldownSeconds: formData.get("cooldownSeconds"),
   });
-  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
   await db.workshop.update({ where: { id: workshop.id }, data: parsed });
-  await audit(user.id, "workshop.settings", workshop.name);
+  await audit(user.id, "workshop.settings", `${workshop.name} · ${parsed.ageGroup} · Stufe ${parsed.supportLevel}`);
   revalidatePath(`/lehrer/${workshop.id}`);
 }
 

@@ -3,7 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
-import { gameBuilderPrompt, dayFocusPrompt } from "@/lib/prompts";
+import { kernPrompt, systemTeile, type PromptKontext } from "@/lib/prompts";
+import { alterProfil } from "@/lib/audience";
+import type { AgeGroup } from "@/generated/prisma/enums";
 import type { Protokoll } from "@/lib/providers";
 
 const MAX_TOKENS = 32000; // Lehre aus dem Piloten: 8k schneidet Spiele mitten im Script ab
@@ -37,7 +39,7 @@ export type BuildResult = {
 async function rufeModell(
   v: Verbindung,
   model: string,
-  systemTeile: string[],
+  anweisungen: string[],
   userMsg: string,
   maxTokens: number
 ): Promise<LlmAntwort> {
@@ -48,7 +50,7 @@ async function rufeModell(
         apiKey: v.secret,
         ...(v.baseUrl ? { baseURL: v.baseUrl } : {}),
       });
-      const system: Anthropic.TextBlockParam[] = systemTeile.map((text, i) => ({
+      const system: Anthropic.TextBlockParam[] = anweisungen.map((text, i) => ({
         type: "text",
         text,
         // Nur der erste (lange, immer gleiche) Block profitiert vom Caching
@@ -84,7 +86,7 @@ async function rufeModell(
       stream: true,
       stream_options: { include_usage: true },
       messages: [
-        { role: "system", content: systemTeile.join("\n\n") },
+        { role: "system", content: anweisungen.join("\n\n") },
         { role: "user", content: userMsg },
       ],
     });
@@ -137,29 +139,20 @@ export type BuildParams = {
   model: string;
   currentHtml: string | null;
   userPrompt: string;
-  day: number;
-  totalDays: number;
   studioName: string;
-  learningGoal: string;
+  /** Altersstufe, Unterstützungslevel, Lernziel, eigene Fassung, Tag */
+  kontext: PromptKontext;
 };
 
 export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
-  const systemTeile = [
-    gameBuilderPrompt(),
-    `## Tagesfokus (Tag ${p.day} von ${p.totalDays})\n\n${dayFocusPrompt(p.day, p.totalDays)}`,
-  ];
-  if (p.learningGoal.trim()) {
-    systemTeile.push(
-      `## Lernziel der Lehrkraft (in das Spiel einbauen!)\n\n${p.learningGoal.trim()}\n\nDas Spiel ist ein LERNSPIEL: Baue Aufgaben zu diesem Lernziel sinnvoll in die Spielmechanik ein (z. B. als Fragen, Hindernisse, Schlüssel). Kindgerecht für die angegebene Klassenstufe.`
-    );
-  }
+  const teile = systemTeile(p.kontext);
 
   const stand = p.currentHtml
-    ? `## Aktueller Stand des Spiels\n\n\`\`\`html\n${p.currentHtml}\n\`\`\``
-    : `## Aktueller Stand des Spiels\n\nEs gibt noch KEIN Spiel — das ist der allererste Wunsch. Baue eine erste Version.`;
-  const userMsg = `${stand}\n\n## Wunsch der Kinder (Studio „${p.studioName || "?"}")\n\n${p.userPrompt.trim()}`;
+    ? `## Aktueller Stand des Spiels\n\n\`\`\`html\n${p.currentHtml}\n\`\`\`\n\nBewahre alles, was nicht ausdrücklich geändert werden soll. Steht oben ein STUDIO45-Steckbrief, halte dich an ihn und schreibe ihn fort.`
+    : `## Aktueller Stand des Spiels\n\nEs gibt noch KEIN Spiel — das ist der allererste Wunsch. Baue eine erste, vollständig spielbare Version und lege den STUDIO45-Steckbrief an.`;
+  const userMsg = `${stand}\n\n## Wunsch des Studios „${p.studioName || "?"}"\n\n${p.userPrompt.trim()}`;
 
-  const antwort = await rufeModell(p.verbindung, p.model, systemTeile, userMsg, MAX_TOKENS);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   const html = extractHtml(antwort.text);
   return {
@@ -167,6 +160,58 @@ export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
     tokensIn: antwort.tokensIn,
     tokensOut: antwort.tokensOut,
     ...(html ? {} : { error: "Die Antwort enthielt kein vollständiges HTML." }),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Prompt-Coach: aus einem kargen Wunsch eine brauchbare Anforderung machen
+// ---------------------------------------------------------------------------
+
+export type CoachParams = {
+  verbindung: Verbindung;
+  model: string;
+  wunsch: string;
+  currentHtml: string | null;
+  studioName: string;
+  ageGroup: AgeGroup;
+  learningGoal: string;
+};
+
+/**
+ * Schlägt eine ausformulierte Fassung des Wunsches vor.
+ *
+ * Didaktisch der stärkste Hebel: Die Klasse sieht am eigenen Beispiel, wie ein
+ * präziser Auftrag klingt — und entscheidet selbst, ob sie ihn übernimmt.
+ */
+export async function coachWunsch(p: CoachParams): Promise<{ vorschlag: string; tokensIn: number; tokensOut: number; error?: string }> {
+  const alter = alterProfil(p.ageGroup);
+  const steckbrief = p.currentHtml?.match(/<!--\s*STUDIO45([\s\S]{0,1200}?)-->/)?.[1]?.trim();
+
+  const system = `Du hilfst einer Schulklasse (${alter.name}, ${alter.klassen}), ihren Wunsch an eine spielebauende KI genauer zu formulieren.
+
+Du baust NICHTS. Du schreibst nur den Wunsch besser auf.
+
+Regeln:
+- Bleibe strikt bei der Idee der Klasse. Erfinde kein anderes Spiel und kein anderes Thema.
+- Ergänze das, was offensichtlich fehlt, damit die KI nicht raten muss: WAS passiert, WIE es
+  aussieht, WANN man gewinnt oder verliert.
+- Höchstens drei kurze Sätze, Sprache der Zielgruppe, keine Fachbegriffe.
+- Schreibe aus Sicht der Klasse („Wir wollen …").
+- Keine Einleitung, keine Erklärung, keine Anführungszeichen — nur der verbesserte Wunsch.${
+    p.learningGoal.trim() ? `\n- Das Spiel soll außerdem zu diesem Lernziel passen: ${p.learningGoal.trim()}` : ""
+  }`;
+
+  const userMsg = [
+    steckbrief ? `So sieht das bisherige Spiel aus:\n${steckbrief}` : "Es gibt noch kein Spiel.",
+    `\n\nDas hat das Studio „${p.studioName}" gesagt:\n${p.wunsch.trim()}`,
+  ].join("");
+
+  const antwort = await rufeModell(p.verbindung, p.model, [system], userMsg, 500);
+  if (antwort.error) return { vorschlag: "", tokensIn: 0, tokensOut: 0, error: antwort.error };
+  return {
+    vorschlag: antwort.text.trim().replace(/^["„]|["“]$/g, ""),
+    tokensIn: antwort.tokensIn,
+    tokensOut: antwort.tokensOut,
   };
 }
 
@@ -255,10 +300,10 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
 - Lernaufgaben als HTML-Overlay ÜBER dem Canvas, nicht in der 3D-Szene.`
     : "";
 
-  const systemTeile = [gameBuilderPrompt(), directorBlock];
-  if (engineBlock) systemTeile.push(engineBlock);
+  const teile = [kernPrompt(), directorBlock];
+  if (engineBlock) teile.push(engineBlock);
   if (p.learningGoal.trim()) {
-    systemTeile.push(`## Lernziel der Lehrkraft (PFLICHT im Spiel)\n\n${p.learningGoal.trim()}`);
+    teile.push(`## Lernziel der Lehrkraft (PFLICHT im Spiel)\n\n${p.learningGoal.trim()}`);
   }
 
   const userMsg = [
@@ -269,7 +314,7 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
       : `\n\nBaue daraus die KOMPLETTE HTML-Datei (eine Datei, HTML+CSS+JS inline), in genau einem \`\`\`html ... \`\`\`-Block. Keine Erklärungen.`,
   ].join("");
 
-  const antwort = await rufeModell(p.verbindung, p.model, systemTeile, userMsg, MAX_TOKENS);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   let html = extractHtml(antwort.text);
   if (html && p.engine3d) html = injectThreeJs(html);

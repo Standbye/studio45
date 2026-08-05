@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
 import { playVersion } from "@/lib/games";
 import { dayMotto, dayTitle } from "@/lib/prompts";
+import { alterProfil, supportProfil } from "@/lib/audience";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,16 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     motto: dayMotto(w.currentDay, w.totalDays),
     phase: w.phase,
     locked: group.locked,
-    guidance: w.guidance,
+    ageGroup: w.ageGroup,
+    supportLevel: w.supportLevel,
+    optik: alterProfil(w.ageGroup).optik,
+    texte: alterProfil(w.ageGroup).texte,
+    chips: alterProfil(w.ageGroup).chips[Math.min(w.currentDay, 5)] ?? alterProfil(w.ageGroup).chips[1],
+    hilfen: {
+      chips: supportProfil(w.supportLevel).chips,
+      teamCheck: supportProfil(w.supportLevel).teamCheck,
+      coachAbZeichen: supportProfil(w.supportLevel).coachAbZeichen,
+    },
     attemptsLeft: attemptsLeft(group, w.genLimitPerLesson),
     cooldownRemaining: cooldownRemaining(group, w.cooldownSeconds),
     cooldownSeconds: w.cooldownSeconds,

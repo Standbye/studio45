@@ -1,6 +1,8 @@
 import "server-only";
 import fs from "node:fs";
 import path from "node:path";
+import type { AgeGroup } from "@/generated/prisma/enums";
+import { alterProfil, supportProfil } from "@/lib/audience";
 
 const PROMPTS_DIR = path.join(process.cwd(), "prompts");
 
@@ -8,8 +10,9 @@ function load(name: string): string {
   return fs.readFileSync(path.join(PROMPTS_DIR, `${name}.md`), "utf8");
 }
 
-export function gameBuilderPrompt(): string {
-  return load("game-builder");
+/** Fester Kern: Format, Sandbox-Grenzen, Kinderschutz, Qualitätsuntergrenze, Steckbrief. */
+export function kernPrompt(): string {
+  return load("kern");
 }
 
 /**
@@ -50,4 +53,89 @@ export function dayMotto(day: number, totalDays: number): string {
   const three = [five[0], five[1], five[4]];
   const list = totalDays <= 3 ? three : five;
   return list[Math.min(Math.max(day, 1), list.length) - 1];
+}
+
+// ---------------------------------------------------------------------------
+// Zusammensetzen des Metaprompts
+// ---------------------------------------------------------------------------
+
+export type PromptBlock = {
+  /** Überschrift in der Vorschau für die Lehrkraft */
+  titel: string;
+  /** Woher der Text kommt — für die Herkunftsanzeige */
+  herkunft: string;
+  /** Kann die Lehrkraft diesen Block ändern? */
+  editierbar: boolean;
+  text: string;
+};
+
+export type PromptKontext = {
+  ageGroup: AgeGroup;
+  supportLevel: number;
+  learningGoal: string;
+  /** Eigene Fassung der didaktischen Zone; leer = erzeugte Fassung */
+  promptDidactic: string;
+  day: number;
+  totalDays: number;
+};
+
+/**
+ * Die didaktische Zone in ihrer erzeugten Fassung: Altersstufe,
+ * Unterstützungslevel und Lernziel. Genau das kann die Lehrkraft
+ * übernehmen und überschreiben.
+ */
+export function didaktikStandard(k: PromptKontext): string {
+  const alter = alterProfil(k.ageGroup);
+  const support = supportProfil(k.supportLevel);
+  const teile = [alter.promptBlock, support.promptBlock];
+
+  if (k.learningGoal.trim()) {
+    teile.push(`## Lernziel der Lehrkraft — verbindlich
+
+${k.learningGoal.trim()}
+
+Baue passende Aufgaben so ein, dass sie **zum Spielfortschritt gehören**: als Tor, das sich
+öffnet, als Belohnung, als Schlüssel zum nächsten Abschnitt. Kein vorgeschaltetes Quiz, das
+man wegklicken kann. Antwortflächen groß, Rückmeldung sofort, bei Fehlern ein zweiter Versuch
+ohne Strafe.`);
+  }
+
+  return teile.join("\n\n");
+}
+
+/** Alle Blöcke des Metaprompts mit Herkunft — Grundlage für Vorschau und Aufruf. */
+export function promptBloecke(k: PromptKontext): PromptBlock[] {
+  const alter = alterProfil(k.ageGroup);
+  const support = supportProfil(k.supportLevel);
+  const eigene = k.promptDidactic.trim();
+
+  return [
+    {
+      titel: "Fester Kern",
+      herkunft: "Studio45 — Format, Sandbox-Grenzen, Kinderschutz, Qualitätsuntergrenze",
+      editierbar: false,
+      text: kernPrompt(),
+    },
+    {
+      titel: `Tagesfokus — Tag ${k.day} von ${k.totalDays}`,
+      herkunft: `Ablaufplan: ${dayTitle(k.day, k.totalDays)}`,
+      editierbar: false,
+      text: dayFocusPrompt(k.day, k.totalDays),
+    },
+    {
+      titel: "Didaktische Zone",
+      herkunft: eigene
+        ? "eigene Fassung dieses Workshops"
+        : `erzeugt aus: ${alter.name} · Unterstützung ${support.stufe} (${support.name})${
+            k.learningGoal.trim() ? " · Lernziel" : ""
+          }`,
+      editierbar: true,
+      text: eigene || didaktikStandard(k),
+    },
+  ];
+}
+
+/** Systemanweisungen für den Modellaufruf (erster Block ist der cachebare Kern). */
+export function systemTeile(k: PromptKontext): string[] {
+  return promptBloecke(k).map((b) => b.text);
 }

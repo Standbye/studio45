@@ -18,10 +18,11 @@ enum Phase {
   PAUSE
 }
 
-enum GuidanceLevel {
-  FREI
-  IMPULSE
-  GEFUEHRT
+/// Zielgruppe des Workshops — steuert Optik, Ansprache und Metaprompt.
+enum AgeGroup {
+  GRUNDSCHULE
+  MITTELSTUFE
+  OBERSTUFE
 }
 
 model User {
@@ -73,9 +74,14 @@ model Workshop {
   phase      Phase  @default(PLENUM)
 
   // Didaktik
-  guidance      GuidanceLevel @default(IMPULSE)
-  learningGoal  String        @default("") // Lernziel/Preprompt der Lehrkraft
-  presetLabel   String        @default("")
+  ageGroup     AgeGroup @default(GRUNDSCHULE)
+  /// 1 = KI hilft maximal mit, 5 = KI macht nur, was gesagt wird
+  supportLevel Int      @default(2)
+  learningGoal String   @default("") // fachlicher Auftrag der Lehrkraft
+  /// Eigene didaktische Zone des Prompts. Leer = die aus Altersstufe,
+  /// Unterstützungslevel und Lernziel erzeugte Fassung wird verwendet.
+  promptDidactic String @default("")
+  presetLabel    String @default("")
 
   // KI-Konfiguration liegt vollständig bei der Verbindung (ApiKey) — die
   // Lehrkraft wählt nur aus, was der Admin bereitgestellt hat.
