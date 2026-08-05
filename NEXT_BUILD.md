@@ -13,13 +13,9 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 ## Sofort möglich
 
 - [ ] **Druck-Redesign pushen** — der Neusatz der Druckmaterialien (2026-08-05) liegt als
-      lokaler Commit vor; auf Peters Ansage: „kein deployment auf github". Push, Release
-      und Server-Deploy erst auf Kommando.
-
-- [ ] **Produktion auf 1.0.1 bringen** — der Lesbarkeits-Fix (helle Marken-Farben) ist gebaut,
-      getestet, released und als Image verfügbar; `studio45.littleproject.de` läuft aber noch
-      auf dem Stand davor. Ein Deploy dauert ~2 Minuten. Praktisch relevant nur, wenn jemand
-      einen sehr hellen Hauptton einstellt — der Demo-Workshop nutzt die Standardfarben.
+      lokaler Commit vor und ist per rsync zum Testen auf dem Server (damit läuft dort
+      auch der 1.0.1-Lesbarkeits-Fix). Auf Peters Ansage: „kein deployment auf github" —
+      Push und Release erst auf Kommando; GHCR-Image ist entsprechend noch alt.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
