@@ -4,6 +4,7 @@ import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } 
 import { playVersion } from "@/lib/games";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { alterProfil, supportProfil } from "@/lib/audience";
+import { farbschema } from "@/lib/kontrast";
 
 export const dynamic = "force-dynamic";
 
@@ -49,8 +50,9 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     dauerSchaetzung,
     gameVersion: playVersion(group.id),
     branding: {
-      colorPrimary: w.colorPrimary,
-      colorAccent: w.colorAccent,
+      // Textfarben werden aus den Marken-Farben berechnet — sonst wird bei
+      // hellen Tönen (z. B. Weiß) weiße Schrift unsichtbar.
+      ...farbschema(w.colorPrimary, w.colorAccent),
       hasLogo: Boolean(w.logoPath),
     },
   });

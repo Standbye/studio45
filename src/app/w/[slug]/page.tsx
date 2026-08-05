@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { BASE_URL } from "@/lib/env";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { farbschema } from "@/lib/kontrast";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +28,17 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
     )
   );
 
+  // Schrift- und Verlaufsfarben aus der Markenfarbe ableiten — bei hellen
+  // Tönen wäre weiße Schrift auf hellem Grund unlesbar.
+  const farben = farbschema(w.colorPrimary, w.colorAccent);
+
   return (
     <main
-      className="min-h-svh p-8 text-white"
-      style={{ background: `linear-gradient(160deg, ${w.colorPrimary}, #14141f)` }}
+      className="min-h-svh p-8"
+      style={{
+        background: `linear-gradient(160deg, ${farben.primary}, ${farben.primaryDunkel})`,
+        color: farben.aufPrimary,
+      }}
     >
       <AutoRefresh seconds={30} />
       <header className="mb-8 flex items-center gap-4">

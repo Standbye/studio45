@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALTERSSTUFEN } from "@/lib/audience";
 import { promptBloecke, didaktikStandard } from "@/lib/prompts";
 import { SupportLevelWahl } from "./support-level";
+import { FarbVorschau } from "./farb-vorschau";
 import { PromptVorschau } from "./prompt-vorschau";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -295,15 +296,8 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
             <CardContent>
               <form action={updateBrandingAction} className="space-y-4">
                 <input type="hidden" name="workshopId" value={w.id} />
+                <FarbVorschau primary={w.colorPrimary} accent={w.colorAccent} />
                 <div className="flex flex-wrap items-end gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="colorPrimary">Hauptfarbe</Label>
-                    <input id="colorPrimary" name="colorPrimary" type="color" defaultValue={w.colorPrimary} className="h-10 w-20 cursor-pointer rounded border" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="colorAccent">Akzentfarbe</Label>
-                    <input id="colorAccent" name="colorAccent" type="color" defaultValue={w.colorAccent} className="h-10 w-20 cursor-pointer rounded border" />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="logo">Logo (max. 4 MB)</Label>
                     <Input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" />

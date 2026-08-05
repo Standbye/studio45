@@ -4,6 +4,22 @@ Alle nennenswerten Änderungen an Studio45. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.1] — 2026-08-05
+
+### Behoben
+
+- **Helle Marken-Farben machten Text unlesbar.** Weiße Schrift war an vielen Stellen fest
+  verdrahtet — bei einem weißen oder sehr hellen Hauptton verschwand sie. Schriftfarben werden
+  jetzt aus der Hintergrundfarbe berechnet (WCAG-Leuchtdichte), und die Marken-Farbe wird
+  automatisch abgedunkelt, wo sie als Text auf hellem Grund steht. Betrifft Kopfzeile und
+  Knöpfe der Schüler-Seite, Plenum-Bildschirm, Beamer-Seite, Spiel-Platzhalter und die
+  Druckmaterialien.
+
+### Neu
+
+- **Farbvorschau im Branding-Reiter**: zeigt Kopfzeile, Chip, Knopf und Druck-Überschrift in
+  den gewählten Farben samt Kontrastwerten — bevor die Klasse davorsitzt.
+
 ## [1.0.0] — 2026-08-04
 
 Erste vollständige Fassung. Studio45 löst den handgestrickten Prototyp ab, mit dem eine
@@ -109,4 +125,5 @@ zum Selbsthosten.
 - Die Ratenbegrenzung liegt im Arbeitsspeicher und wirkt daher pro Instanz.
 - Für das Datenverzeichnis gibt es keine eingebaute Sicherung.
 
+[1.0.1]: https://github.com/Standbye/studio45/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Standbye/studio45/releases/tag/v1.0.0

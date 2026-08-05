@@ -39,7 +39,18 @@ type KidState = {
   laufSekunden: number;
   dauerSchaetzung: number;
   gameVersion: number;
-  branding: { colorPrimary: string; colorAccent: string; hasLogo: boolean };
+  branding: {
+    primary: string;
+    accent: string;
+    /** Schrift auf der Hauptfarbe — berechnet, damit helle Töne lesbar bleiben */
+    aufPrimary: string;
+    aufAccent: string;
+    /** Hauptfarbe als Schrift auf hellem Grund */
+    primaryText: string;
+    accentText: string;
+    primaryDunkel: string;
+    hasLogo: boolean;
+  };
 };
 
 const CHECKFRAGEN = [
@@ -268,8 +279,12 @@ export function KidStudio({ code }: { code: string }) {
   }
 
   const vars = {
-    "--s45-primary": state.branding.colorPrimary,
-    "--s45-accent": state.branding.colorAccent,
+    "--s45-primary": state.branding.primary,
+    "--s45-accent": state.branding.accent,
+    "--s45-auf-primary": state.branding.aufPrimary,
+    "--s45-auf-accent": state.branding.aufAccent,
+    "--s45-primary-text": state.branding.primaryText,
+    "--s45-primary-dunkel": state.branding.primaryDunkel,
     "--s45-radius": state.optik.radius,
     "--s45-schrift": state.optik.grundschrift,
     "--s45-knopf": state.optik.knopfHoehe,
@@ -286,8 +301,11 @@ export function KidStudio({ code }: { code: string }) {
   // Plenum-/Pause-Sperre: Kinder sehen Wartebildschirm mit Merksatz
   if (state.phase !== "STUDIO") {
     return (
-      <main style={vars} className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center text-white" >
-        <div className="absolute inset-0 -z-10" style={{ background: "linear-gradient(160deg, var(--s45-primary), #1a1a2e)" }} />
+      <main
+        style={{ ...vars, color: state.branding.aufPrimary }}
+        className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center"
+      >
+        <div className="absolute inset-0 -z-10" style={{ background: "linear-gradient(160deg, var(--s45-primary), var(--s45-primary-dunkel))" }} />
         {state.branding.hasLogo && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={`/api/g/${code}/logo`} alt="" className="h-20 w-auto rounded-xl bg-white/90 p-2" />
@@ -307,7 +325,7 @@ export function KidStudio({ code }: { code: string }) {
   return (
     <main style={vars} className="flex min-h-svh flex-col bg-slate-100">
       {/* Kopfzeile */}
-      <header className="flex items-center gap-3 px-4 py-2 text-white" style={{ background: "var(--s45-primary)" }}>
+      <header className="flex items-center gap-3 px-4 py-2" style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}>
         {state.branding.hasLogo && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={`/api/g/${code}/logo`} alt="" className="h-9 w-auto rounded bg-white/90 p-0.5" />
@@ -319,7 +337,7 @@ export function KidStudio({ code }: { code: string }) {
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <span className="rounded-full px-3 py-1 text-sm font-bold" style={{ background: "var(--s45-accent)", color: "#1f2430" }}>
+          <span className="rounded-full px-3 py-1 text-sm font-bold" style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)" }}>
             {state.attemptsLeft > 0 ? `Noch ${state.attemptsLeft} ${state.attemptsLeft === 1 ? "Versuch" : "Versuche"}` : "Keine Versuche mehr"}
           </span>
           <button
@@ -390,7 +408,7 @@ export function KidStudio({ code }: { code: string }) {
       <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {feedback && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">{feedback}</p>}
         {cooldown > 0 && (
-          <p className="rounded-lg px-3 py-2 text-center text-sm font-bold text-white" style={{ background: "var(--s45-primary)" }}>
+          <p className="rounded-lg px-3 py-2 text-center text-sm font-bold" style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}>
             ⏸️ Denkpause: Testet euer Spiel und besprecht den nächsten Schritt — weiter in {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, "0")}
           </p>
         )}
@@ -402,7 +420,7 @@ export function KidStudio({ code }: { code: string }) {
                 onClick={() => setText((t) => (t ? t.replace(/⏳.*$/, "").trim() + " — " + chip : chip))}
                 disabled={baut}
                 className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-                style={{ borderColor: "var(--s45-primary)", color: "var(--s45-primary)" }}
+                style={{ borderColor: "var(--s45-primary-text)", color: "var(--s45-primary-text)" }}
               >
                 {chip}
               </button>
@@ -413,8 +431,12 @@ export function KidStudio({ code }: { code: string }) {
           <button
             onClick={toggleMic}
             disabled={baut}
-            className={`flex w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
-            style={{ background: listening ? "#dc2626" : "var(--s45-primary)", height: "var(--s45-knopf)" }}
+            className={`flex w-14 shrink-0 items-center justify-center rounded-full text-2xl shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
+            style={{
+              background: listening ? "#dc2626" : "var(--s45-primary)",
+              color: listening ? "#ffffff" : "var(--s45-auf-primary)",
+              height: "var(--s45-knopf)",
+            }}
             title={baut ? "Die KI baut gerade" : listening ? "Aufnahme stoppen" : "Sprechen"}
           >
             {listening ? "⏹" : "🎤"}
@@ -434,7 +456,7 @@ export function KidStudio({ code }: { code: string }) {
             }
             className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
             style={{
-              borderColor: !baut && promptText ? "var(--s45-primary)" : undefined,
+              borderColor: !baut && promptText ? "var(--s45-primary-text)" : undefined,
               borderRadius: "var(--s45-radius)",
               fontSize: "var(--s45-schrift)",
               minHeight: "var(--s45-knopf)",
@@ -444,7 +466,7 @@ export function KidStudio({ code }: { code: string }) {
             onClick={submit}
             disabled={!canSend}
             className="shrink-0 px-5 text-lg font-black shadow disabled:opacity-40"
-            style={{ background: "var(--s45-accent)", color: "#1f2430", height: "var(--s45-knopf)", borderRadius: "var(--s45-radius)" }}
+            style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", height: "var(--s45-knopf)", borderRadius: "var(--s45-radius)" }}
           >
             {baut || coachLaeuft ? "…" : state.texte.bauKnopf}
           </button>
@@ -461,7 +483,7 @@ export function KidStudio({ code }: { code: string }) {
             className="w-full max-w-lg space-y-4 bg-white p-6"
             style={{ borderRadius: "var(--s45-radius)" }}
           >
-            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary)" }}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
               So könnte man es genauer sagen
             </h2>
             <div className="space-y-1">
@@ -472,7 +494,7 @@ export function KidStudio({ code }: { code: string }) {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Genauer gesagt</p>
               <p
                 className="p-3 text-base"
-                style={{ background: "var(--s45-accent)", borderRadius: "var(--s45-radius)", color: "#1f2430" }}
+                style={{ background: "var(--s45-accent)", borderRadius: "var(--s45-radius)", color: "var(--s45-auf-accent)" }}
               >
                 {coachVorschlag}
               </p>
@@ -487,8 +509,8 @@ export function KidStudio({ code }: { code: string }) {
                   setCoachVorschlag(null);
                   setCoachGezeigt(true);
                 }}
-                className="flex-1 py-3 font-bold text-slate-900"
-                style={{ background: "var(--s45-accent)", borderRadius: "var(--s45-radius)" }}
+                className="flex-1 py-3 font-bold"
+                style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", borderRadius: "var(--s45-radius)" }}
               >
                 Übernehmen und bearbeiten
               </button>
@@ -498,8 +520,8 @@ export function KidStudio({ code }: { code: string }) {
                   setCoachGezeigt(true);
                   void submit();
                 }}
-                className="flex-1 py-3 font-bold text-white"
-                style={{ background: "var(--s45-primary)", borderRadius: "var(--s45-radius)" }}
+                className="flex-1 py-3 font-bold"
+                style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
               >
                 So bauen
               </button>
@@ -521,7 +543,7 @@ export function KidStudio({ code }: { code: string }) {
       {showCheck && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
           <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6">
-            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary)" }}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
               Kurzer Team-Check ✋
             </h2>
             {CHECKFRAGEN.map((frage, i) => (
@@ -542,8 +564,8 @@ export function KidStudio({ code }: { code: string }) {
               <button
                 onClick={submit}
                 disabled={!checks.every(Boolean)}
-                className="flex-1 rounded-xl py-3 font-black text-white disabled:opacity-40"
-                style={{ background: "var(--s45-primary)" }}
+                className="flex-1 rounded-xl py-3 font-black disabled:opacity-40"
+                style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}
               >
                 Los geht's!
               </button>
