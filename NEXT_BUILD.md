@@ -51,6 +51,70 @@ Technisch: ein Feld `ageGroup` am Workshop, ein Theme-/Textbaustein-Satz pro Stu
 (vermutlich als eigene Datei analog `src/lib/providers.ts`), und der Systemprompt bekommt
 einen stufenabhängigen Block. Die Branding-Farben der Schule bleiben davon unberührt.
 
+**Die Altersstufe stellt die Lehrkraft selbst ein** (Workshop-Einstellungen, neben Lernziel
+und Führungslevel) — sie kennt ihre Klasse. Aus der Einstellung leitet sich unmittelbar der
+Metaprompt ab, siehe nächster Abschnitt.
+
+### Metaprompt neu aufbauen — gute Spiele trotz karger Eingaben
+
+**Das Kernproblem:** Kinder sagen „mach ein spiel mit einem drachen" und erwarten ein fertiges
+Spiel. Nachfragen kann das System nicht (die Oberfläche ist ein Einbahn-Kanal, und Rückfragen
+würden den knappen 45-Minuten-Takt sprengen). Der Metaprompt muss aus drei Worten also ein
+vollständiges, spielbares, altersgerechtes Spiel machen — und trotzdem die Idee der Kinder
+erkennbar lassen. Vorschlag in Bausteinen:
+
+**1. Lücken füllen statt nachfragen — mit fester Rangfolge.**
+Ein eigener Abschnitt „Wenn Informationen fehlen": (a) Was schon im Spiel existiert, bleibt
+und gibt die Richtung vor. (b) Danach greifen Genre-Konventionen des genannten Themas
+(Drache → fliegen, Feuer, Schätze sammeln). (c) Erst dann altersabhängige Standards. Die KI
+**trifft eine konkrete Entscheidung** und stellt keine Rückfrage — falsch geratene Details
+korrigieren die Kinder in der nächsten Runde, und genau das ist der Lerneffekt.
+
+**2. Qualitätsuntergrenze, die unabhängig vom Input immer gilt.**
+Checkliste im Prompt, die jedes Spiel erfüllen muss: Startbildschirm mit Titel · sofort
+verständliches Ziel · jede Aktion gibt sofort sichtbares Feedback · Sieg- **und**
+Verlierbedingung · Neustart immer erreichbar · keine Sackgassen · lesbar auf Armlänge
+(Mindestgrößen) · Touch-Flächen groß genug · Ton abschaltbar · nichts Externes.
+Damit ist auch das Ergebnis eines Ein-Wort-Prompts nie ein Fragment.
+
+**3. Ein „Überraschungs-Budget".**
+Die KI darf **genau eine** kleine Sache ergänzen, die niemand verlangt hat (Idle-Animation,
+Partikel beim Treffer, ein witziger Sound, ein verstecktes Detail). Das erzeugt den
+Wow-Moment, wenn nur drei Worte kamen — begrenzt auf eine Sache, damit die Vision der Kinder
+nicht überschrieben wird.
+
+**4. Spielsteckbrief als Gedächtnis im Spiel selbst.**
+Die KI legt einen maschinenlesbaren Kommentarblock in die HTML-Datei (Titel, Figur, Ziel,
+Steuerung, Siegbedingung, Stil, Lernaufgaben-Einbau, bereits umgesetzte Wünsche). Bei der
+nächsten Änderung liest sie ihren eigenen Steckbrief mit — dadurch bleibt die Linie erhalten,
+auch wenn der neue Wunsch nur „mach es grün" lautet. Nebeneffekt: Die Lehrkraft kann im
+Verlauf sehen, wie die KI das Spiel *verstanden* hat.
+
+**5. Wohlwollende Interpretation von Spracherkennung.**
+Der Prompt bekommt einen Abschnitt zu typischen Verhörern der deutschen Diktat-Erkennung und
+zur Regel: erst sinnvoll deuten, dann bauen — niemals wörtlich Unsinn umsetzen.
+
+**6. Anti-Muster ausdrücklich verbieten.**
+Textwände, Tastatursteuerung, Mini-Buttons, „Game Over" ohne sofortigen Neustart,
+Schwierigkeit, die frustriert statt reizt.
+
+**7. Altersblock aus der Lehrer-Einstellung.**
+Wortschatz, Lesemenge, Mechaniktiefe, Anspruch der Lernaufgaben und visueller Stil kommen aus
+`ageGroup`. Der heutige Prompt ist fest auf „4. Klasse" gemünzt — das muss heraus und
+stufenabhängig werden, sonst bekommt eine 10. Klasse trotz erwachsener Oberfläche ein
+Kindergarten-Spiel.
+
+**8. Optionaler Prompt-Coach in der Schüler-Oberfläche** (didaktisch der stärkste Hebel):
+Ist der Wunsch sehr knapp, zeigt Studio45 vor dem Bauen eine **ausformulierte Fassung**
+(„So könnte man es genauer sagen: …") zum Übernehmen, Ändern oder Verwerfen. Die Kinder
+sehen dadurch am eigenen Beispiel, was ein guter Prompt ist — das ist Unterricht, nicht nur
+Technik. Kostet einen zusätzlichen, kleinen Modellaufruf; als Schalter pro Workshop denkbar
+(passt zum bestehenden Führungslevel).
+
+Offene Frage für den Bau: ob die Anreicherung in **einem** Aufruf passiert (billiger) oder in
+zwei Schritten „Wunsch verstehen → Spiel bauen" (deutlich bessere Ergebnisse bei kargem Input,
+doppelte Kosten). Vorschlag: zweistufig nur im geführten Modus und bei sehr kurzen Eingaben.
+
 ## Ideen aus der Konzeptphase, noch nicht gebaut
 
 - [ ] **Lernziel-Presets pro Fach** (Mathe 4, Sachkunde, Englisch …) statt nur Freitext —
