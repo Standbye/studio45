@@ -1,8 +1,8 @@
 services:
   studio45:
-    build: .
-    # Alternativ ein fertiges Image:
-    # image: ghcr.io/standbye/studio45:latest
+    # Fertiges Image von GitHub — kein Quellcode, kein Build nötig.
+    # Zum Selberbauen stattdessen `build: .` verwenden (siehe README).
+    image: ghcr.io/standbye/studio45:latest
     container_name: studio45
     restart: unless-stopped
     ports:

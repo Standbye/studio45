@@ -17,6 +17,11 @@ RUN npx prisma generate && npm run build:next
 
 FROM node:22-slim AS runner
 WORKDIR /app
+
+# Verknüpft das Image auf GHCR mit dem Repository (Quellcode, README, Lizenz)
+LABEL org.opencontainers.image.source="https://github.com/Standbye/studio45" \
+      org.opencontainers.image.description="Studio45 — Kinder lernen KI-Kompetenz, indem sie per Sprache eigene Lernspiele bauen." \
+      org.opencontainers.image.licenses="AGPL-3.0-or-later"
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \

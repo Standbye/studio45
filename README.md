@@ -1,5 +1,9 @@
 # Studio45 — Spielestudio in 45 Minuten
 
+[![Release](https://img.shields.io/github/v/release/Standbye/studio45?label=Release)](https://github.com/Standbye/studio45/releases)
+[![Image](https://img.shields.io/badge/ghcr.io-standbye%2Fstudio45-blue?logo=docker)](https://github.com/Standbye/studio45/pkgs/container/studio45)
+[![Lizenz](https://img.shields.io/badge/Lizenz-AGPL--3.0-green)](LICENSE)
+
 **Kinder lernen den Umgang mit KI, indem sie ihr eigenes Lernspiel bauen.**
 
 Studio45 ist die Produkt-Fassung eines Schulprojekts: Eine Klasse arbeitet in Kleingruppen,
@@ -12,26 +16,77 @@ Ergebnisse prüfen, iterieren — und **einschätzen, was eine KI ist und wo sie
 
 ---
 
-## Schnellstart (Docker)
+## Was man braucht
+
+- **Docker** auf irgendeinem Rechner oder Server (auch ein Raspberry-Pi-Nachfolger mit x86 reicht;
+  das Image ist für `linux/amd64` gebaut).
+- **Einen KI-Zugang**: ein Schlüssel von Anthropic, OpenAI, OpenRouter, Langdock … oder ein
+  lokales Modell über Ollama. Studio45 bringt keinen eigenen mit — die Kosten bleiben bei dir
+  und lassen sich pro Workshop begrenzen.
+- **Tablets oder Laptops** für die Gruppen mit einem aktuellen Browser. Für die Spracheingabe
+  eignen sich Chrome und Safari; ohne Mikrofon geht es per Tastatur genauso.
+
+Nicht nötig: Schülerkonten, Zugangsdaten für Kinder, ein Google- oder Microsoft-Konto,
+eine Cloud-Anmeldung.
+
+## Schnellstart — ein Befehl
+
+Es wird nichts kompiliert und nichts geklont: Das fertige Image liegt auf der GitHub
+Container Registry.
+
+```bash
+docker run -d --name studio45 -p 3000:3000 -v studio45-data:/data ghcr.io/standbye/studio45:latest
+```
+
+Danach `http://localhost:3000` öffnen — die **Ersteinrichtung** legt das Admin-Konto an.
+Das war's: Workshop anlegen, QR-Codes ausdrucken, loslegen.
+
+Für den Dauerbetrieb lieber mit Compose. Eine Datei `docker-compose.yml` genügt:
+
+```yaml
+services:
+  studio45:
+    image: ghcr.io/standbye/studio45:latest
+    container_name: studio45
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      BASE_URL: "https://studio45.example.org"
+    volumes:
+      - studio45-data:/data
+volumes:
+  studio45-data:
+```
+
+```bash
+docker compose up -d
+```
+
+**Version festnageln** statt `latest` — empfohlen, damit ein Neustart nicht ungefragt
+aktualisiert: `ghcr.io/standbye/studio45:1.0.0` (auch `:1.0` und `:1` verfügbar).
+
+Aktualisieren:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Der Container läuft als **non-root**, alle Daten (SQLite, Spiele, Snapshots, Logos, Session-Secret)
+liegen im Volume `/data`. Migrationen werden beim Start automatisch angewendet — ein Update ist
+also ein `pull` plus Neustart, mehr nicht.
+
+### Lieber selbst bauen?
 
 ```bash
 git clone https://github.com/Standbye/studio45.git && cd studio45 && docker compose up -d --build
 ```
 
-Danach `http://localhost:3000` öffnen — die **Ersteinrichtung** legt das Admin-Konto an.
-
-### Container selbst bauen
+Dafür in der `docker-compose.yml` die Zeile `image:` durch `build: .` ersetzen. Oder direkt:
 
 ```bash
-docker build -t studio45:local .
+docker build -t studio45:local . && docker run -d --name studio45 -p 3000:3000 -v studio45-data:/data studio45:local
 ```
-
-```bash
-docker run -d --name studio45 -p 3000:3000 -e BASE_URL="https://studio45.example.org" -v studio45-data:/data studio45:local
-```
-
-Der Container läuft als **non-root**, alle Daten (SQLite, Spiele, Snapshots, Logos, Session-Secret)
-liegen im Volume `/data`. Migrationen werden beim Start automatisch angewendet.
 
 ### Umgebungsvariablen
 
