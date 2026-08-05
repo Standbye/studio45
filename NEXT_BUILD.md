@@ -10,6 +10,40 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-05, abends)
+
+Weitere Materialdokumente + Anpassung der Tagesdramaturgie:
+
+- [ ] **„Wie rede ich mit der KI?"** — ein A4-Blatt für die Kinder: Best Practices und
+      die wichtigsten Tipps, Leitmotiv **„Erst denken, dann tippen"**. Inhalt aus dem
+      vorhandenen Wissen speisen (Tages-Chips, Coach-Regeln, `prompts/kern.md`):
+      WAS soll passieren + WIE soll es aussehen, ganze Sätze statt Stichworte, erst im
+      Team besprechen, eine Änderung pro Wunsch, nach jedem Bauen sofort testen.
+      Ansprache je Altersstufe beachten.
+- [ ] **Laufplan (Rollen-Rotation)** — wer hat in welcher Runde welche Rolle: Tabelle
+      Termine × Rollen zum Eintragen der Kindernamen, generiert passend zu den
+      Terminen (3 oder 5) und Gruppen des Workshops.
+- [ ] **Tagesdramaturgie bei 5 Terminen anpassen**: Tag 4 wird **Test-Tag**
+      (Peer-Testing, Bugs finden und beheben), Tag 5 wird **Release-Tag** — die Kinder
+      zeigen sich gegenseitig ihre Spiele. Betrifft nicht nur den Druck:
+      `DAY_TITLES_5` + Merksätze in `prompts.ts`, die Tagesfokus-Prompts
+      (`prompts/day-4-challenge.md`, `day-5-polish.md`), die Tages-Chips in
+      `audience.ts` und die Termin-Seiten der Stundenverläufe (Tag 4/5 brauchen einen
+      anderen 45-Minuten-Ablauf als die Bautage).
+- [ ] **Bugreport-Karten (A4)** — Ausfüllkarten „Was hat nicht funktioniert?" mit
+      Hilfefragen zur Ursache: Was haben wir gesagt? Was hat die KI gebaut? Was war
+      anders als erwartet? Was sagen wir jetzt genauer? — Kernwerkzeug für den Test-Tag.
+- [ ] **Lehrer-Laufzettel** — eine A4-Kurzübersicht über den ganzen Workshop: was
+      insgesamt zu tun ist und worauf zu achten (Accounts/QR vorbereiten, Phasen
+      schalten, Versuche nachladen, Budget im Blick, typische Stolperfallen), Termin
+      für Termin in je 2–3 Zeilen — kompakter als die Termin-Seiten der Stundenverläufe.
+- [ ] **„Was funktioniert gut / nicht gut?"** — A4-Hilfe für die Kinder beim Testen:
+      zwei Spalten zum Ausfüllen, Brücke zu „Zwei Sterne und ein Wunsch".
+      (Beim Bau abgrenzen: Beobachtungsbogen fürs Spielen vs. Bugreport-Fehlerjagd —
+      geplant als zwei getrennte Blätter.)
+- [ ] **Rollenkarten erweitern** — konkrete Aufgabenliste je Rolle (was das Kind in der
+      Stunde wirklich tut, Schritt für Schritt), zusätzlich zu Kurzbeschreibung und Tipps.
+
 ## Sofort möglich
 
 - [ ] **Druck-Redesign pushen** — der Neusatz der Druckmaterialien (2026-08-05) liegt als
