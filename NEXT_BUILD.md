@@ -147,6 +147,39 @@ Klasse 5–10 → 3, Oberstufe → 4–5), die Lehrkraft kann jederzeit abweiche
 4. Klasse am dritten Termin verträgt weniger Hilfe, eine ungeübte 9. Klasse mehr. Denkbar wäre
 später sogar eine Staffelung über die Termine (Tag 1 mehr Hilfe als Tag 5).
 
+### Preprompt sichtbar und anpassbar machen
+
+Der Metaprompt bleibt **stark ausgeprägt als Vorgabe** — die Lehrkraft soll nicht bei null
+anfangen, sondern einen fertigen, guten Prompt vorfinden. Er wird ihr aber **angezeigt** und
+ist anpassbar, wenn sie es will. Zwei Gründe: Sie muss verantworten können, was ihre Klasse
+bekommt, und sie kennt fachliche Feinheiten, die keine Vorlage kennt („wir hatten schriftliche
+Division noch nicht").
+
+**Aufbau in zwei Zonen — das ist der entscheidende Punkt:**
+
+1. **Fester Kern (nicht editierbar, aber sichtbar):** technische und Sicherheitsregeln —
+   eine Datei, alles inline, keine externen Ressourcen, kein `fetch`, `localStorage` nur in
+   `try/catch`, Touch-Steuerung, keine Gewalt, keine Abfrage persönlicher Daten, keine echten
+   Marken. Wird diese Zone editierbar, kann eine gut gemeinte Änderung die Verifikation, die
+   Sandbox-Tauglichkeit oder den Kinderschutz aushebeln.
+2. **Didaktische Zone (voll editierbar):** Tonfall, Anspruch, Lernziel, Fachkontext,
+   Beispiele, Genre-Wünsche, Dinge die vermieden werden sollen. Hier darf die Lehrkraft
+   schreiben, was sie will.
+
+**Anzeige im Lehrerbereich:** eine Vorschau des **vollständig zusammengesetzten** Prompts, mit
+sichtbarer Herkunft jedes Blocks — Kern · Tagesfokus (Tag X) · Altersstufe · Unterstützungslevel
+· Lernziel · eigene Ergänzungen. So sieht die Lehrkraft schwarz auf weiß, was die KI wirklich
+liest. Das ist zugleich das beste Werkzeug, um zu verstehen, warum ein Spiel so wurde, wie es
+wurde.
+
+Dazu gehören: **„Auf Standard zurücksetzen"** pro Block, ein Hinweis, dass Änderungen erst für
+die **nächste** Generierung gelten, und die Möglichkeit, den eigenen Prompt als **Vorlage zu
+speichern** (verbindet sich mit dem Punkt „Workshop-Vorlagen" weiter unten).
+
+Optional, aber nützlich: ein **Trockenlauf** („Prompt testen") mit einem Beispielwunsch wie
+„mach ein spiel mit einem drachen" — die Lehrkraft sieht das Ergebnis, bevor die Klasse davor
+sitzt. Kostet einen Modellaufruf aufs Workshop-Budget.
+
 ## Ideen aus der Konzeptphase, noch nicht gebaut
 
 - [ ] **Lernziel-Presets pro Fach** (Mathe 4, Sachkunde, Englisch …) statt nur Freitext —
