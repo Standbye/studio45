@@ -12,10 +12,9 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ## Sofort möglich
 
-- [ ] **Druck-Redesign pushen** — der Neusatz der Druckmaterialien (2026-08-05) liegt als
-      lokaler Commit vor und ist per rsync zum Testen auf dem Server (damit läuft dort
-      auch der 1.0.1-Lesbarkeits-Fix). Auf Peters Ansage: „kein deployment auf github" —
-      Push und Release erst auf Kommando; GHCR-Image ist entsprechend noch alt.
+- [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
+      (2026-08-05); das `latest`-GHCR-Image stammt aber noch von v1.0.1. Ein neues
+      Release (Tag + Changelog) erst auf Peters Ansage.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
