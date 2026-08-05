@@ -115,6 +115,38 @@ Offene Frage für den Bau: ob die Anreicherung in **einem** Aufruf passiert (bil
 zwei Schritten „Wunsch verstehen → Spiel bauen" (deutlich bessere Ergebnisse bei kargem Input,
 doppelte Kosten). Vorschlag: zweistufig nur im geführten Modus und bei sehr kurzen Eingaben.
 
+### Unterstützungslevel 1–5, von der Lehrkraft eingestellt
+
+Ein Regler von **1 (maximale Hilfe)** bis **5 (die KI macht nur, was gesagt wird)**. Eine
+4. Klasse braucht die KI als mitdenkenden Partner, eine 10. Klasse soll die Lücken selbst
+merken — das ist dort der eigentliche Lerninhalt.
+
+⚠️ **Achtung beim Bau:** Es gibt bereits das dreistufige Feld `guidance`
+(FREI / IMPULSE / GEFUEHRT), das aber **nur die Oberfläche** steuert (Chips, Team-Check).
+Zwei Regler nebeneinander wären verwirrend. Vorschlag: `guidance` durch das neue Level
+ersetzen und beides — Oberfläche *und* KI-Verhalten — daran hängen.
+
+Was sich pro Stufe ändern sollte:
+
+| | **1 — Partner** | **3 — Ausgewogen** | **5 — Werkzeug** |
+|---|---|---|---|
+| Lücken füllen | KI ergänzt großzügig alles Fehlende | ergänzt das Nötige für Spielbarkeit | ergänzt nur das absolut Nötige |
+| Überraschungs-Budget | 1 Extra + Politur erlaubt | 1 kleines Extra | nichts Ungefragtes |
+| Prompt-Coach | immer bei kurzen Wünschen | nur bei sehr kurzen | aus |
+| Satz-Chips | volle Satzanfänge | Stichwort-Impulse | keine |
+| Team-Check vor dem Bauen | ja | nein | nein |
+| Rückmeldung bei Fehlversuch | erklärt kindgerecht, schlägt Formulierung vor | benennt das Problem | nüchterne Fehlermeldung |
+| Ton der Oberfläche | ermutigend, viel Lob | freundlich-sachlich | knapp |
+
+**Was auf allen Stufen gleich bleibt:** die Qualitätsuntergrenze aus dem Metaprompt (das Spiel
+ist immer vollständig und startbar). Auch bei Stufe 5 darf kein Fragment herauskommen — ein
+kaputtes Spiel lehrt nichts. Der Unterschied ist der *Reichtum*, nicht die Funktionsfähigkeit.
+
+**Verhältnis zur Altersstufe:** Die Altersstufe setzt den **Vorschlagswert** (Grundschule → 1–2,
+Klasse 5–10 → 3, Oberstufe → 4–5), die Lehrkraft kann jederzeit abweichen — eine geübte
+4. Klasse am dritten Termin verträgt weniger Hilfe, eine ungeübte 9. Klasse mehr. Denkbar wäre
+später sogar eine Staffelung über die Termine (Tag 1 mehr Hilfe als Tag 5).
+
 ## Ideen aus der Konzeptphase, noch nicht gebaut
 
 - [ ] **Lernziel-Presets pro Fach** (Mathe 4, Sachkunde, Englisch …) statt nur Freitext —
