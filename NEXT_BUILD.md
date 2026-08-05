@@ -20,6 +20,37 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
 
+## Vorgemerkt
+
+### Altersstufe pro Workshop — Design und Ansprache anpassen
+
+Die Kinder-Oberfläche ist derzeit fast so nüchtern wie der Lehrerbereich (weiß, dezent,
+shadcn-Optik). Für eine 4. Klasse ist das zu erwachsen; für eine Oberstufe wäre kindliche
+Gestaltung dagegen peinlich. Deshalb eine **Einstellung „Altersstufe"** am Workshop mit drei
+Stufen: **Grundschule · Klasse 5–10 · Klasse 10–13**.
+
+Was daran hängen sollte:
+
+- **Optik der Kinder-/Schüler-Seite**: Grundschule verspielt (kräftige Farben, große runde
+  Flächen, Emoji, kleine Animationen, große Schrift); Mittelstufe freundlich, aber sachlicher;
+  Oberstufe reduziert und „echtes Werkzeug"-Look, näher am Entwickler-Alltag.
+- **Ansprache und Texte**: „Was soll die KI bauen?" vs. „Was möchtest du ändern?" —
+  Wartesprüche, Hinweise, Fehlermeldungen, Team-Check-Fragen.
+- **Prompt-Chips**: einfache Satzanfänge für die Kleinen, offenere Impulse für die Großen.
+- **Systemprompt der Spiel-Generierung**: Anspruch, Mechaniktiefe und Textniveau im Spiel
+  selbst (bisher fest auf Grundschule gemünzt: „4. Klasse", große Touch-Flächen, sehr einfache
+  Sprache).
+- **Merksätze und Reflexionsfragen**: bei Älteren dürfen Themen wie Trainingsdaten,
+  Halluzinationen und Urheberrecht dazukommen.
+- **Materialien**: Rollenkarten, Thementafeln, Ich-kann-Bogen und Elternbrief in der Sprache
+  der jeweiligen Stufe (bei Oberstufe eher „Infoblatt" als „Elternbrief").
+- **Standardwerte**: Grundschule kürzere Sessions und mehr Führung, Oberstufe mehr Versuche
+  und weniger Denkpause.
+
+Technisch: ein Feld `ageGroup` am Workshop, ein Theme-/Textbaustein-Satz pro Stufe
+(vermutlich als eigene Datei analog `src/lib/providers.ts`), und der Systemprompt bekommt
+einen stufenabhängigen Block. Die Branding-Farben der Schule bleiben davon unberührt.
+
 ## Ideen aus der Konzeptphase, noch nicht gebaut
 
 - [ ] **Lernziel-Presets pro Fach** (Mathe 4, Sachkunde, Englisch …) statt nur Freitext —
