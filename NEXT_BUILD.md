@@ -10,6 +10,34 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-05)
+
+- [ ] **Druckmaterialien neu und grafisch schöner aufbereiten** — sauber auf A4 druckbar,
+      Inhalte dürfen auf mehrere Seiten verteilt werden; klar strukturierte Dokumente,
+      kindgerecht, ausdrücklich **keine PowerPoint-/Folien-Optik**. Konkrete Schwächen
+      des Ist-Stands, die dabei fallen:
+      - Kein gemeinsames Gestaltungssystem: jedes Blatt ad hoc inline gestylt; einheitliche
+        Typo-Skala, Fußzeile mit Seitenzahl und wiederkehrende Bausteine (Infokasten,
+        Ampelkarte, Schreiblinien, Ankreuzfelder) fehlen.
+      - **Stundenverläufe**: alle Termine + Reflexion + Peer-Testing + Fehlerkultur auf
+        *einem* `.blatt` — läuft bei 3–5 Terminen über A4 hinaus, Umbrüche fallen mitten
+        in Tabellen. → pro Termin eine Seite (oder zwei pro Seite) + eigene Methodenseite,
+        `break-inside: avoid` auf jedem Abschnitt.
+      - **Thementafeln** sind quer, aber `@page` steht fest auf `A4 portrait` — Querblätter
+        drucken gestaucht/falsch gedreht. → benannte `@page`-Regel mit `landscape` oder
+        Tafeln als Hochformat-Poster neu setzen.
+      - **Rollenkarten** ohne Schnittmarken/Scherensymbol; Karten können am Seitenumbruch
+        zerrissen werden.
+      - Farbflächen verschwinden je nach Browser im Druck (`print-color-adjust: exact`
+        fehlt) — zugleich Vollflächen zugunsten von Akzentlinien/Markenfarbe als
+        Auszeichnungsfarbe reduzieren (tonerfreundlich, ruhigeres Druckbild).
+      - Zielgruppen trennen: Kinder-Blätter (Rollenkarten, QR, Ich-kann, Urkunde) mit
+        großer Schrift, runden Formen, viel Weißraum — Erwachsenen-Blätter (Stundenverlauf,
+        Elternbrief) als ruhige, professionelle Dokumente. Optional darf die Altersstufe
+        des Workshops (`audience.ts`) die Optik der Kinder-Blätter mitsteuern.
+      - Verifikation beim Bau: per Headless-Druck (PDF) prüfen, dass jede Seite exakt auf
+        A4 fällt — nicht nur die Bildschirmvorschau ansehen.
+
 ## Sofort möglich
 
 - [ ] **Produktion auf 1.0.1 bringen** — der Lesbarkeits-Fix (helle Marken-Farben) ist gebaut,
