@@ -1,12 +1,21 @@
 # Studio45 — Sammelliste
 
-> **Arbeitsweise:** Neue Anforderungen und Ideen werden hier nur **notiert**.
-> Gebaut wird ausschließlich auf ausdrückliches Kommando von Peter — nichts aus
-> dieser Liste wird ungefragt umgesetzt.
+> **Arbeitsweise:**
+> 1. Neue Anforderungen und Ideen werden hier nur **notiert**. Gebaut wird ausschließlich
+>    auf ausdrückliches Kommando von Peter — nichts aus dieser Liste wird ungefragt umgesetzt.
+> 2. **Releases und Versions-Tags nur auf Ansage.** Auch nach einem fertigen Fix wird kein
+>    Release erstellt, bis Peter es sagt.
 
 Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/studio45`
 
 ---
+
+## Sofort möglich
+
+- [ ] **Produktion auf 1.0.1 bringen** — der Lesbarkeits-Fix (helle Marken-Farben) ist gebaut,
+      getestet, released und als Image verfügbar; `studio45.littleproject.de` läuft aber noch
+      auf dem Stand davor. Ein Deploy dauert ~2 Minuten. Praktisch relevant nur, wenn jemand
+      einen sehr hellen Hauptton einstellt — der Demo-Workshop nutzt die Standardfarben.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
