@@ -96,6 +96,13 @@ zum Selbsthosten.
 - **Hängengebliebene Generierungen** werden nach zehn Minuten erkannt und geben die Gruppe
   wieder frei.
 
+### Bezug
+
+- **Fertiges Image** auf der GitHub Container Registry: `ghcr.io/standbye/studio45`
+  (Tags `latest`, `1.0.0`, `1.0`, `1`), gebaut für `linux/amd64`.
+- Ein GitHub-Actions-Workflow baut und veröffentlicht das Image bei jedem Push auf `main`
+  und bei jedem Versions-Tag.
+
 ### Bekannte Grenzen
 
 - Studio45 terminiert kein TLS und gehört hinter einen Reverse-Proxy.
