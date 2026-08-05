@@ -10,7 +10,7 @@ const BLAETTER = [
   { slug: "rollenkarten", titel: "Rollenkarten", beschreibung: "Vier Karten zum Ausschneiden: Sprecher:in, Tester:in, Gestalter:in, Teamchef:in — mit Aufgaben und Tipps.", emoji: "🎭" },
   { slug: "tafeln", titel: "Thementafeln: Gefahren & Risiken", beschreibung: "Zwei Plakate für die Wand: Die KI ist ein Werkzeug — und: Sicher unterwegs mit KI (Ampel-Regeln).", emoji: "🚦" },
   { slug: "qr", titel: "QR-Blätter", beschreibung: "Ein Blatt pro Gruppe mit großem QR-Code für den iPad-Einstieg.", emoji: "📱" },
-  { slug: "stundenverlauf", titel: "Stundenverläufe & Reflexion", beschreibung: "Minutenplan pro Termin, Merksätze, Reflexionsfragen und Peer-Testing-Methode.", emoji: "⏱️" },
+  { slug: "stundenverlauf", titel: "Stundenverläufe & Reflexion", beschreibung: "Eine Seite pro Termin: Merksatz, Minutenplan, Checkliste und Notizen — plus Methodenseite.", emoji: "⏱️" },
   { slug: "ich-kann", titel: "Ich-kann-Bogen", beschreibung: "Selbsteinschätzung für Kinder am Ende des Workshops.", emoji: "✅" },
   { slug: "elternbrief", titel: "Elternbrief", beschreibung: "Informationsschreiben inkl. der Sicherheitsregeln zum Mitgeben.", emoji: "✉️" },
   { slug: "urkunden", titel: "Urkunden", beschreibung: "Eine Urkunde pro Gruppe im Workshop-Branding, Name handschriftlich einzutragen.", emoji: "🏆" },

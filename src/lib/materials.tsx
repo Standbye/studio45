@@ -42,7 +42,10 @@ export const ROLLEN = [
   },
 ] as const;
 
-export const TAFEL_1 = {
+export type TafelPunkt = { icon: string; text: string; ampel?: "rot" | "gelb" | "gruen" };
+export type Tafel = { titel: string; emoji: string; punkte: TafelPunkt[] };
+
+export const TAFEL_1: Tafel = {
   titel: "Die KI ist ein Werkzeug — kein Mensch",
   emoji: "🤖",
   punkte: [
@@ -53,7 +56,7 @@ export const TAFEL_1 = {
   ],
 };
 
-export const TAFEL_2 = {
+export const TAFEL_2: Tafel = {
   titel: "Sicher unterwegs mit KI",
   emoji: "🚦",
   punkte: [
@@ -89,15 +92,38 @@ export function stundenverlauf(day: number, totalDays: number) {
   ];
 }
 
-/** Kopfzeile für alle Materialblätter — trägt das Branding des Workshops. */
-export function Kopf({ ctx, titel }: { ctx: MaterialKontext; titel: string }): ReactNode {
+/** Checkliste vor jeder Stunde — auf jeder Termin-Seite des Stundenverlaufs. */
+export function vorbereitung(slug: string): string[] {
+  return [
+    `Beamer zeigt die Startseite (…/w/${slug}) — QR-Codes und Merksatz sind zu sehen`,
+    "iPads geladen, Kamera-Zugriff für die Spracheingabe erlaubt",
+    `Phase steht auf „Plenum" — die Eingabe ist gesperrt, bis Sie freigeben`,
+    "Versuche der Gruppen und Token-Budget im Dashboard geprüft",
+  ];
+}
+
+/**
+ * Kopfzeile für alle Materialblätter — trägt das Branding des Workshops.
+ * `schlicht` lässt den Blatt-Titel weg (Briefform: der Betreff übernimmt).
+ */
+export function Kopf({ ctx, titel, schlicht }: { ctx: MaterialKontext; titel?: string; schlicht?: boolean }): ReactNode {
   return (
     <div className="kopf">
       {ctx.logoUrl && <img src={ctx.logoUrl} alt="" />}
       <div className="titel">
         <div className="marke">Studio45 · {ctx.workshopName}{ctx.className ? ` · ${ctx.className}` : ""}</div>
-        <h1>{titel}</h1>
+        {!schlicht && titel && <h1>{titel}</h1>}
       </div>
+    </div>
+  );
+}
+
+/** Fußzeile mit Seitenzählung — auf jedem Blatt außer der Urkunde. */
+export function Fuss({ ctx, blatt, seite, von }: { ctx: MaterialKontext; blatt: string; seite: number; von: number }): ReactNode {
+  return (
+    <div className="fuss">
+      <span>Studio45 · {ctx.workshopName}</span>
+      <span>{blatt} · Seite {seite} von {von}</span>
     </div>
   );
 }

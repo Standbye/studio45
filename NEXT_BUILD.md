@@ -10,35 +10,11 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
-## Gesammelt für den nächsten Build (2026-08-05)
-
-- [ ] **Druckmaterialien neu und grafisch schöner aufbereiten** — sauber auf A4 druckbar,
-      Inhalte dürfen auf mehrere Seiten verteilt werden; klar strukturierte Dokumente,
-      kindgerecht, ausdrücklich **keine PowerPoint-/Folien-Optik**. Konkrete Schwächen
-      des Ist-Stands, die dabei fallen:
-      - Kein gemeinsames Gestaltungssystem: jedes Blatt ad hoc inline gestylt; einheitliche
-        Typo-Skala, Fußzeile mit Seitenzahl und wiederkehrende Bausteine (Infokasten,
-        Ampelkarte, Schreiblinien, Ankreuzfelder) fehlen.
-      - **Stundenverläufe**: alle Termine + Reflexion + Peer-Testing + Fehlerkultur auf
-        *einem* `.blatt` — läuft bei 3–5 Terminen über A4 hinaus, Umbrüche fallen mitten
-        in Tabellen. → pro Termin eine Seite (oder zwei pro Seite) + eigene Methodenseite,
-        `break-inside: avoid` auf jedem Abschnitt.
-      - **Thementafeln** sind quer, aber `@page` steht fest auf `A4 portrait` — Querblätter
-        drucken gestaucht/falsch gedreht. → benannte `@page`-Regel mit `landscape` oder
-        Tafeln als Hochformat-Poster neu setzen.
-      - **Rollenkarten** ohne Schnittmarken/Scherensymbol; Karten können am Seitenumbruch
-        zerrissen werden.
-      - Farbflächen verschwinden je nach Browser im Druck (`print-color-adjust: exact`
-        fehlt) — zugleich Vollflächen zugunsten von Akzentlinien/Markenfarbe als
-        Auszeichnungsfarbe reduzieren (tonerfreundlich, ruhigeres Druckbild).
-      - Zielgruppen trennen: Kinder-Blätter (Rollenkarten, QR, Ich-kann, Urkunde) mit
-        großer Schrift, runden Formen, viel Weißraum — Erwachsenen-Blätter (Stundenverlauf,
-        Elternbrief) als ruhige, professionelle Dokumente. Optional darf die Altersstufe
-        des Workshops (`audience.ts`) die Optik der Kinder-Blätter mitsteuern.
-      - Verifikation beim Bau: per Headless-Druck (PDF) prüfen, dass jede Seite exakt auf
-        A4 fällt — nicht nur die Bildschirmvorschau ansehen.
-
 ## Sofort möglich
+
+- [ ] **Druck-Redesign pushen** — der Neusatz der Druckmaterialien (2026-08-05) liegt als
+      lokaler Commit vor; auf Peters Ansage: „kein deployment auf github". Push, Release
+      und Server-Deploy erst auf Kommando.
 
 - [ ] **Produktion auf 1.0.1 bringen** — der Lesbarkeits-Fix (helle Marken-Farben) ist gebaut,
       getestet, released und als Image verfügbar; `studio45.littleproject.de` läuft aber noch
@@ -56,6 +32,23 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Hosting-Standort? (Kinder bleiben anonym, aber Lehrkraft-Daten und Schulnamen fallen an.)
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
+
+## Erledigt (gebaut am 2026-08-05, lokaler Commit — noch nicht gepusht)
+
+- [x] **Druckmaterialien neu aufbereitet** — gemeinsames Gestaltungssystem in `print.css.ts`
+      (Typo-Skala, Kopf mit Akzentlinie, Fußzeile mit Seitenzahl, Kasten/Merksatz/Schreib-
+      linien/Ankreuzfelder, `print-color-adjust`), exakte A4-Geometrie: jedes Blatt ist genau
+      eine Seite, Umbruch per `break-before` (kein Leerseiten-Bug mehr). Im Einzelnen:
+      Rollenkarten mit Schnittlinien + Scherensymbol · Thementafeln als echte Querformat-
+      Plakate (`@page landscape` pro Dokument) · QR-Blätter mit Schrittfolge 1-2-3 ·
+      Stundenverläufe **eine Seite pro Termin** (Merksatz, Minutenplan, Checkliste, Notizen)
+      plus Methodenseite · Ich-kann-Bogen mit Ausmal-Kreisen · Elternbrief in Briefform ·
+      Urkunde mit Serifenschrift und Doppelrahmen. Farbe kommt aus Akzentlinien statt
+      Vollflächen (tonerfreundlich, keine Folien-Optik); Grundschul-Workshops bekommen
+      rundere Ecken (`verspielt`).
+- [x] **`scripts/druck-pdf.ts`**: rendert alle Blätter per Headless-Chrome (CDP
+      `printToPDF` mit `preferCSSPageSize` — das CLI-Flag `--print-to-pdf` ignoriert
+      `@page`-Größen!) und prüft Seitenmaße + Seitenzahlen hart gegen A4.
 
 ## Erledigt (gebaut am 2026-08-04)
 
@@ -98,3 +91,7 @@ Staffelung des Unterstützungslevels über die Termine.
 - [ ] **Modell-Liste vom Anbieter laden** (`/models`) statt Vorschlagsliste — funktioniert
       aber nicht bei jedem Dienst.
 - [ ] **Automatische Sicherung** des `/data`-Volumes auf dem Server (aktuell keine).
+- [ ] **Druckseiten rendern ein eigenes `<html>` innerhalb des Root-Layouts** — erzeugt
+      eine (rein kosmetische) Hydration-Warnung im Dev-Overlay. Sauber wäre eine
+      Route-Group mit eigenem Root-Layout für `/druck`; Druckausgabe ist nachweislich
+      korrekt, daher nur notiert.
