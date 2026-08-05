@@ -88,7 +88,7 @@ zeigen, sonst führen die QR-Codes der Gruppen ins Leere.
 | Ebene | Zugang | Aufgaben |
 |---|---|---|
 | **Admin** (einer pro Instanz) | `/admin` | Workshops anlegen, Lehrkräfte anlegen (mit Startpasswort zur Übergabe), KI-Verbindungen pflegen, Budgets vorgeben, Protokoll einsehen |
-| **Lehrkraft** | `/lehrer` | Tag & Phase steuern, Lernziel und Führungslevel setzen, Limits, Branding (Farben + Logo), Gruppen verwalten, Prompt-Verlauf, Zeitreise |
+| **Lehrkraft** | `/lehrer` | Tag & Phase steuern, Zielgruppe und Unterstützungslevel wählen, Lernziel und KI-Anweisung anpassen, Limits, Branding (Farben + Logo), Gruppen verwalten, Prompt-Verlauf, Zeitreise |
 | **Gruppe (Kinder)** | `/g/<code>` per QR | Sprechen, bauen, testen — **kein Login, keine Namen, keine personenbezogenen Daten** |
 
 ## KI-Anbieter
@@ -175,6 +175,10 @@ npx tsx scripts/seed-demo.ts
   Entwicklungsmodus für Debugging-Features.
 - Die Spiel-Auslieferung unter `/g/<code>/play` bringt eine **eigene, strengere CSP** mit;
   sie ist in `next.config.ts` von der globalen Header-Regel ausgenommen.
+
+## Änderungsverlauf
+
+Siehe [CHANGELOG.md](CHANGELOG.md).
 
 ## Lizenz
 

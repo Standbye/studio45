@@ -1,6 +1,6 @@
 {
   "name": "studio45",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -48,5 +48,11 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.5",
     "typescript": "^5"
+  },
+  "description": "Studio45 — Kinder lernen KI-Kompetenz, indem sie per Sprache eigene Lernspiele bauen.",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Standbye/studio45.git"
   }
 }
