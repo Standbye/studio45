@@ -20,7 +20,7 @@ export function kernPrompt(): string {
  * wird komprimiert (Idee → Mechanik → Politur inkl. Punkte).
  */
 export function dayFocusPrompt(day: number, totalDays: number): string {
-  const five = ["day-1-idee", "day-2-mechanik", "day-3-visuals", "day-4-challenge", "day-5-polish"];
+  const five = ["day-1-idee", "day-2-mechanik", "day-3-visuals", "day-4-test", "day-5-polish"];
   const three = ["day-1-idee", "day-2-mechanik", "day-5-polish"];
   const list = totalDays <= 3 ? three : five;
   const idx = Math.min(Math.max(day, 1), list.length) - 1;
@@ -31,8 +31,8 @@ export const DAY_TITLES_5 = [
   "Idee & erstes Lebenszeichen",
   "Spielregel",
   "Hübsch & Hörbar",
-  "Herausforderung",
-  "Feinschliff & Release",
+  "Test-Tag",
+  "Release-Tag",
 ];
 export const DAY_TITLES_3 = ["Idee & erstes Lebenszeichen", "Spielregel", "Feinschliff & Release"];
 
@@ -47,10 +47,12 @@ export function dayMotto(day: number, totalDays: number): string {
     "Je genauer ich sage, was ich will, desto besser versteht mich die KI.",
     "Die KI macht Fehler — Testen gehört dazu.",
     "Schön wird es, wenn ich beschreibe, WIE es aussehen soll.",
-    "Eine gute Herausforderung ist schwer, aber schaffbar.",
-    "Ich entscheide, die KI schlägt vor.",
+    "Jeder Fehler, den wir finden, macht unser Spiel besser.",
+    "Fertig ist, was wir stolz zeigen können.",
   ];
-  const three = [five[0], five[1], five[4]];
+  // Das 3-Tage-Format behält seinen eigenen Schlusssatz — Tag 3 ist dort
+  // Feinschliff UND Release in einem.
+  const three = [five[0], five[1], "Ich entscheide, die KI schlägt vor."];
   const list = totalDays <= 3 ? three : five;
   return list[Math.min(Math.max(day, 1), list.length) - 1];
 }

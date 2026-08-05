@@ -70,8 +70,8 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
       1: ["Unser Spiel heißt …", "Die Hauptfigur ist …", "Die Farben sollen … sein", "Wenn man die Figur antippt, soll …"],
       2: ["Man muss … sammeln", "Man muss … ausweichen", "Man gewinnt, wenn …", "Man verliert, wenn …"],
       3: ["Der Hintergrund soll …", "Die Figur soll wackeln, wenn …", "Bei einem Treffer soll es … machen", "Baut Sterne ein, wenn …"],
-      4: ["Es soll Punkte geben für …", "Nach … wird es schwerer", "Baut ein zweites Level ein mit …", "Es soll einen Endgegner geben, der …"],
-      5: ["Ein Startbildschirm mit unserem Studio-Namen", "Eine Urkunde am Ende", "Macht den Anfang leichter", "Der beste Punktestand soll gespeichert werden"],
+      4: ["Wir haben einen Fehler gefunden: …", "Repariert bitte: …", "Das war zu schwer: …", "Das war zu leicht: …"],
+      5: ["Ein Startbildschirm mit unserem Studio-Namen", "Eine kurze Anleitung für andere Kinder", "Macht unser Spiel fertig zum Zeigen", "Ein Endbildschirm mit Feier"],
     },
     promptBlock: `## Zielgruppe: Grundschule (Klasse 1–4, 6–10 Jahre)
 
@@ -112,8 +112,8 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
       1: ["Titel und Hauptfigur", "Setting/Umgebung", "Farbstimmung", "Erste Interaktion"],
       2: ["Spielregel", "Gewinnbedingung", "Verlierbedingung", "Steuerung"],
       3: ["Optik verbessern", "Sound-Effekte", "Animationen", "Feedback bei Treffern"],
-      4: ["Punktesystem", "Schwierigkeitskurve", "Zweites Level", "Gegner-Verhalten"],
-      5: ["Startbildschirm", "Abschluss-Bildschirm", "Balancing", "Highscore"],
+      4: ["Gemeldete Bugs beheben", "Schwierigkeit anpassen", "Test-Feedback umsetzen", "Steuerung verständlicher machen"],
+      5: ["Startbildschirm", "Anleitung für neue Spieler", "Abschluss-Bildschirm", "Letzter Feinschliff fürs Publikum"],
     },
     promptBlock: `## Zielgruppe: Mittelstufe (Klasse 5–10, 10–16 Jahre)
 
@@ -152,8 +152,8 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
       1: ["Konzept und Kernschleife", "Steuerungsmodell", "Visuelles Konzept", "Zielgruppe des Spiels"],
       2: ["Spielmechanik im Detail", "Zustandsautomat", "Sieg-/Verlierbedingungen", "Balancing-Parameter"],
       3: ["Visuelle Politur", "Audio-Design", "Animation und Übergänge", "Rückmeldung an die Spielenden"],
-      4: ["Progression und Levelaufbau", "Gegner-KI", "Schwierigkeitskurve", "Wiederspielwert"],
-      5: ["Onboarding", "Abschluss und Auswertung", "Feinschliff", "Persistenz"],
+      4: ["Bugfixes aus dem Peer-Test", "Balancing nach Testeindrücken", "Randfälle absichern", "Usability-Probleme beheben"],
+      5: ["Onboarding für fremde Spielende", "Abschluss und Auswertung", "Präsentierbarer Endzustand", "Letzte Politur"],
     },
     promptBlock: `## Zielgruppe: Oberstufe (Klasse 10–13, ab 16 Jahren)
 

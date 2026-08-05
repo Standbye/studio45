@@ -78,6 +78,9 @@ p { margin: 0 0 3mm; }
 ul { list-style: disc; margin: 0 0 3mm; padding-left: 6.5mm; }
 ul li { margin-bottom: 1.6mm; }
 ul li::marker { color: var(--accent); }
+ol { list-style: decimal; margin: 0 0 3mm; padding-left: 7mm; }
+ol li { margin-bottom: 2mm; }
+ol li::marker { color: var(--primary-text); font-weight: 800; }
 
 /* ---- Kopfzeile -------------------------------------------------------- */
 .kopf { position: relative; display: flex; align-items: flex-end; gap: 5mm;
@@ -116,16 +119,19 @@ table.bogen th.frage { width: auto; text-align: left; font-size: 9pt; font-weigh
 table.bogen td { padding: 3.4mm 0; border-top: 0.3mm solid var(--linie); font-size: 12pt; }
 table.bogen td.mitte { text-align: center; }
 
-/* Rollenkarten — gestrichelte Kante = Schnittlinie */
-.rollen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 5mm; }
-.rollenkarte { position: relative; border: 0.35mm dashed #9aa3b0; border-radius: var(--rund); padding: 5mm 6mm; min-height: 102mm; break-inside: avoid; }
-.rollenkarte .schere { position: absolute; top: -3.1mm; left: 6mm; padding: 0 1.5mm; background: #fff; font-size: 9pt; color: #9aa3b0; }
+/* Gestrichelte Kante = Schnittlinie (Rollenkarten, Bugreport-Karten) */
+.schnittkarte { position: relative; border: 0.35mm dashed #9aa3b0; border-radius: var(--rund); padding: 5mm 6mm; break-inside: avoid; }
+.schere { position: absolute; top: -3.1mm; left: 6mm; padding: 0 1.5mm; background: #fff; font-size: 9pt; color: #9aa3b0; }
+
+/* Rollenkarten */
+.rollen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 4mm; }
+.rollenkarte { min-height: 108mm; }
 .rolle-kopf { display: flex; align-items: center; gap: 3mm; }
 .rolle-kopf .emoji { font-size: 19pt; line-height: 1; }
 .rolle-kopf .name { font-size: 15pt; font-weight: 900; }
 .rolle-rule { width: 16mm; height: 0.8mm; border-radius: 1mm; margin: 2.5mm 0; }
 .rollenkarte .aufgabe { font-size: 10.5pt; margin: 0 0 2.5mm; }
-.rollenkarte .so { font-size: 8.5pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--grau); margin: 0 0 1.5mm; }
+.so { font-size: 8.5pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--grau); margin: 0 0 1.5mm; }
 .tipps { list-style: none; margin: 0; padding: 0; }
 .tipps li { position: relative; padding-left: 5mm; font-size: 10pt; line-height: 1.45; margin-bottom: 1.6mm; }
 .tipps li::before { content: "▸"; position: absolute; left: 0; font-weight: 900; color: var(--rolle, var(--accent)); }
@@ -138,6 +144,25 @@ table.bogen td.mitte { text-align: center; }
 .tafel-punkt { display: flex; align-items: center; gap: 6mm; min-height: 52mm; border: 0.4mm solid var(--linie); border-left: 1.8mm solid var(--accent); border-radius: var(--rund); padding: 6mm 7mm; break-inside: avoid; }
 .tafel-punkt .icon { font-size: 25pt; line-height: 1.15; }
 .tafel-punkt .text { font-size: 15.5pt; line-height: 1.45; margin: 0; }
+
+/* Laufplan — Rotations-Tabelle zum Eintragen */
+table.rotation { width: 100%; border-collapse: collapse; margin-top: 4mm; }
+table.rotation th { padding: 2.5mm 2mm; font-size: 10.5pt; border-bottom: 0.5mm solid var(--linie); }
+table.rotation td { border: 0.3mm solid var(--linie); height: 19mm; }
+table.rotation td.termin { width: 42mm; padding: 0 3mm; font-weight: 700; font-size: 10.5pt; }
+table.rotation td.termin .klein { display: block; font-weight: 400; }
+
+/* Lehrer-Laufzettel */
+table.zettel { width: 100%; border-collapse: collapse; margin-top: 2mm; }
+table.zettel th { text-align: left; font-size: 8.5pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--grau); padding: 0 3mm 1.5mm 0; }
+table.zettel td { padding: 2.4mm 3mm 2.4mm 0; border-top: 0.3mm solid var(--linie); vertical-align: top; font-size: 9.5pt; line-height: 1.45; }
+table.zettel td.termin { width: 30mm; font-weight: 800; color: var(--primary-text); font-size: 10pt; }
+table.zettel td.termin .klein { display: block; font-weight: 600; color: var(--grau); }
+
+/* Zweispaltige Bereiche & Ausfüllzeilen mit vorangestelltem Symbol */
+.spalten { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.mitzeile { display: flex; align-items: flex-end; gap: 3mm; }
+.mitzeile .linie { flex: 1; }
 
 /* QR-Blatt */
 .gruppen-pill { display: inline-block; border: 1mm solid; border-radius: 12mm; padding: 2mm 9mm; font-size: 15pt; font-weight: 900; }

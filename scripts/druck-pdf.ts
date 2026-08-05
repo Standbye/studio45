@@ -98,9 +98,14 @@ async function main() {
 
   const blaetter: { slug: string; quer: boolean; seiten: number }[] = [
     { slug: "rollenkarten", quer: false, seiten: 1 },
+    { slug: "laufplan", quer: false, seiten: 1 },
+    { slug: "ki-tipps", quer: false, seiten: 1 },
     { slug: "tafeln", quer: true, seiten: 2 },
     { slug: "qr", quer: false, seiten: workshop.groups.length },
+    { slug: "laufzettel", quer: false, seiten: 1 },
     { slug: "stundenverlauf", quer: false, seiten: workshop.totalDays + 1 },
+    { slug: "testbogen", quer: false, seiten: 1 },
+    { slug: "bugreport", quer: false, seiten: 1 },
     { slug: "ich-kann", quer: false, seiten: 1 },
     { slug: "elternbrief", quer: false, seiten: 1 },
     { slug: "urkunden", quer: false, seiten: workshop.groups.length },

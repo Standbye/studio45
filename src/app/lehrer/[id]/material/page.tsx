@@ -7,10 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const dynamic = "force-dynamic";
 
 const BLAETTER = [
-  { slug: "rollenkarten", titel: "Rollenkarten", beschreibung: "Vier Karten zum Ausschneiden: Sprecher:in, Tester:in, Gestalter:in, Teamchef:in — mit Aufgaben und Tipps.", emoji: "🎭" },
+  { slug: "rollenkarten", titel: "Rollenkarten", beschreibung: "Vier Karten zum Ausschneiden: Sprecher:in, Tester:in, Gestalter:in, Teamchef:in — mit konkreten Aufgaben und Tipps.", emoji: "🎭" },
+  { slug: "laufplan", titel: "Laufplan (Rollen-Rotation)", beschreibung: "Wer hat in welcher Stunde welche Rolle? Tabelle zum Eintragen — pro Gruppe ein Blatt drucken.", emoji: "🔄" },
+  { slug: "ki-tipps", titel: "Wie rede ich mit der KI?", beschreibung: "Die fünf Regeln für gute Wünsche auf einer Seite — erst denken, dann tippen.", emoji: "💬" },
   { slug: "tafeln", titel: "Thementafeln: Gefahren & Risiken", beschreibung: "Zwei Plakate für die Wand: Die KI ist ein Werkzeug — und: Sicher unterwegs mit KI (Ampel-Regeln).", emoji: "🚦" },
   { slug: "qr", titel: "QR-Blätter", beschreibung: "Ein Blatt pro Gruppe mit großem QR-Code für den iPad-Einstieg.", emoji: "📱" },
+  { slug: "laufzettel", titel: "Lehrer-Laufzettel", beschreibung: "Der ganze Workshop auf einer Seite: Vorbereitung, alle Termine, worauf zu achten ist.", emoji: "🗒️" },
   { slug: "stundenverlauf", titel: "Stundenverläufe & Reflexion", beschreibung: "Eine Seite pro Termin: Merksatz, Minutenplan, Checkliste und Notizen — plus Methodenseite.", emoji: "⏱️" },
+  { slug: "testbogen", titel: "Testbogen: gut / noch nicht", beschreibung: `Ausfüllhilfe fürs Peer-Testing — mit „Zwei Sterne und ein Wunsch".`, emoji: "👍" },
+  { slug: "bugreport", titel: "Bugreport-Karten", beschreibung: "Was hat nicht funktioniert — und warum? Detektiv-Fragen und der neue, genauere Wunsch.", emoji: "🐞" },
   { slug: "ich-kann", titel: "Ich-kann-Bogen", beschreibung: "Selbsteinschätzung für Kinder am Ende des Workshops.", emoji: "✅" },
   { slug: "elternbrief", titel: "Elternbrief", beschreibung: "Informationsschreiben inkl. der Sicherheitsregeln zum Mitgeben.", emoji: "✉️" },
   { slug: "urkunden", titel: "Urkunden", beschreibung: "Eine Urkunde pro Gruppe im Workshop-Branding, Name handschriftlich einzutragen.", emoji: "🏆" },

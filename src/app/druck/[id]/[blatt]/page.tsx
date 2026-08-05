@@ -6,9 +6,13 @@ import { BASE_URL } from "@/lib/env";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { alterProfil } from "@/lib/audience";
 import {
+  BUG_FRAGEN,
   Fuss,
   ICH_KANN,
+  KI_BEISPIEL,
+  KI_TIPPS,
   Kopf,
+  laufzettel,
   REFLEXIONSFRAGEN,
   ROLLEN,
   TAFEL_1,
@@ -68,13 +72,13 @@ export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[
       inhalt = (
         <div className="blatt">
           <Kopf ctx={ctx} titel="Unsere Rollen im Spielestudio" />
-          <p>
+          <p className="klein">
             An den gestrichelten Linien ausschneiden und in der Gruppe verteilen.{" "}
-            <strong>Jede Stunde tauschen — so kommt jedes Kind einmal ans Mikro!</strong>
+            <strong>Jede Stunde tauschen — der Laufplan zeigt, wer dran ist.</strong>
           </p>
           <div className="rollen-grid">
             {ROLLEN.map((r) => (
-              <div key={r.name} className="rollenkarte" style={{ "--rolle": r.farbe } as React.CSSProperties}>
+              <div key={r.name} className="schnittkarte rollenkarte" style={{ "--rolle": r.farbe } as React.CSSProperties}>
                 <span className="schere">✂</span>
                 <div className="rolle-kopf">
                   <span className="emoji">{r.emoji}</span>
@@ -82,7 +86,13 @@ export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[
                 </div>
                 <div className="rolle-rule" style={{ background: r.farbe }} />
                 <p className="aufgabe">{r.aufgabe}</p>
-                <p className="so">So machst du es gut</p>
+                <p className="so">Das machst du</p>
+                <ul className="tipps">
+                  {r.schritte.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ul>
+                <p className="so" style={{ marginTop: "2.5mm" }}>Tipps</p>
                 <ul className="tipps">
                   {r.tipps.map((t) => (
                     <li key={t}>{t}</li>
@@ -377,6 +387,239 @@ export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[
             );
           })}
         </>
+      );
+      break;
+
+    case "ki-tipps":
+      titel = "Wie rede ich mit der KI?";
+      inhalt = (
+        <div className="blatt">
+          <Kopf ctx={ctx} titel="Wie rede ich mit der KI?" />
+          <div className="merksatz">
+            <span className="label">Die wichtigste Regel</span>
+            <span className="satz">Erst denken, dann tippen!</span>
+          </div>
+          <h2>Die fünf Regeln für gute Wünsche</h2>
+          <ol>
+            {KI_TIPPS.map((t) => (
+              <li key={t.regel}>
+                <strong>{t.regel}</strong> {t.erklaerung}
+              </li>
+            ))}
+          </ol>
+          <h2>So klingt der Unterschied</h2>
+          <div className="spalten">
+            <div className="kasten">
+              <p className="ktitel">❌ So versteht die KI euch nicht</p>
+              <p style={{ margin: 0, fontSize: "12pt" }}>„{KI_BEISPIEL.schlecht}"</p>
+            </div>
+            <div className="kasten akzent">
+              <p className="ktitel">✅ So klappt es</p>
+              <p style={{ margin: 0, fontSize: "10.5pt" }}>„{KI_BEISPIEL.gut}"</p>
+            </div>
+          </div>
+          <div className="kasten" style={{ marginTop: "6mm" }}>
+            <p className="ktitel">Wenn es nicht klappt</p>
+            <p style={{ margin: 0, fontSize: "10.5pt" }}>
+              Nicht ärgern — nachdenken: Was hat die KI verstanden? Was war anders gemeint?
+              Sagt es beim nächsten Wunsch <strong>genauer</strong>. Die Bugreport-Karte hilft euch dabei.
+            </p>
+          </div>
+          <Fuss ctx={ctx} blatt="Wie rede ich mit der KI?" seite={1} von={1} />
+        </div>
+      );
+      break;
+
+    case "laufplan":
+      titel = "Laufplan";
+      inhalt = (
+        <div className="blatt">
+          <Kopf ctx={ctx} titel="Unser Laufplan" />
+          <div style={{ display: "flex", gap: "10mm", marginBottom: "5mm" }}>
+            <div style={{ flex: 1 }}>
+              <span className="klein">Unser Studio</span>
+              <div className="linie" style={{ height: "7mm" }} />
+            </div>
+          </div>
+          <p>
+            Tragt ein, wer in welcher Stunde welche Rolle hat.{" "}
+            <strong>Jede Stunde wandern die Rollen eine Position weiter</strong> — so kommt jedes Kind
+            einmal an jede Aufgabe. Seid ihr mehr als vier? Dann gibt es eine Rolle doppelt.
+          </p>
+          <table className="rotation">
+            <thead>
+              <tr>
+                <th style={{ textAlign: "left" }}>Termin</th>
+                {ROLLEN.map((r) => (
+                  <th key={r.name} style={{ color: r.farbe }}>
+                    {r.emoji} {r.name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: w.totalDays }, (_, i) => i + 1).map((day) => (
+                <tr key={day}>
+                  <td className="termin">
+                    Termin {day}
+                    <span className="klein">{dayTitle(day, w.totalDays)}</span>
+                  </td>
+                  {ROLLEN.map((r) => (
+                    <td key={r.name} />
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="klein" style={{ marginTop: "4mm" }}>
+            Tipp: Blatt gut sichtbar auf den Gruppentisch legen — dann gibt es keine Diskussionen. 😉
+          </p>
+          <Fuss ctx={ctx} blatt="Laufplan" seite={1} von={1} />
+        </div>
+      );
+      break;
+
+    case "laufzettel":
+      titel = "Lehrer-Laufzettel";
+      inhalt = (
+        <div className="blatt">
+          <Kopf ctx={ctx} titel="Lehrer-Laufzettel" />
+          <h2 style={{ marginTop: "2mm" }}>Vor dem Workshop</h2>
+          {[
+            "KI-Verbindung im Workshop testen, Versuche pro Stunde und Token-Budget prüfen",
+            "Materialien drucken: QR-Blätter, Rollenkarten, Laufplan, KI-Tipps, Thementafeln",
+            "Beamer testen (Startseite des Workshops), iPads laden, Kamera-Zugriff erlauben",
+            "Testbogen und Bugreport-Karten fürs Peer-Testing bereitlegen",
+          ].map((v) => (
+            <p key={v} style={{ margin: "0 0 2mm", fontSize: "10pt" }}>
+              <span className="check" />
+              {v}
+            </p>
+          ))}
+          <h2>Die Termine im Überblick</h2>
+          <table className="zettel">
+            <thead>
+              <tr>
+                <th>Termin</th>
+                <th>Das tun Sie</th>
+                <th>Darauf achten</th>
+              </tr>
+            </thead>
+            <tbody>
+              {laufzettel(w.totalDays).map((z) => (
+                <tr key={z.termin}>
+                  <td className="termin">
+                    Termin {z.termin}
+                    <span className="klein">{z.fokus}</span>
+                  </td>
+                  <td>{z.tun}</td>
+                  <td>{z.achten}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="kasten akzent" style={{ marginTop: "6mm" }}>
+            <p className="ktitel">In jeder Stunde im Blick</p>
+            <p style={{ margin: 0, fontSize: "9.5pt" }}>
+              Phase „Plenum" sperrt die Eingabe der Kinder — nutzen Sie das für Erklärungen. Versuche
+              können Sie im Dashboard pro Gruppe nachladen (+N); fehlgeschlagene Generierungen kosten{" "}
+              <strong>keinen</strong> Versuch. Der Merksatz des Tages steht automatisch auf der Beamer-Seite.
+              Wenn die KI Mist baut: laut analysieren — das ist der beste Lernmoment.
+            </p>
+          </div>
+          <Fuss ctx={ctx} blatt="Lehrer-Laufzettel" seite={1} von={1} />
+        </div>
+      );
+      break;
+
+    case "testbogen":
+      titel = "Testbogen";
+      inhalt = (
+        <div className="blatt">
+          <Kopf ctx={ctx} titel="Was funktioniert gut — was noch nicht?" />
+          <div style={{ display: "flex", gap: "10mm", marginBottom: "5mm" }}>
+            <div style={{ flex: 1 }}>
+              <span className="klein">Wir sind Studio</span>
+              <div className="linie" style={{ height: "7mm" }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <span className="klein">Wir testen das Spiel von</span>
+              <div className="linie" style={{ height: "7mm" }} />
+            </div>
+          </div>
+          <p>Spielt das Spiel der anderen Gruppe in Ruhe — und schreibt auf, was euch auffällt.</p>
+          <div className="spalten">
+            <div className="kasten">
+              <p className="ktitel">👍 Das funktioniert gut</p>
+              {[0, 1, 2, 3, 4].map((n) => (
+                <div key={n} className="linie" style={{ height: "9.5mm" }} />
+              ))}
+            </div>
+            <div className="kasten">
+              <p className="ktitel">👎 Das funktioniert noch nicht</p>
+              {[0, 1, 2, 3, 4].map((n) => (
+                <div key={n} className="linie" style={{ height: "9.5mm" }} />
+              ))}
+            </div>
+          </div>
+          <h2>Zwei Sterne und ein Wunsch</h2>
+          <p className="klein" style={{ marginTop: 0 }}>
+            Das sagt ihr der anderen Gruppe ins Gesicht: zwei Dinge, die richtig gut sind — und einen
+            freundlichen Wunsch für die nächste Version.
+          </p>
+          {["⭐", "⭐", "🌠"].map((s, n) => (
+            <div key={n} className="mitzeile" style={{ marginBottom: "2mm" }}>
+              <span style={{ fontSize: "13pt" }}>{s}</span>
+              <div className="linie" style={{ height: "9mm" }} />
+            </div>
+          ))}
+          <Fuss ctx={ctx} blatt="Testbogen" seite={1} von={1} />
+        </div>
+      );
+      break;
+
+    case "bugreport":
+      titel = "Bugreport-Karten";
+      inhalt = (
+        <div className="blatt">
+          <Kopf ctx={ctx} titel="Bugreport-Karten" />
+          <p className="klein">
+            Für jeden Fehler eine Karte ausfüllen — erst Detektiv spielen, dann den neuen Wunsch formulieren.
+          </p>
+          {[0, 1].map((k) => (
+            <div key={k} className="schnittkarte" style={{ marginTop: k === 0 ? "3mm" : "6mm" }}>
+              <span className="schere">✂</span>
+              <p style={{ fontSize: "13pt", fontWeight: 900, margin: "0 0 3mm", color: "var(--primary-text)" }}>
+                🐞 Bugreport
+              </p>
+              <div className="spalten">
+                <div>
+                  <span className="klein">Das wollten wir:</span>
+                  <div className="linie" style={{ height: "8mm" }} />
+                  <div className="linie" style={{ height: "8mm" }} />
+                </div>
+                <div>
+                  <span className="klein">Das ist stattdessen passiert:</span>
+                  <div className="linie" style={{ height: "8mm" }} />
+                  <div className="linie" style={{ height: "8mm" }} />
+                </div>
+              </div>
+              <p className="so" style={{ margin: "3.5mm 0 1.5mm" }}>Detektiv-Fragen: Woran könnte es liegen?</p>
+              {BUG_FRAGEN.map((f) => (
+                <p key={f} style={{ margin: "0 0 1.6mm", fontSize: "10pt" }}>
+                  <span className="check" />
+                  {f}
+                </p>
+              ))}
+              <span className="klein" style={{ display: "block", marginTop: "2.5mm" }}>
+                Unser neuer, genauerer Wunsch:
+              </span>
+              <div className="linie" style={{ height: "8mm" }} />
+              <div className="linie" style={{ height: "8mm" }} />
+            </div>
+          ))}
+          <Fuss ctx={ctx} blatt="Bugreport-Karten" seite={1} von={1} />
+        </div>
       );
       break;
 
