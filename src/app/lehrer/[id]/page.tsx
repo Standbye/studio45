@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALTERSSTUFEN } from "@/lib/audience";
 import { promptBloecke, didaktikStandard } from "@/lib/prompts";
+import { euroKosten, euroText, tokenText } from "@/lib/verbrauch";
 import { SupportLevelWahl } from "./support-level";
 import { FarbVorschau } from "./farb-vorschau";
 import { PromptVorschau } from "./prompt-vorschau";
@@ -40,10 +41,43 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
     where: { id, teacherId: user.id },
     include: {
       groups: { orderBy: { index: "asc" }, include: { _count: { select: { prompts: true } } } },
-      apiKey: { select: { label: true, protocol: true, modelKid: true, modelDirector: true } },
+      apiKey: {
+        select: {
+          label: true, protocol: true, modelKid: true, modelDirector: true,
+          eurPerMTokensIn: true, eurPerMTokensOut: true, whPerMTokens: true,
+        },
+      },
     },
   });
   if (!w) notFound();
+
+  // Token-Verbrauch pro Gruppe: Summe aller Läufe + der jeweils letzte Bau
+  const summen = await db.promptLog.groupBy({
+    by: ["groupId"],
+    where: { group: { workshopId: w.id } },
+    _sum: { tokensIn: true, tokensOut: true },
+  });
+  const letzteLaeufe = await db.promptLog.findMany({
+    where: { group: { workshopId: w.id } },
+    orderBy: { createdAt: "desc" },
+    distinct: ["groupId"],
+    select: { groupId: true, tokensIn: true, tokensOut: true },
+  });
+  const verbrauchProGruppe = new Map(
+    w.groups.map((g) => {
+      const s = summen.find((x) => x.groupId === g.id);
+      const l = letzteLaeufe.find((x) => x.groupId === g.id);
+      return [
+        g.id,
+        {
+          in: s?._sum.tokensIn ?? 0,
+          out: s?._sum.tokensOut ?? 0,
+          gesamt: (s?._sum.tokensIn ?? 0) + (s?._sum.tokensOut ?? 0),
+          letzter: l ? l.tokensIn + l.tokensOut : 0,
+        },
+      ];
+    })
+  );
 
   const qrCodes = Object.fromEntries(
     await Promise.all(
@@ -55,6 +89,12 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
   ) as Record<string, string>;
 
   const budgetPct = Math.min(100, Math.round((w.tokensUsed / w.tokenBudget) * 100));
+  const alleWerte = [...verbrauchProGruppe.values()];
+  const budgetKosten = euroKosten(
+    alleWerte.reduce((a, v) => a + v.in, 0),
+    alleWerte.reduce((a, v) => a + v.out, 0),
+    w.apiKey
+  );
 
   const promptKontext = {
     ageGroup: w.ageGroup,
@@ -123,9 +163,18 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Token-Budget ({w.apiKey?.label ?? "kein Key"})</span>
-              <span className={budgetPct > 85 ? "font-semibold text-destructive" : ""}>{budgetPct}% verbraucht</span>
+              <span className={budgetPct >= 85 ? "font-semibold text-destructive" : ""}>
+                {tokenText(w.tokensUsed)} von {tokenText(w.tokenBudget)} Tokens · {budgetPct}%
+                {budgetKosten !== null && <> · {euroText(budgetKosten)}</>}
+              </span>
             </div>
             <Progress value={budgetPct} />
+            {budgetPct >= 85 && (
+              <p className="text-sm font-medium text-destructive">
+                ⚠️ Das Budget ist fast aufgebraucht — bei 100 % stoppt die Generierung.
+                Erhöhen kann es der Admin in der Workshop-Verwaltung.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -141,6 +190,8 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
         <TabsContent value="gruppen" className="grid gap-4 md:grid-cols-2">
           {w.groups.map((g) => {
             const left = attemptsLeft(g, w.genLimitPerLesson);
+            const v = verbrauchProGruppe.get(g.id)!;
+            const kosten = euroKosten(v.in, v.out, w.apiKey);
             return (
               <Card key={g.id} className={g.locked ? "border-destructive/50" : ""}>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -151,6 +202,16 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     </CardTitle>
                     <CardDescription>
                       {g._count.prompts} Prompts · noch {left}/{w.genLimitPerLesson + g.genBonus} Versuche diese Stunde
+                      <br />
+                      {v.gesamt > 0 ? (
+                        <>
+                          {tokenText(v.gesamt)} Tokens
+                          {kosten !== null && <> ({euroText(kosten)})</>}
+                          {v.letzter > 0 && <> · letzter Bau {tokenText(v.letzter)}</>}
+                        </>
+                      ) : (
+                        "noch keine Tokens verbraucht"
+                      )}
                     </CardDescription>
                   </div>
                   {g.locked && <Badge variant="destructive">gesperrt</Badge>}
@@ -237,6 +298,17 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     <Label htmlFor="cooldown">Denkpause (Sekunden)</Label>
                     <Input id="cooldown" name="cooldownSeconds" type="number" min={0} max={1800} defaultValue={w.cooldownSeconds} />
                   </div>
+                </div>
+                <div className="space-y-1 rounded-lg border p-3">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" name="challenge" value="1" defaultChecked={w.challenge} className="h-4 w-4" />
+                    🏆 Token-Spar-Challenge
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Zeigt den Gruppen eine Rangliste, wer mit den wenigsten Tokens baut — gedacht für die
+                    Oberstufe als Anreiz für präzise Prompts. Bei jüngeren Stufen besser aus: dort soll
+                    Ausprobieren nicht bestraft wirken. Fehlgeschlagene Builds kosten weiterhin keinen Versuch.
+                  </p>
                 </div>
                 <div className="rounded-lg border bg-muted/40 p-3 text-sm">
                   <span className="font-medium">KI-Verbindung: </span>

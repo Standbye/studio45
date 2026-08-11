@@ -183,6 +183,9 @@ export default async function AdminPage() {
                         baseUrl: k.baseUrl,
                         modelKid: k.modelKid,
                         modelDirector: k.modelDirector,
+                        eurPerMTokensIn: k.eurPerMTokensIn,
+                        eurPerMTokensOut: k.eurPerMTokensOut,
+                        whPerMTokens: k.whPerMTokens,
                       }}
                     />
                     <form action={deleteApiKeyAction} className="inline">

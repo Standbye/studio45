@@ -10,38 +10,6 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
-## Gesammelt für den nächsten Build (2026-08-06)
-
-- [ ] **Token-Transparenz für Lehrkraft und Kinder** — sichtbar machen, was ins Bauen
-      fließt. Die Daten liegen komplett in `PromptLog` (`tokensIn`/`tokensOut` pro
-      Generierung und Gruppe) — keine Migration nötig, reine Aggregation + Anzeige:
-      - **Lehrkraft**: Gesamtliste Tokens pro Gruppe im Dashboard (gesamt + letzter
-        Build), zusätzlich zur bestehenden Budget-Anzeige des Workshops.
-      - **Kinder-App**: nach jedem Build anzeigen, wie viele Tokens er gebraucht hat,
-        plus Gesamtstand der Gruppe — Ansprache je Altersstufe (Grundschule spielerisch,
-        Oberstufe nüchterne Zahlen).
-      - **Kosten in Euro (optional)**: an der KI-Verbindung Preise hinterlegen
-        (€ pro 1M Input-/Output-Tokens); wenn gesetzt, erscheint neben Tokens der
-        Euro-Betrag — zeigt Kindern, was da wirklich reinfließt. (Ersetzt den alten
-        Beobachtungs-Punkt „Kosten in Euro statt Tokens".)
-      - **Token-Spar-Challenge (optional, pro Workshop zuschaltbar)**: Wer baut mit dem
-        geringsten Token-Einsatz ein komplettes Spiel? Rangliste z. B. Tokens des
-        letzten erfolgreichen Builds bzw. Gesamt-Tokens. Gedacht für die Oberstufe —
-        motiviert präzise Prompts. Didaktische Leitplanke: bei jüngeren Stufen aus,
-        damit Sparsamkeit das Iterieren nicht abwürgt; Fehlbuilds zählen weiterhin
-        nicht gegen die Gruppe.
-      - **Energie-Vergleichswert (optional einblendbar)**: Tokens in Alltagsenergie
-        übersetzen — „das entspricht ≈ 50× Handy laden" oder „≈ 50 Minuten Radfahren",
-        auch LED-Lampen-Stunden denkbar. Als Hover/Tooltip gedacht; auf den iPads gibt
-        es kein Hover → dort als antippbares ⓘ. Technisch: konfigurierbarer Faktor
-        Wh pro 1M Tokens (Standardwert aus der Literatur, ehrlich als Schätzung
-        gekennzeichnet — die echten Zahlen hängen stark von Modell und Rechenzentrum
-        ab), Vergleichsanker als feste Liste (Handy-Akku ≈ 12 Wh, Radfahren ≈ 100 W,
-        LED ≈ 8 W). Didaktisch wertvoll: macht den Ressourcenverbrauch von KI konkret —
-        passt zur Reflexionsrunde und perspektivisch als Punkt auf eine Thementafel.
-      - Passt zusammen mit der bestehenden Idee **Budget-Warnung ab ~85 %** an die
-        Lehrkraft — im selben Zug mit erledigen.
-
 ## Sofort möglich
 
 - [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
@@ -60,7 +28,21 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
 
-## Erledigt (gebaut am 2026-08-05, lokaler Commit — noch nicht gepusht)
+## Erledigt (gebaut am 2026-08-06)
+
+- [x] **Token-Transparenz**: Lehrer-Dashboard zeigt das Budget jetzt absolut
+      (Tokens verbraucht/gesamt, optional in €) und pro Gruppe Gesamt-Tokens + letzten
+      Bau; Warnhinweis ab 85 % Budget. Kinder-App zeigt unter der Eingabe „Letzter Bau ·
+      Gesamt" mit antippbarem ⓘ: Dialog mit Tokens, €-Kosten und **Energie-Vergleich**
+      (≈ Handy laden / Minuten Radfahren / LED-Stunden — als grobe Schätzung
+      gekennzeichnet). Preise (€/1M Tokens Ein-/Ausgabe) und Energie-Faktor (Wh/1M,
+      Standard 100) pflegt der Admin an der KI-Verbindung; ohne Preise keine €-Anzeige.
+      **Token-Spar-Challenge** pro Workshop zuschaltbar (Einstellungen-Reiter):
+      Rangliste der sparsamsten Gruppen in Fußzeile + Dialog der Kinder-App.
+      Rechenkern in `src/lib/verbrauch.ts`; Migration `20260806090000_verbrauch`
+      (nur ADD COLUMN). Fehlbuilds kosten weiterhin keinen Versuch.
+
+## Erledigt (gebaut am 2026-08-05)
 
 - [x] **Fünf neue Materialblätter**: „Wie rede ich mit der KI?" (fünf Regeln, Gut/Schlecht-
       Beispiel, „Erst denken, dann tippen") · Laufplan (Rotations-Tabelle Termine × Rollen

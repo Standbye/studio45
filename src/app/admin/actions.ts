@@ -24,6 +24,10 @@ const verbindungSchema = z.object({
   baseUrl: z.union([z.literal(""), z.string().trim().url().max(300)]),
   modelKid: z.string().trim().min(1).max(120),
   modelDirector: z.string().trim().min(1).max(120),
+  // Kosten-/Energie-Transparenz: 0 = Kostenanzeige aus bzw. Standard-Energiefaktor
+  eurPerMTokensIn: z.coerce.number().min(0).max(10_000),
+  eurPerMTokensOut: z.coerce.number().min(0).max(10_000),
+  whPerMTokens: z.coerce.number().min(0).max(100_000),
 });
 
 function verbindungAusForm(formData: FormData) {
@@ -34,6 +38,9 @@ function verbindungAusForm(formData: FormData) {
     baseUrl: (formData.get("baseUrl") ?? "") as string,
     modelKid: formData.get("modelKid"),
     modelDirector: formData.get("modelDirector"),
+    eurPerMTokensIn: formData.get("eurPerMTokensIn") || 0,
+    eurPerMTokensOut: formData.get("eurPerMTokensOut") || 0,
+    whPerMTokens: formData.get("whPerMTokens") || 0,
   });
 }
 

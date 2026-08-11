@@ -53,6 +53,12 @@ model ApiKey {
   modelKid      String @default("claude-sonnet-5")
   modelDirector String @default("claude-opus-5")
 
+  /// Preise in Euro pro 1 Mio Tokens — 0 = keine Kostenanzeige
+  eurPerMTokensIn  Float @default(0)
+  eurPerMTokensOut Float @default(0)
+  /// Energie-Schätzfaktor in Wh pro 1 Mio Tokens — 0 = eingebauter Standardwert
+  whPerMTokens     Float @default(0)
+
   createdAt DateTime   @default(now())
   workshops Workshop[]
 }
@@ -89,6 +95,8 @@ model Workshop {
   // Limits & Budget (Admin gibt Obergrenzen vor, Lehrkraft nutzt sie)
   genLimitPerLesson Int @default(4)   // Generierungen pro Gruppe pro Schulstunde
   cooldownSeconds   Int @default(120) // Frontend-Pause zwischen Generierungen
+  /// Token-Spar-Challenge: Rangliste der sparsamsten Gruppen in der Kinder-UI (Oberstufe)
+  challenge         Boolean @default(false)
   tokenBudget       Int @default(2000000) // harte Obergrenze (Input+Output-Tokens)
   tokensUsed        Int @default(0)
 

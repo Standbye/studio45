@@ -128,6 +128,9 @@ function VerbindungsFelder({
     baseUrl: string;
     modelKid: string;
     modelDirector: string;
+    eurPerMTokensIn: number;
+    eurPerMTokensOut: number;
+    whPerMTokens: number;
   };
 }) {
   const start =
@@ -231,6 +234,50 @@ function VerbindungsFelder({
           </datalist>
         </div>
       </div>
+
+      <div className="space-y-2">
+        <Label>Kosten- & Energie-Transparenz (optional)</Label>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Input
+              name="eurPerMTokensIn"
+              type="number"
+              min={0}
+              step="0.01"
+              defaultValue={vorhanden?.eurPerMTokensIn || ""}
+              placeholder="z. B. 3"
+            />
+            <p className="text-xs text-muted-foreground">€ / 1 Mio Tokens Eingabe</p>
+          </div>
+          <div className="space-y-1">
+            <Input
+              name="eurPerMTokensOut"
+              type="number"
+              min={0}
+              step="0.01"
+              defaultValue={vorhanden?.eurPerMTokensOut || ""}
+              placeholder="z. B. 15"
+            />
+            <p className="text-xs text-muted-foreground">€ / 1 Mio Tokens Ausgabe</p>
+          </div>
+          <div className="space-y-1">
+            <Input
+              name="whPerMTokens"
+              type="number"
+              min={0}
+              step="1"
+              defaultValue={vorhanden?.whPerMTokens || ""}
+              placeholder="Standard: 100"
+            />
+            <p className="text-xs text-muted-foreground">Wh / 1 Mio Tokens</p>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Mit Preisen erscheinen Euro-Beträge neben den Token-Zahlen (Lehrkraft und Kinder).
+          Der Energie-Faktor speist den Alltagsvergleich („≈ 3× Handy laden") — leer lassen für
+          den eingebauten Schätzwert.
+        </p>
+      </div>
     </>
   );
 }
@@ -270,7 +317,17 @@ export function CreateApiKeyDialog() {
 export function EditApiKeyDialog({
   verbindung,
 }: {
-  verbindung: { id: string; label: string; protocol: string; baseUrl: string; modelKid: string; modelDirector: string };
+  verbindung: {
+    id: string;
+    label: string;
+    protocol: string;
+    baseUrl: string;
+    modelKid: string;
+    modelDirector: string;
+    eurPerMTokensIn: number;
+    eurPerMTokensOut: number;
+    whPerMTokens: number;
+  };
 }) {
   const [state, action, pending] = useActionState(updateApiKeyAction, IDLE);
   return (

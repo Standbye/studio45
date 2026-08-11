@@ -39,6 +39,14 @@ type KidState = {
   laufSekunden: number;
   dauerSchaetzung: number;
   gameVersion: number;
+  verbrauch: {
+    gesamtTokens: number;
+    letzterTokens: number;
+    gesamtEuro: string | null;
+    letzterEuro: string | null;
+    energie: string[];
+  };
+  challenge: { platz: number; von: number; fuehrtTokens: number } | null;
   branding: {
     primary: string;
     accent: string;
@@ -80,6 +88,7 @@ export function KidStudio({ code }: { code: string }) {
   const [showCheck, setShowCheck] = useState(false);
   const [checks, setChecks] = useState<boolean[]>([false, false, false]);
   const [coachVorschlag, setCoachVorschlag] = useState<string | null>(null);
+  const [showVerbrauch, setShowVerbrauch] = useState(false);
   const [coachGezeigt, setCoachGezeigt] = useState(false);
   const [coachLaeuft, setCoachLaeuft] = useState(false);
   const gameVersionRef = useRef(0);
@@ -474,6 +483,19 @@ export function KidStudio({ code }: { code: string }) {
         {state.hilfen.chips && (
           <p className="text-center text-xs text-slate-400">{state.texte.tipp}</p>
         )}
+        {state.verbrauch.gesamtTokens > 0 && (
+          <button
+            onClick={() => setShowVerbrauch(true)}
+            className="mx-auto block text-center text-xs text-slate-400 underline-offset-2 hover:underline"
+          >
+            ⚡ {state.verbrauch.letzterTokens > 0 && (
+              <>Letzter Bau: {state.verbrauch.letzterTokens.toLocaleString("de-DE")} · </>
+            )}
+            Gesamt: {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
+            {state.verbrauch.gesamtEuro && <> ({state.verbrauch.gesamtEuro})</>}
+            {state.challenge && <> · 🏆 Platz {state.challenge.platz} von {state.challenge.von}</>} ⓘ
+          </button>
+        )}
       </footer>
 
       {/* Formulierungshilfe: der eigene Wunsch und eine genauere Fassung im Vergleich */}
@@ -534,6 +556,70 @@ export function KidStudio({ code }: { code: string }) {
               className="w-full text-center text-sm text-slate-500 underline"
             >
               Bei unserem Satz bleiben
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Token-Transparenz: was das Bauen verbraucht — mit Alltagsvergleich */}
+      {showVerbrauch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md space-y-4 bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+              ⚡ Was verbraucht unser Bauen?
+            </h2>
+            <div className="space-y-2 text-base">
+              {state.verbrauch.letzterTokens > 0 && (
+                <p className="flex justify-between gap-4 rounded-lg bg-slate-100 p-3">
+                  <span>Letzter Bau</span>
+                  <span className="font-bold">
+                    {state.verbrauch.letzterTokens.toLocaleString("de-DE")} Tokens
+                    {state.verbrauch.letzterEuro && <> · {state.verbrauch.letzterEuro}</>}
+                  </span>
+                </p>
+              )}
+              <p className="flex justify-between gap-4 rounded-lg bg-slate-100 p-3">
+                <span>Alle Bauten zusammen</span>
+                <span className="font-bold">
+                  {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
+                  {state.verbrauch.gesamtEuro && <> · {state.verbrauch.gesamtEuro}</>}
+                </span>
+              </p>
+            </div>
+            {state.verbrauch.energie.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  So viel Strom ist das ungefähr
+                </p>
+                {state.verbrauch.energie.map((zeile, i) => (
+                  <p key={zeile} className="text-base">
+                    {["🔋", "🚴", "💡"][i] ?? "⚡"} {zeile}
+                  </p>
+                ))}
+              </div>
+            )}
+            {state.challenge && (
+              <p
+                className="rounded-lg p-3 text-base font-semibold"
+                style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", borderRadius: "var(--s45-radius)" }}
+              >
+                🏆 Sparsamkeits-Challenge: Ihr seid Platz {state.challenge.platz} von {state.challenge.von}.
+                {state.challenge.platz === 1
+                  ? " Ihr baut am sparsamsten — weiter so!"
+                  : ` Die sparsamste Gruppe liegt bei ${state.challenge.fuehrtTokens.toLocaleString("de-DE")} Tokens.`}
+              </p>
+            )}
+            <p className="text-xs text-slate-500">
+              Tokens sind die „Denk-Häppchen" der KI — jedes Bauen kostet Rechenleistung und Strom.
+              Der Vergleich ist eine grobe Schätzung. Genaue, gut überlegte Wünsche sparen Tokens:
+              erst denken, dann tippen!
+            </p>
+            <button
+              onClick={() => setShowVerbrauch(false)}
+              className="w-full py-3 font-bold"
+              style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
+            >
+              Alles klar!
             </button>
           </div>
         </div>
