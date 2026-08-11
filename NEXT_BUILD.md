@@ -30,6 +30,15 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
         motiviert präzise Prompts. Didaktische Leitplanke: bei jüngeren Stufen aus,
         damit Sparsamkeit das Iterieren nicht abwürgt; Fehlbuilds zählen weiterhin
         nicht gegen die Gruppe.
+      - **Energie-Vergleichswert (optional einblendbar)**: Tokens in Alltagsenergie
+        übersetzen — „das entspricht ≈ 50× Handy laden" oder „≈ 50 Minuten Radfahren",
+        auch LED-Lampen-Stunden denkbar. Als Hover/Tooltip gedacht; auf den iPads gibt
+        es kein Hover → dort als antippbares ⓘ. Technisch: konfigurierbarer Faktor
+        Wh pro 1M Tokens (Standardwert aus der Literatur, ehrlich als Schätzung
+        gekennzeichnet — die echten Zahlen hängen stark von Modell und Rechenzentrum
+        ab), Vergleichsanker als feste Liste (Handy-Akku ≈ 12 Wh, Radfahren ≈ 100 W,
+        LED ≈ 8 W). Didaktisch wertvoll: macht den Ressourcenverbrauch von KI konkret —
+        passt zur Reflexionsrunde und perspektivisch als Punkt auf eine Thementafel.
       - Passt zusammen mit der bestehenden Idee **Budget-Warnung ab ~85 %** an die
         Lehrkraft — im selben Zug mit erledigen.
 
