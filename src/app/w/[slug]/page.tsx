@@ -38,6 +38,7 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
       style={{
         background: `linear-gradient(160deg, ${farben.primary}, ${farben.primaryDunkel})`,
         color: farben.aufPrimary,
+        fontFamily: "var(--font-kind)",
       }}
     >
       <AutoRefresh seconds={30} />

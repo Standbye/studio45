@@ -22,13 +22,15 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-svh items-center justify-center bg-muted/40 p-6">
-      <div className="w-full max-w-sm space-y-4">
-        <div className="text-center">
-          <span className="text-3xl font-black tracking-tight">
-            Studio<span className="text-primary">45</span>
+    <main className="flex min-h-svh items-center justify-center bg-primary p-6">
+      <div className="w-full max-w-sm space-y-5">
+        <div className="text-center text-primary-foreground">
+          <span className="text-4xl font-black tracking-tight">
+            Studio<span className="text-amber-400">45</span>
           </span>
-          <p className="text-xs text-muted-foreground mt-1">Spielestudio in 45 Minuten</p>
+          <p className="mt-1.5 text-sm opacity-85">
+            Spielestudio in 45 Minuten — Kinder bauen mit KI ihre eigenen Lernspiele.
+          </p>
         </div>
         <Card>
           <CardHeader>

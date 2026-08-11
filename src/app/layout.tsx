@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+// Schriften selbst gehostet (fontsource) — keine externen Requests zur Laufzeit
+import "@fontsource-variable/inter";
+import "@fontsource-variable/nunito";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 

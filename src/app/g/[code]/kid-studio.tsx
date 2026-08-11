@@ -288,6 +288,7 @@ export function KidStudio({ code }: { code: string }) {
   }
 
   const vars = {
+    fontFamily: "var(--font-kind)",
     "--s45-primary": state.branding.primary,
     "--s45-accent": state.branding.accent,
     "--s45-auf-primary": state.branding.aufPrimary,

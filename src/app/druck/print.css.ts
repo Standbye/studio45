@@ -49,7 +49,7 @@ export function printStyles(primary: string, accent: string, opt: DruckOptionen 
 }
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--tinte); background: #eef1f5; }
+body { margin: 0; font-family: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--tinte); background: #eef1f5; }
 
 /* Bildschirm-Werkzeugleiste — verschwindet im Druck */
 .werkzeugleiste { position: sticky; top: 0; z-index: 10; display: flex; gap: .75rem; align-items: center;

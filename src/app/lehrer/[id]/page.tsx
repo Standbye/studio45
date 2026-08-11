@@ -112,6 +112,17 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">{w.name}</h1>
         {w.className && <Badge variant="secondary">{w.className}</Badge>}
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            w.phase === "STUDIO"
+              ? "bg-emerald-100 text-emerald-800"
+              : w.phase === "PAUSE"
+                ? "bg-amber-100 text-amber-900"
+                : "bg-accent text-accent-foreground"
+          }`}
+        >
+          {w.phase === "STUDIO" ? "🎮 Studio läuft" : w.phase === "PAUSE" ? "⏸️ Pause" : "🗣️ Plenum"}
+        </span>
         <Link href={`/w/${w.slug}`} target="_blank" className="text-sm text-primary underline-offset-2 hover:underline">
           Beamer-Seite ↗
         </Link>
@@ -168,7 +179,16 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                 {budgetKosten !== null && <> · {euroText(budgetKosten)}</>}
               </span>
             </div>
-            <Progress value={budgetPct} />
+            <Progress
+              value={budgetPct}
+              className={
+                budgetPct >= 85
+                  ? "[&>[data-slot=progress-indicator]]:bg-red-600"
+                  : budgetPct >= 70
+                    ? "[&>[data-slot=progress-indicator]]:bg-amber-500"
+                    : "[&>[data-slot=progress-indicator]]:bg-emerald-500"
+              }
+            />
             {budgetPct >= 85 && (
               <p className="text-sm font-medium text-destructive">
                 ⚠️ Das Budget ist fast aufgebraucht — bei 100 % stoppt die Generierung.
@@ -201,7 +221,16 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                       {g.studioName && <span className="text-muted-foreground"> · „{g.studioName}"</span>}
                     </CardTitle>
                     <CardDescription>
-                      {g._count.prompts} Prompts · noch {left}/{w.genLimitPerLesson + g.genBonus} Versuche diese Stunde
+                      {g._count.prompts} Prompts · Versuche:{" "}
+                      {w.genLimitPerLesson + g.genBonus <= 10 ? (
+                        <span className="inline-flex items-center gap-1 align-middle" title={`noch ${left} von ${w.genLimitPerLesson + g.genBonus}`}>
+                          {Array.from({ length: w.genLimitPerLesson + g.genBonus }, (_, i) => (
+                            <span key={i} className={`inline-block h-2 w-2 rounded-full ${i < left ? "bg-amber-400" : "bg-stone-200"}`} />
+                          ))}
+                        </span>
+                      ) : (
+                        <>noch {left}/{w.genLimitPerLesson + g.genBonus}</>
+                      )}
                       <br />
                       {v.gesamt > 0 ? (
                         <>
