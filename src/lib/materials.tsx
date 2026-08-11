@@ -203,17 +203,24 @@ export function vorbereitung(slug: string): string[] {
 
 /**
  * Kopfzeile für alle Materialblätter — trägt das Branding des Workshops.
- * `schlicht` lässt den Blatt-Titel weg (Briefform: der Betreff übernimmt).
+ * Das Logo steht abgesetzt als eigenes Element ÜBER der Kopfzeile, nicht
+ * inline daneben. `schlicht` lässt den Blatt-Titel weg (Briefform).
  */
 export function Kopf({ ctx, titel, schlicht }: { ctx: MaterialKontext; titel?: string; schlicht?: boolean }): ReactNode {
   return (
-    <div className="kopf">
-      {ctx.logoUrl && <img src={ctx.logoUrl} alt="" />}
-      <div className="titel">
-        <div className="marke">Studio45 · {ctx.workshopName}{ctx.className ? ` · ${ctx.className}` : ""}</div>
-        {!schlicht && titel && <h1>{titel}</h1>}
+    <>
+      {ctx.logoUrl && (
+        <div className="kopf-logo">
+          <img src={ctx.logoUrl} alt="" />
+        </div>
+      )}
+      <div className="kopf">
+        <div className="titel">
+          <div className="marke">Studio45 · {ctx.workshopName}{ctx.className ? ` · ${ctx.className}` : ""}</div>
+          {!schlicht && titel && <h1>{titel}</h1>}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

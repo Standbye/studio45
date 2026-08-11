@@ -221,7 +221,6 @@ export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[
               <div className="linie" />
               <div className="linie" />
               <div className="linie" />
-              <div className="linie" />
               <Fuss ctx={ctx} blatt="Stundenverläufe" seite={day} von={seiten} />
             </div>
           ))}
@@ -587,35 +586,35 @@ export default async function MaterialBlatt({ params }: PageProps<"/druck/[id]/[
             Für jeden Fehler eine Karte ausfüllen — erst Detektiv spielen, dann den neuen Wunsch formulieren.
           </p>
           {[0, 1].map((k) => (
-            <div key={k} className="schnittkarte" style={{ marginTop: k === 0 ? "3mm" : "6mm" }}>
+            <div key={k} className="schnittkarte" style={{ marginTop: k === 0 ? "3mm" : "5mm" }}>
               <span className="schere">✂</span>
-              <p style={{ fontSize: "13pt", fontWeight: 900, margin: "0 0 3mm", color: "var(--primary-text)" }}>
+              <p style={{ fontSize: "13pt", fontWeight: 900, margin: "0 0 2.5mm", color: "var(--primary-text)" }}>
                 🐞 Bugreport
               </p>
               <div className="spalten">
                 <div>
                   <span className="klein">Das wollten wir:</span>
-                  <div className="linie" style={{ height: "8mm" }} />
-                  <div className="linie" style={{ height: "8mm" }} />
+                  <div className="linie" style={{ height: "7mm" }} />
+                  <div className="linie" style={{ height: "7mm" }} />
                 </div>
                 <div>
                   <span className="klein">Das ist stattdessen passiert:</span>
-                  <div className="linie" style={{ height: "8mm" }} />
-                  <div className="linie" style={{ height: "8mm" }} />
+                  <div className="linie" style={{ height: "7mm" }} />
+                  <div className="linie" style={{ height: "7mm" }} />
                 </div>
               </div>
-              <p className="so" style={{ margin: "3.5mm 0 1.5mm" }}>Detektiv-Fragen: Woran könnte es liegen?</p>
+              <p className="so" style={{ margin: "3mm 0 1.5mm" }}>Detektiv-Fragen: Woran könnte es liegen?</p>
               {BUG_FRAGEN.map((f) => (
-                <p key={f} style={{ margin: "0 0 1.6mm", fontSize: "10pt" }}>
+                <p key={f} style={{ margin: "0 0 1.5mm", fontSize: "10pt" }}>
                   <span className="check" />
                   {f}
                 </p>
               ))}
-              <span className="klein" style={{ display: "block", marginTop: "2.5mm" }}>
+              <span className="klein" style={{ display: "block", marginTop: "2mm" }}>
                 Unser neuer, genauerer Wunsch:
               </span>
-              <div className="linie" style={{ height: "8mm" }} />
-              <div className="linie" style={{ height: "8mm" }} />
+              <div className="linie" style={{ height: "7mm" }} />
+              <div className="linie" style={{ height: "7mm" }} />
             </div>
           ))}
           <Fuss ctx={ctx} blatt="Bugreport-Karten" seite={1} von={1} />

@@ -83,10 +83,12 @@ ol li { margin-bottom: 2mm; }
 ol li::marker { color: var(--primary-text); font-weight: 800; }
 
 /* ---- Kopfzeile -------------------------------------------------------- */
+/* Das Logo steht abgesetzt über der Kopfzeile — nicht inline daneben. */
+.kopf-logo { margin-bottom: 3mm; }
+.kopf-logo img { height: 10mm; width: auto; }
 .kopf { position: relative; display: flex; align-items: flex-end; gap: 5mm;
   padding-bottom: 3.5mm; border-bottom: 0.3mm solid var(--linie); margin-bottom: 7mm; }
 .kopf::after { content: ""; position: absolute; left: 0; bottom: -0.45mm; width: 26mm; height: 0.9mm; background: var(--accent); }
-.kopf img { height: 13mm; width: auto; }
 .kopf .marke { font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--grau); }
 .kopf h1 { margin-top: 1mm; }
 
@@ -125,7 +127,7 @@ table.bogen td.mitte { text-align: center; }
 
 /* Rollenkarten */
 .rollen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 4mm; }
-.rollenkarte { min-height: 108mm; }
+.rollenkarte { min-height: 100mm; }
 .rolle-kopf { display: flex; align-items: center; gap: 3mm; }
 .rolle-kopf .emoji { font-size: 19pt; line-height: 1; }
 .rolle-kopf .name { font-size: 15pt; font-weight: 900; }

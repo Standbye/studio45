@@ -42,22 +42,34 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
       }}
     >
       <AutoRefresh seconds={30} />
-      <header className="mb-8 flex items-center gap-4">
+      <header className="mb-8 space-y-4">
+        {/* Logo abgesetzt als eigenes Element über dem Titel — wie auf den Materialien */}
         {w.logoPath && w.groups[0] && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`/api/g/${w.groups[0].code}/logo`} alt="" className="h-16 w-auto rounded-xl bg-white/90 p-1.5" />
+          <img
+            src={`/api/g/${w.groups[0].code}/logo`}
+            alt=""
+            className="h-12 w-auto rounded-lg bg-white/95 p-1"
+          />
         )}
-        <div>
-          <h1 className="text-4xl font-black">
-            {w.name} {w.className && <span className="opacity-70">· {w.className}</span>}
-          </h1>
-          <p className="text-lg opacity-90">
-            Tag {w.currentDay}/{w.totalDays}: {dayTitle(w.currentDay, w.totalDays)}
-          </p>
-        </div>
-        <div className="ml-auto rounded-2xl px-5 py-3 text-right" style={{ background: "rgba(255,255,255,.12)" }}>
-          <span className="block text-xs uppercase tracking-widest opacity-75">Merksatz des Tages</span>
-          <span className="text-xl font-bold">„{dayMotto(w.currentDay, w.totalDays)}"</span>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-4xl font-black">{w.name}</h1>
+              {w.className && (
+                <span className="rounded-full bg-white/15 px-3 py-1 text-base font-bold">
+                  Klasse {w.className}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-lg opacity-90">
+              Tag {w.currentDay}/{w.totalDays}: {dayTitle(w.currentDay, w.totalDays)}
+            </p>
+          </div>
+          <div className="ml-auto shrink-0 rounded-2xl px-5 py-3 text-right" style={{ background: "rgba(255,255,255,.12)" }}>
+            <span className="block text-xs uppercase tracking-widest opacity-75">Merksatz des Tages</span>
+            <span className="text-xl font-bold">„{dayMotto(w.currentDay, w.totalDays)}"</span>
+          </div>
         </div>
       </header>
 
@@ -66,7 +78,14 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
         style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
       >
         {w.groups.map((g, i) => (
-          <div key={g.id} className="rounded-3xl bg-white p-5 text-center text-slate-900 shadow-xl">
+          // Am Whiteboard/Beamer-Rechner öffnet ein Klick das Studio direkt
+          <a
+            key={g.id}
+            href={`/g/${g.code}`}
+            target="_blank"
+            rel="noopener"
+            className="block rounded-3xl bg-white p-5 text-center text-slate-900 shadow-xl transition hover:scale-[1.02] hover:shadow-2xl"
+          >
             <div
               className="mb-3 rounded-xl py-2 text-xl font-black text-white"
               style={{ background: GROUP_COLORS[i % GROUP_COLORS.length] }}
@@ -75,8 +94,8 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={qr[i]} alt={`QR-Code Gruppe ${g.index}`} className="mx-auto w-full max-w-52" />
-            <p className="mt-2 text-sm text-slate-500">iPad-Kamera drauf halten 📷</p>
-          </div>
+            <p className="mt-2 text-sm text-slate-500">iPad-Kamera drauf halten 📷 — oder antippen</p>
+          </a>
         ))}
       </div>
 
