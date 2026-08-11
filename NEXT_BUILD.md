@@ -10,6 +10,29 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-06)
+
+- [ ] **Token-Transparenz für Lehrkraft und Kinder** — sichtbar machen, was ins Bauen
+      fließt. Die Daten liegen komplett in `PromptLog` (`tokensIn`/`tokensOut` pro
+      Generierung und Gruppe) — keine Migration nötig, reine Aggregation + Anzeige:
+      - **Lehrkraft**: Gesamtliste Tokens pro Gruppe im Dashboard (gesamt + letzter
+        Build), zusätzlich zur bestehenden Budget-Anzeige des Workshops.
+      - **Kinder-App**: nach jedem Build anzeigen, wie viele Tokens er gebraucht hat,
+        plus Gesamtstand der Gruppe — Ansprache je Altersstufe (Grundschule spielerisch,
+        Oberstufe nüchterne Zahlen).
+      - **Kosten in Euro (optional)**: an der KI-Verbindung Preise hinterlegen
+        (€ pro 1M Input-/Output-Tokens); wenn gesetzt, erscheint neben Tokens der
+        Euro-Betrag — zeigt Kindern, was da wirklich reinfließt. (Ersetzt den alten
+        Beobachtungs-Punkt „Kosten in Euro statt Tokens".)
+      - **Token-Spar-Challenge (optional, pro Workshop zuschaltbar)**: Wer baut mit dem
+        geringsten Token-Einsatz ein komplettes Spiel? Rangliste z. B. Tokens des
+        letzten erfolgreichen Builds bzw. Gesamt-Tokens. Gedacht für die Oberstufe —
+        motiviert präzise Prompts. Didaktische Leitplanke: bei jüngeren Stufen aus,
+        damit Sparsamkeit das Iterieren nicht abwürgt; Fehlbuilds zählen weiterhin
+        nicht gegen die Gruppe.
+      - Passt zusammen mit der bestehenden Idee **Budget-Warnung ab ~85 %** an die
+        Lehrkraft — im selben Zug mit erledigen.
+
 ## Sofort möglich
 
 - [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
@@ -90,9 +113,6 @@ Staffelung des Unterstützungslevels über die Termine.
 
 ## Beobachtungen aus dem Bau (kein Auftrag, nur notiert)
 
-- [ ] **Kosten in Euro statt Tokens** anzeigen — Tokenzahlen sagen einer Lehrkraft wenig.
-      Bräuchte hinterlegte Preise pro Modell.
-- [ ] **Budget-Warnung** an die Lehrkraft, bevor es aufgebraucht ist (z. B. ab 85 %).
 - [ ] **Prompt-Verlauf exportieren** (PDF/CSV) — nützlich für die Reflexionsrunde und für
       Elternabende.
 - [ ] **Ratenbegrenzung liegt im Arbeitsspeicher** — bei mehreren Instanzen hinter einem
