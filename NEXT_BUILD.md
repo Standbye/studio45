@@ -10,6 +10,22 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-11, abends): Beamer-Seite
+
+- [ ] **Logo-Platzierung im Kopf**: Das Workshop-Logo wirkt neben „Name · Klasse"
+      deplatziert. Neu ordnen: Logo bekommt seinen eigenen ruhigen Platz im Kopf,
+      der Workshop-Name steht ohne „·"-Punkte daneben — die Klasse wandert in einen
+      dezenten Chip, die Tag-Zeile darunter. Logo-Kasten (weiße Kachel) verkleinern/
+      entschärfen, damit er nicht wie aufgeklebt wirkt.
+- [ ] **Klickbare Links auf der Beamer-Seite**: Die Gruppen-Karten sind bisher nur
+      QR-Bilder — am interaktiven Whiteboard/Beamer-Rechner soll ein Klick auf die
+      Karte (bzw. den Gruppennamen) direkt das Studio `/g/{code}` in neuem Tab öffnen.
+- [ ] **Druckmaterialien: Logo absetzen**: Auch im `Kopf` der Materialblätter ist das
+      Logo derzeit in die Kopfzeile integriert (inline neben Marke/Titel). Es soll
+      **abgesetzt als eigenes Element darüber** stehen — eigene Zeile über der
+      Kopfzeile, sauber ausgerichtet; die Kopfzeile darunter bleibt Marke + Titel +
+      Akzentlinie. Betrifft alle Blätter mit `Kopf` (Urkunde hat ihre eigene Logik).
+
 ## Sofort möglich
 
 - [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
