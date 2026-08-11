@@ -10,6 +10,40 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-11): Design-Refresh
+
+Peters Eindruck: wirkt „lieblos und zu steril", soll mehr wie eine App wirken, mit gutem
+Farbkonzept. Diagnose + Plan:
+
+- [ ] **Font-Bug beheben (Ursache Nr. 1 der Sterilität!)**: `globals.css` definiert
+      `--font-sans: var(--font-sans)` — zirkulär, löst nie auf; es wird nirgends eine
+      Schrift geladen. Die GESAMTE App (auch Kinder-Seite und Beamer) rendert in der
+      Browser-Serifenschrift (Times-Optik). Fix: Schrift per `next/font` selbst hosten
+      (keine externen Requests, Offline-Prinzip!) und `--font-sans` korrekt verdrahten.
+      Vorschlag: **Inter** für Lehrer/Admin, für Kinder-Flächen ggf. **Nunito** (runder,
+      freundlicher) als `--font-kind`.
+- [ ] **Produkt-Farbkonzept** (Studio45-Marke — unabhängig vom Workshop-Branding, das
+      Kinder-UI/Beamer/Materialien weiter färbt). Drei Richtungen vorgestellt:
+      **A „Werkbank" (Empfehlung)**: Indigo `#4338CA` als Primärfarbe, Amber `#F59E0B`
+      als Akzent, warme Neutrale (Stone statt Zinc: Hintergrund `#FAFAF9`, Text `#292524`)
+      — professionell genug für Lehrkräfte, mit sichtbarer Spielfreude.
+      **B „Schulhaus"**: Petrol `#0F766E` + Koralle `#E8604C` + Creme `#FAF7F0`.
+      **C „Arcade"**: Violett `#7C3AED` + Cyan `#06B6D4`, dunkle Kopfleiste `#241D3D`.
+      Umsetzung als shadcn-Theme-Tokens (CSS-Variablen in `globals.css`), damit alles
+      durchgängig zieht.
+- [ ] **App-Gefühl im Lehrer-/Admin-Bereich**:
+      - Farbige Kopfleiste mit Logo/Wortmarke statt weißem Balken; aktive Navigation.
+      - Karten mit etwas mehr Radius, weichem (dezentem) Schatten und Hover-Zustand.
+      - Status sichtbar machen: Phase als farbiger Chip (Plenum/Studio/Pause), Budget-
+        Balken in Ampellogik, Versuche als gefüllte Punkte statt „4/4"-Text.
+      - Leere Zustände mit freundlichem Text + kleiner Illustration statt nackter Tabelle.
+      - Login-Seite mit Markenauftritt (Farbfläche, Wortmarke, ein Satz, was Studio45 ist).
+      - Icons konsistent (Lucide ist über shadcn da) statt Emoji-Streusel im Chrome;
+        Emoji bleiben bewusst in kindgerichteten Texten.
+- [ ] **Abgrenzung**: Kinder-Studio behält das Workshop-Branding als Hauptfarbe —
+      der Design-Refresh gibt ihm nur die reparierte Schrift und Feinschliff
+      (Abstände, Radien aus `audience.ts` bleiben führend).
+
 ## Sofort möglich
 
 - [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
