@@ -4,6 +4,48 @@ Alle nennenswerten Änderungen an Studio45. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.1.0] — 2026-08-06
+
+### Neu — Druckmaterialien, komplett neu gesetzt
+
+- **Gemeinsames Gestaltungssystem** statt Einzelbasteleien: ruhige Dokument-Typografie,
+  Kopfzeile mit Akzentlinie, Fußzeile mit Seitenzahl, Farbe aus Linien statt Flächen —
+  tonerfreundlich und ohne Folien-Optik. Jedes Blatt ist exakt eine A4-Seite; die
+  Thementafeln drucken jetzt als echtes Querformat.
+- **Stundenverläufe: eine Seite pro Termin** mit Merksatz, Minutenplan, Checkliste vor der
+  Stunde und Notizzeilen — plus eine Methodenseite (Reflexion, Peer-Testing, Rollen-Rotation).
+- **Fünf neue Blätter**: „Wie rede ich mit der KI?" (die fünf Regeln für gute Wünsche),
+  Laufplan (Rollen-Rotation zum Eintragen), Lehrer-Laufzettel (der ganze Workshop auf einer
+  Seite), Testbogen „gut / noch nicht" und Bugreport-Karten mit Detektiv-Fragen.
+- **Rollenkarten** mit konkreten Aufgaben je Rolle („Das machst du") und Schnittlinien.
+
+### Geändert — Ablauf bei fünf Terminen
+
+- **Tag 4 ist jetzt der Test-Tag**: Gruppen tauschen die iPads, testen die Spiele der
+  anderen und beheben gemeldete Fehler. **Tag 5 ist der Release-Tag**: letzter Feinschliff,
+  dann zeigen die Gruppen ihre Spiele am Beamer. Titel, Merksätze, KI-Tagesfokus,
+  Eingabe-Impulse und Stundenpläne ziehen mit. Das 3-Tage-Format bleibt unverändert.
+
+### Neu — Token-Transparenz
+
+- **Lehrkräfte** sehen das Budget jetzt absolut (verbrauchte/verfügbare Tokens, optional in
+  Euro), den Verbrauch jeder Gruppe samt letztem Bau — und eine Warnung ab 85 % Budget.
+- **Kinder** sehen unter der Eingabe, was ihr letzter Bau und alle Bauten zusammen verbraucht
+  haben. Ein Tipp auf ⓘ öffnet die Erklärung mit Kosten und **Energie-Alltagsvergleich**
+  („≈ 3× Handy laden · ≈ 20 Minuten Radfahren"), ehrlich als grobe Schätzung gekennzeichnet.
+- **Preise und Energie-Faktor** pflegt der Admin an der KI-Verbindung (€ pro 1 Mio Tokens
+  Ein-/Ausgabe, Wh pro 1 Mio Tokens). Ohne Preise erscheinen keine Euro-Beträge.
+- **Token-Spar-Challenge** pro Workshop zuschaltbar: Rangliste der sparsamsten Gruppen —
+  gedacht für die Oberstufe als Anreiz für präzise Prompts. Fehlgeschlagene Generierungen
+  kosten weiterhin keinen Versuch.
+
+### Für Selbst-Hoster
+
+- Migration `20260806090000_verbrauch` läuft beim Container-Start automatisch (nur
+  `ADD COLUMN`, kein Tabellen-Neuaufbau).
+- Neues Prüfwerkzeug `scripts/druck-pdf.ts`: rendert alle Druckbögen per Headless-Chrome
+  als PDF und prüft Seitenmaße und Seitenzahlen gegen A4.
+
 ## [1.0.1] — 2026-08-05
 
 ### Behoben
