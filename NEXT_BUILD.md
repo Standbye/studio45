@@ -10,6 +10,46 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
+
+Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
+Ist-Stand im Code: `generate.ts` hat bereits DOM-Stub-Verifikation + genau EINEN
+Reparaturversuch — aber jeder Edit generiert das komplette HTML neu, ohne statische
+Vorprüfung, ohne Mehrrunden-Schleife, ohne messbare Qualität. Vorschlag: schlanker
+eigener Harness in `src/lib/harness/` (~300 Zeilen, KEIN LangChain/Framework),
+anbieterneutral über die bestehende `llm.ts`-Abstraktion. In Prioritätsreihenfolge:
+
+- [ ] **1. Prüf-Reparatur-Schleife ausbauen** (größter Qualitätsgewinn):
+      Statik-Linter VOR der Sandbox (fetch/XHR/WebSocket/externe URLs verboten,
+      localStorage nur mit try/catch, Datei vollständig?) — billige Fehler kosten
+      dann keinen teuren Modell-Aufruf. DOM-Stub erweitert um Konsolen-Capture
+      (nicht nur Crash, auch error-Logs), Checkliste aus der Qualitätsuntergrenze
+      von `kern.md` maschinell (Neustart ohne Reload? Touch-Handler? Canvas da?).
+      Bis zu 2 Reparaturrunden, jede mit konkretem Befund statt nur Crash-Text.
+- [ ] **2. Patch-Edits statt Voll-Neugenerierung**: Bei Änderungswünschen liefert das
+      Modell SEARCH/REPLACE-Blöcke statt der ganzen Datei — strukturell erzwungenes
+      „Bestehendes bewahren", drastisch weniger Output-Tokens (zahlt direkt auf die
+      Token-Transparenz und die Spar-Challenge ein), schnellere Builds für die Kinder.
+      Als strukturierte Textausgabe, kein Tool-Calling — funktioniert damit bei allen
+      Anbietern (auch Ollama). Fallback: wenn Patches nicht greifen, Voll-Generierung.
+- [ ] **3. Spielsteckbrief als echtes Artefakt**: `spec.json` neben dem HTML (heute nur
+      HTML-Kommentar) — Titel, Mechanik, Steuerung, offene Wünsche, Fehlerhistorie.
+      Der Harness füttert das Modell mit Spec + letzten Wünschen + letztem Befund
+      statt „alles im Prompt"; Spec wird pro Runde fortgeschrieben und versioniert
+      (passt zu Snapshots/Zeitreise).
+- [ ] **4. Eval-Suite aus echten Kinderwünschen**: Golden-Prompts aus dem PromptLog
+      (anonym, typische kurze Wünsche) als Regressionslauf: `scripts/eval.ts` baut
+      N Spiele, führt Linter+DOM-Stub+Checkliste aus und schreibt eine Ergebnis-
+      Matrix. Damit werden Metaprompt-/Harness-Änderungen MESSBAR statt gefühlt —
+      vor jedem Release ein Lauf. Kostenkontrolle über eigenen Key + Budget.
+- [ ] **5. Harness-Phasen sichtbar machen**: Fortschritt (verstehe → baue → prüfe →
+      repariere) in der Kinder-Warteanzeige und im Lehrer-Verlauf („2. Versuch nötig,
+      Grund: …") — PromptLog um Rundenzahl/Befunde erweitern.
+
+**Bewusst NICHT** (Nicht-bauen-Liste): kein Framework (LangChain & Co.), kein
+Multi-Agent-Aufbau, kein Vision-/Screenshot-Check (teuer; höchstens später für den
+Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
+
 ## Sofort möglich
 
 - [ ] **Release erstellen** — Druck-Redesign + Materialpaket 2 sind gepusht und deployt
