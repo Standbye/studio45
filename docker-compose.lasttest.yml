@@ -1,0 +1,25 @@
+# Lasttest-Overlay: Fake-KI-Anbieter im Compose-Netz des Containers.
+#
+# Start (mit serverspezifischem Override):
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.lasttest.yml up -d mock-ki
+# Start (ohne Override):
+#   docker compose -f docker-compose.yml -f docker-compose.lasttest.yml up -d mock-ki
+# Danach im Admin eine KI-Verbindung anlegen (oder runtime/lasttest-seed.mjs nutzen):
+#   Protokoll OpenAI · Endpunkt http://mock-ki:9999/v1 · beliebiger Schlüssel
+# Stopp: … down mock-ki  bzw.  docker rm -f studio45-mock-ki
+services:
+  mock-ki:
+    image: node:22-slim
+    container_name: studio45-mock-ki
+    restart: "no"
+    working_dir: /app
+    command: ["node", "/app/mock-ki.mjs"]
+    volumes:
+      - ./runtime/mock-ki.mjs:/app/mock-ki.mjs:ro
+      - ./runtime/mock-spiel.html:/app/mock-spiel.html:ro
+    environment:
+      MOCK_DAUER_MS: "${MOCK_DAUER_MS:-45000}"
+      MOCK_STREUUNG: "${MOCK_STREUUNG:-0.2}"
+      MOCK_FEHLERQUOTE: "${MOCK_FEHLERQUOTE:-0}"
+      MOCK_429_QUOTE: "${MOCK_429_QUOTE:-0}"
+    # Bewusst kein `ports:` — der Mock ist nur aus dem Compose-Netz erreichbar.

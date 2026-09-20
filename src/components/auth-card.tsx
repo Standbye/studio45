@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { versionsText } from "@/lib/version";
 
 const FEHLER_TEXTE: Record<string, string> = {
   eingabe: "Bitte prüfe deine Eingaben (Benutzername min. 2, Passwort min. 8 Zeichen).",
@@ -46,6 +47,7 @@ export function AuthShell({
             {children}
           </CardContent>
         </Card>
+        <p className="text-center text-xs text-primary-foreground/60">Studio45 {versionsText()}</p>
       </div>
     </main>
   );

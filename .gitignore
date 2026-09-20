@@ -44,3 +44,8 @@ next-env.d.ts
 data/
 .env
 src/generated/
+
+# Beim Bauen erzeugt (scripts/build-info.mjs)
+build-info.json
+# Lasttest-Ausgaben
+lasttest-codes.json

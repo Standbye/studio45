@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/session";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
+import { versionsText } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function LehrerLayout({ children }: LayoutProps<"/lehrer">)
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <footer className="mx-auto max-w-6xl px-4 pb-6 text-xs text-muted-foreground">Studio45 {versionsText()}</footer>
     </div>
   );
 }

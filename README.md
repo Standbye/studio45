@@ -231,6 +231,51 @@ npx tsx scripts/seed-demo.ts
 - Die Spiel-Auslieferung unter `/g/<code>/play` bringt eine **eigene, strengere CSP** mit;
   sie ist in `next.config.ts` von der globalen Header-Regel ausgenommen.
 
+### Welcher Stand läuft gerade?
+
+Beim Bauen entsteht `build-info.json` (`scripts/build-info.mjs`: Version, `git describe`,
+Commit, Bauzeitpunkt). Sie steht in der Fußzeile von Login, Lehrer- und Adminbereich
+(z. B. „v1.1.0-3-gdd745e6 · gebaut 20.09.2026, 14:02" = drei Commits nach 1.1.0) und
+unter `GET /api/version`. `scripts/deploy.sh` erzeugt die Datei vor dem rsync und prüft
+nach dem Neustart, ob der Server genau diesen Stand meldet. Das GHCR-Image trägt Version
+und Commit zusätzlich als OCI-Labels (`docker inspect`).
+
+## Lasttest: hält der Server einen ganzen Workshop aus?
+
+Ein Workshop heißt: bis zu zehn Tablets, die alle 4 s den Zustand abfragen und auf Kommando
+gleichzeitig bauen lassen. Der Lasttest spielt genau das gegen einen laufenden Server durch —
+**kostenlos**, weil ein Mock-Anbieter die KI ersetzt: `runtime/mock-ki.mjs` spricht das
+OpenAI-Protokoll (Streaming inklusive) und liefert nach einstellbarer Bauzeit ein festes,
+lauffähiges Spiel. Der Server merkt keinen Unterschied und durchläuft seinen kompletten
+Pfad: Metaprompt, Extraktion, DOM-Stub-Verifikation, Reparaturrunde, Veröffentlichung.
+
+```bash
+# 1. Mock-Anbieter neben dem Container starten (auf dem Server, im Repo-Verzeichnis)
+docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.lasttest.yml up -d mock-ki
+
+# 2. Lasttest-Workshop mit 10 Gruppen anlegen — gibt die Gruppencodes als JSON aus
+docker exec studio45 node runtime/lasttest-seed.mjs > lasttest-codes.json
+
+# 3. Treiber vom eigenen Rechner aus starten (Codes vorher herüberkopieren)
+npx tsx scripts/lasttest.ts --basis https://studio45.example.de --codes lasttest-codes.json --gleichzeitig --ssh mein-server
+
+# 4. Aufräumen
+docker exec studio45 node runtime/lasttest-seed.mjs --entfernen
+docker rm -f studio45-mock-ki
+```
+
+Der Treiber meldet je Gruppe Bauzeit, Erfolg und Tokens, dazu die Reaktionszeit der
+Kinder-App **während** der Builds (p50/p95) und mit `--ssh` die CPU-/Speicherspitzen des
+Containers — am Ende ein klares GRÜN oder ROT mit Begründung (Exit-Code ≠ 0). Optionen:
+`--runden N`, `--pause S`, `--wunsch "…"`. Der Mock lässt sich über Umgebungsvariablen
+verschärfen: `MOCK_DAUER_MS` (Bauzeit), `MOCK_FEHLERQUOTE=0.5` (jede zweite Antwort
+kaputt → Reparaturrunden), `MOCK_429_QUOTE` (Ratelimit-Antworten). Ohne Override-Datei
+einfach `-f docker-compose.override.yml` weglassen.
+
+Was der Mock **nicht** zeigt: die Ratelimits des echten Anbieters. Dafür den Lasttest-Workshop
+im Admin auf die echte Verbindung umstellen und eine Runde mit `--runden 1` fahren — das
+kostet einmal zehn Generierungen.
+
 ## Änderungsverlauf
 
 Siehe [CHANGELOG.md](CHANGELOG.md).

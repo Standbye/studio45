@@ -11,6 +11,9 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# build-info.json (Version/Commit) — deploy.sh und CI erzeugen sie vorher mit git;
+# ohne git (hier im Build-Kontext) bleibt die vorhandene Datei oder es entsteht ein Minimum.
+RUN node scripts/build-info.mjs
 # DATABASE_URL wird für `prisma generate` gebraucht, nicht für eine echte Verbindung
 ENV DATABASE_URL="file:/data/studio45.db"
 RUN npx prisma generate && npm run build:next
@@ -18,10 +21,15 @@ RUN npx prisma generate && npm run build:next
 FROM node:22-slim AS runner
 WORKDIR /app
 
+# Welcher Stand ist das? Werden von deploy.sh / CI als --build-arg gesetzt.
+ARG APP_VERSION=unbekannt
+ARG APP_REVISION=unbekannt
 # Verknüpft das Image auf GHCR mit dem Repository (Quellcode, README, Lizenz)
 LABEL org.opencontainers.image.source="https://github.com/Standbye/studio45" \
       org.opencontainers.image.description="Studio45 — Kinder lernen KI-Kompetenz, indem sie per Sprache eigene Lernspiele bauen." \
-      org.opencontainers.image.licenses="AGPL-3.0-or-later"
+      org.opencontainers.image.licenses="AGPL-3.0-or-later" \
+      org.opencontainers.image.version="${APP_VERSION}" \
+      org.opencontainers.image.revision="${APP_REVISION}"
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
@@ -45,6 +53,7 @@ COPY --from=builder --chown=studio45:studio45 /app/prompts ./prompts
 COPY --from=builder --chown=studio45:studio45 /app/runtime ./runtime
 COPY --from=builder --chown=studio45:studio45 /app/vendor ./vendor
 COPY --from=builder --chown=studio45:studio45 /app/prisma/migrations ./prisma/migrations
+COPY --from=builder --chown=studio45:studio45 /app/build-info.json ./build-info.json
 COPY --chown=studio45:studio45 docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 

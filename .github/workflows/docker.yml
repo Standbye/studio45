@@ -18,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Volle Historie inkl. Tags, sonst kann `git describe` keine Version nennen
+          fetch-depth: 0
+
+      # build-info.json: welcher Stand steckt im Image (git describe, Commit, Zeit)
+      - run: node scripts/build-info.mjs
 
       - uses: docker/setup-buildx-action@v3
 
@@ -49,5 +55,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+            APP_REVISION=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

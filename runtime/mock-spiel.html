@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Sternenfänger</title>
+<!-- STUDIO45
+Titel: Sternenfänger
+Mechanik: Sterne fallen von oben, der Fänger folgt dem Finger. Jeder gefangene Stern gibt einen Punkt, drei verpasste Sterne beenden das Spiel. Mit jedem Stern wird es ein bisschen schneller.
+Steuerung: Tippen oder Ziehen auf dem Spielfeld (Touch und Maus).
+Stand: Platzhalter-Spiel des Lasttest-Mock-Anbieters — kein von Kindern gebautes Spiel.
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1d3a; font-family: system-ui, sans-serif; color: #fff; }
+  #hud { position: fixed; top: 12px; left: 16px; font-size: 20px; font-weight: 800; text-shadow: 0 2px 6px #0008; }
+  canvas { display: block; }
+  #ende { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(11, 29, 58, .85); text-align: center; }
+  #ende.versteckt { display: none; }
+  #ende h1 { margin: 0; font-size: 40px; }
+  #nochmal { font: inherit; font-size: 22px; font-weight: 800; padding: 16px 32px; border: 0; border-radius: 16px; background: #ffd54a; color: #3a2b00; }
+</style>
+</head>
+<body>
+<div id="hud">Punkte: <span id="punkte">0</span> · Verpasst: <span id="verpasst">0</span>/3</div>
+<canvas id="spiel"></canvas>
+<div id="ende" class="versteckt">
+  <h1>Spiel vorbei!</h1>
+  <p id="ergebnis"></p>
+  <button id="nochmal">Nochmal spielen</button>
+</div>
+<script>
+(function () {
+  var canvas = document.getElementById("spiel");
+  var ctx = canvas.getContext("2d");
+  var W = 800, H = 600;
+  function groesse() {
+    W = window.innerWidth || 800;
+    H = window.innerHeight || 600;
+    canvas.width = W;
+    canvas.height = H;
+  }
+  groesse();
+  window.addEventListener("resize", groesse);
+
+  var faenger = { x: W / 2, breite: 96 };
+  var sterne = [];
+  var punkte = 0, verpasst = 0, laeuft = true, tempo = 2.5, seitLetztem = 0;
+  var punkteEl = document.getElementById("punkte");
+  var verpasstEl = document.getElementById("verpasst");
+  var endeEl = document.getElementById("ende");
+  var ergebnisEl = document.getElementById("ergebnis");
+
+  function neuerStern() {
+    sterne.push({ x: 30 + Math.random() * Math.max(1, W - 60), y: -20, r: 14 + Math.random() * 10, v: tempo + Math.random() * 2 });
+  }
+  function bewege(e) {
+    var p = e.touches ? e.touches[0] : e;
+    if (!p) return;
+    var links = 0;
+    if (canvas.getBoundingClientRect) {
+      var rect = canvas.getBoundingClientRect();
+      links = rect && rect.left ? rect.left : 0;
+    }
+    faenger.x = p.clientX - links;
+  }
+  canvas.addEventListener("touchstart", function (e) { bewege(e); if (e.preventDefault) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener("touchmove", function (e) { bewege(e); if (e.preventDefault) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener("mousedown", bewege);
+  canvas.addEventListener("mousemove", function (e) { if (e.buttons) bewege(e); });
+
+  function stern(x, y, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) {
+      var radius = i % 2 === 0 ? r : r / 2;
+      var winkel = (Math.PI / 5) * i - Math.PI / 2;
+      ctx.lineTo(x + Math.cos(winkel) * radius, y + Math.sin(winkel) * radius);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "#ffd54a";
+    ctx.fill();
+  }
+  function zeichne() {
+    ctx.fillStyle = "#0b1d3a";
+    ctx.fillRect(0, 0, W, H);
+    for (var i = 0; i < sterne.length; i++) stern(sterne[i].x, sterne[i].y, sterne[i].r);
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(faenger.x, H - 60, faenger.breite / 2, Math.PI, 0);
+    ctx.fill();
+  }
+  function schritt() {
+    if (laeuft) {
+      seitLetztem++;
+      if (seitLetztem > Math.max(18, 50 - punkte)) { neuerStern(); seitLetztem = 0; }
+      for (var i = sterne.length - 1; i >= 0; i--) {
+        var s = sterne[i];
+        s.y += s.v;
+        var trifft = Math.abs(s.x - faenger.x) < faenger.breite / 2 + s.r && s.y > H - 60 - s.r && s.y < H - 40;
+        if (trifft) {
+          sterne.splice(i, 1);
+          punkte++;
+          tempo += 0.05;
+          punkteEl.textContent = String(punkte);
+        } else if (s.y > H + s.r) {
+          sterne.splice(i, 1);
+          verpasst++;
+          verpasstEl.textContent = String(verpasst);
+          if (verpasst >= 3) gameOver();
+        }
+      }
+      zeichne();
+    }
+    requestAnimationFrame(schritt);
+  }
+  function gameOver() {
+    laeuft = false;
+    ergebnisEl.textContent = "Ihr habt " + punkte + " Sterne gefangen!";
+    endeEl.className = "";
+    try {
+      var best = Number(localStorage.getItem("sternenfaenger-best") || 0);
+      if (punkte > best) localStorage.setItem("sternenfaenger-best", String(punkte));
+    } catch (e) { /* localStorage kann in der Sandbox fehlen */ }
+  }
+  document.getElementById("nochmal").addEventListener("click", function () {
+    sterne = []; punkte = 0; verpasst = 0; tempo = 2.5; laeuft = true;
+    punkteEl.textContent = "0";
+    verpasstEl.textContent = "0";
+    endeEl.className = "versteckt";
+  });
+  requestAnimationFrame(schritt);
+})();
+</script>
+</body>
+</html>

@@ -10,60 +10,6 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
-## Gesammelt für den nächsten Build (2026-09-20): Lasttest + Versionsanzeige
-
-Anlass: Konferenz-Workshop mit dem Tool. Zwei Bausteine:
-
-- [ ] **Lasttest „10 Gruppen parallel"** — simuliert einen kompletten Workshop gegen den
-      echten Server und prüft, ob er die Last verkraftet. Befund vorab: es gibt KEINE
-      globale Parallelitätsgrenze für Generierungen (nur die Sperre pro Gruppe); die
-      DOM-Stub-Prüfung startet pro Build einen eigenen Node-Prozess (8-s-Timeout);
-      Ratenbegrenzung hängt am Gerätecookie `s45_device`. Bausteine:
-      1. `runtime/mock-ki.mjs`: abhängigkeitsfreier Fake-Anbieter, der das
-         OpenAI-Protokoll spricht (`chat/completions` als SSE-Stream inkl.
-         `stream_options.include_usage`, plus Nicht-Stream für den Verbindungstest) und
-         ein festes, nachweislich lauffähiges Spiel (`runtime/mock-spiel.html`) liefert.
-         ENV: `MOCK_DAUER_MS` (Standard 45 s ± 20 %), `MOCK_FEHLERQUOTE` (kaputte
-         Antworten → Reparaturrunden), `MOCK_429_QUOTE` (Ratelimit-Simulation),
-         Tokenzahlen. Als Compose-Overlay `docker-compose.lasttest.yml` (Service
-         `mock-ki` im Container-Netz → Verbindung `http://mock-ki:9999/v1`). Kosten: 0 €.
-      2. `runtime/lasttest-seed.mjs` (läuft per `docker exec` im Container, raw SQLite
-         wie `migrate.mjs`): legt Verbindung „Lasttest-Mock", Workshop `lasttest`
-         (10 Gruppen, Phase Studio, 99 Versuche, keine Denkpause, hohes Budget,
-         Oberstufe) an und gibt die Gruppencodes als JSON aus; `--entfernen` räumt
-         Workshop + Spieldateien wieder weg.
-      3. `scripts/lasttest.ts` (Treiber vom Mac): simuliert 10 Tablets mit je eigenem
-         Cookie-Jar (State-Poll alle 4 s wie die echte Kinder-App) + 1 Beamer-Client
-         (30 s); zum Startsignal POSTen alle Gruppen `/generate` mit realistischen
-         Kinderwünschen (`--gleichzeitig` oder gestaffelt 0–8 s), Warten bis alle fertig,
-         `/play` abrufen, `--runden N`. Misst: Bauzeit + Erfolg je Gruppe, HTTP-Fehler,
-         Latenz-Perzentile der State-Polls WÄHREND der Builds (bleibt die UI flüssig?),
-         optional per `--ssh lsg-srv` alle 5 s `docker stats` (CPU/Speicher-Spitzen).
-         Urteil: alle Builds ok, keine 5xx/429, p95 State-Latenz < 1,5 s → grün, sonst
-         Exit ≠ 0 mit Befund.
-      4. `--echt`-Modus: derselbe Treiber gegen einen Workshop mit echtem Anbieter-Key —
-         deckt Anbieter-Ratelimits (RPM/TPM bei 10 gleichzeitigen Streams mit ~10k-Token-
-         Metaprompt) und echte Bauzeiten auf; Kostenschätzung vorab, Standard 1 Runde.
-      5. README-Abschnitt „Lasttest" + Ergebnisprotokoll.
-      Hypothesen, die der Test prüft: (a) 10 gleichzeitige Verifikations-Prozesse auf
-      kleinem VPS → Timeouts → falsche Fehlschläge → doppelte Kosten; (b) fehlende
-      Generierungs-Warteschlange; (c) 429 vom Anbieter; (d) SQLite unter paralleler
-      Schreiblast; (e) Speicher. Wahrscheinliche Folge-Fixes, falls rot: Semaphore für
-      die Verifikation (max. 3 parallel), Warteschlange mit Positionsanzeige für die
-      Kinder („Ihr seid Nr. 4"), Retry mit Backoff bei 429.
-- [ ] **Versionsanzeige „Was läuft auf dem Server?"** — heute nur `package.json`-Version;
-      der Server läuft aber oft ungetaggte Commits (aktuell: 1.1.0 + 3 Commits).
-      Umsetzung: `build-info.json` wird beim Bauen erzeugt — `deploy.sh` vor dem rsync,
-      der CI-Workflow vor `docker build`, lokal Fallback „dev" — mit `version`,
-      `git describe --tags --dirty --always` (z. B. `v1.1.0-3-gdd745e6`), Commit, Branch,
-      Bauzeitpunkt; Dockerfile kopiert sie in den Runner (wie `prompts/`), `.gitignore`.
-      `src/lib/version.ts` liest sie, `GET /api/version` liefert sie (öffentlich,
-      unkritisch), Anzeige in der Fußzeile der Login-Seite und im Admin-/Lehrer-Kopf:
-      „Studio45 v1.1.0-3-gdd745e6 · gebaut 20.09.2026 14:02". OCI-Labels `version`/
-      `revision` im Image (für `docker inspect`). **Selbstverifizierender Deploy**:
-      `deploy.sh` vergleicht nach dem Start `/api/version` mit dem lokalen
-      `git describe` und meldet ✓ oder Warnung.
-
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
@@ -121,6 +67,22 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       Hosting-Standort? (Kinder bleiben anonym, aber Lehrkraft-Daten und Schulnamen fallen an.)
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
+
+## Erledigt (gebaut am 2026-09-20)
+
+- [x] **Lasttest „10 Gruppen parallel"**: Mock-Anbieter `runtime/mock-ki.mjs` (OpenAI-
+      Protokoll mit SSE-Streaming, einstellbare Bauzeit, Fehler- und 429-Quote), festes
+      Testspiel `runtime/mock-spiel.html`, Compose-Overlay `docker-compose.lasttest.yml`,
+      Seed `runtime/lasttest-seed.mjs` (rohes SQLite, `--entfernen`), Treiber
+      `scripts/lasttest.ts` (10 Tablets mit eigenem Gerätecookie, State-Polling, Beamer,
+      `docker stats` per SSH, Urteil GRÜN/ROT). Lokal verifiziert: 10/10 Builds in einer
+      Runde, p95 der Kinder-App 88 ms; mit 50 % kaputten Antworten greifen die
+      Reparaturrunden (Tokens verdoppeln sich sichtbar), Urteil korrekt ROT.
+      **Gegen den Server noch nicht gefahren** — braucht den Deploy dieser Dateien.
+- [x] **Versionsanzeige**: `build-info.json` (git describe, Commit, Bauzeit) via
+      `scripts/build-info.mjs` in deploy.sh, CI und Dockerfile; `src/lib/version.ts`,
+      `GET /api/version`, Fußzeile in Login/Lehrer/Admin; OCI-Labels `version`/`revision`;
+      `deploy.sh` prüft nach dem Start, ob der Server den gebauten Stand meldet.
 
 ## Erledigt (gebaut am 2026-08-11)
 
