@@ -31,6 +31,17 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   „KI-Anweisung" als der Ort, an dem die Lehrkraft die Grenzen setzt; läuft parallel zum
   Unterstützungslevel (unten viel Führung, oben wenig).
 
+- **Vergleich Leitplanken** (Peter, 2026-10-01) — Grenzen für die KI sind dasselbe wie die
+  Leitplanken, die man aus Projekten, Ausbildung und Führung kennt: Auch Mitarbeitern setzen
+  wir im Business Leitplanken, in denen sie sich bewegen sollen. Der Zielkonflikt gehört dazu:
+  **je enger die Leitplanken, desto zielgerichteter — aber auch desto weniger kreativ.**
+  Anknüpfungspunkte: als Bild für Erwachsene tragfähiger als der Kinder-Vergleich
+  (Konferenz, Lehrkräfte, Business); das Unterstützungslevel 1–5 ist genau dieser Regler
+  (Stufe 1 weite Leitplanken mit Überraschungs-Budget, Stufe 5 enge: nur was verlangt ist);
+  für die Oberstufe als Lerninhalt: Leitplanken bewusst enger oder weiter stellen und das
+  Ergebnis vergleichen; beim Harness: wie eng die technischen Grenzen sein sollen, ist dieselbe
+  Abwägung.
+
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
