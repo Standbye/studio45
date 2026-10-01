@@ -10,6 +10,18 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ---
 
+## Leitgedanken (gesammelt — fließen in die weiteren Themen ein, kein eigener Bauauftrag)
+
+- **„Der KI wie Kindern klare Grenzen setzen"** (Peter, 2026-10-01) — KI braucht nicht mehr wie
+  früher ganz klare, kleinteilige Prompts; sie kann immer mehr selbst. Umso mehr braucht sie
+  Grenzen, in denen sie arbeiten soll. Ein Rahmen besteht aus Auftrag, Regeln, Spielraum,
+  harter Grenze und Kontrolle — genau wie bei den Kindern (Merksatz, Rollen, Versuche,
+  Plenum-Sperre, Verlauf). Im Produkt schon angelegt: fester Prompt-Kern, „Was du heute NICHT
+  tust" im Tagesfokus, Unterstützungslevel 1–5, Sandbox, Token-Budget, automatische Prüfung.
+  Anknüpfungspunkte: Harness (Grenzen technisch erzwingen statt nur erbitten — Statik-Linter,
+  Patch-Edits), Unterstützungslevel als „Grenz-Regler" erklären, Didaktik-Material
+  (Merksatz, KI-Tipps, Thementafel), Übung „Wunsch = Ziel + Grenze".
+
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
