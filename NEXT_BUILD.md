@@ -22,6 +22,15 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Patch-Edits), Unterstützungslevel als „Grenz-Regler" erklären, Didaktik-Material
   (Merksatz, KI-Tipps, Thementafel), Übung „Wunsch = Ziel + Grenze".
 
+- **Grenzen nach Klassenstufe staffeln** (Peter, 2026-10-01) — In den unteren Klassenstufen
+  wird das Thema Grenzen noch nicht ausdrücklich behandelt: Die Grenzen gibt die Lehrkraft
+  über das Preprompting mit (KI-Anweisung), die Kinder arbeiten einfach darin. In den höheren
+  Klassenstufen wird „Grenzen setzen" selbst zum Lerninhalt — die Schüler formulieren sie.
+  Anknüpfungspunkte: Altersprofile in `audience.ts` (Grundschule: Grenzen nur im Prompt,
+  keine Chips/Übungen dazu; Oberstufe: Grenzen als Impuls, Regel und Übung), Reiter
+  „KI-Anweisung" als der Ort, an dem die Lehrkraft die Grenzen setzt; läuft parallel zum
+  Unterstützungslevel (unten viel Führung, oben wenig).
+
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
