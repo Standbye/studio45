@@ -42,6 +42,49 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Ergebnis vergleichen; beim Harness: wie eng die technischen Grenzen sein sollen, ist dieselbe
   Abwägung.
 
+- **Die Idee ins Git, den Code baut die KI** (Peter, 2026-10-02, „zentraler Gedanke") — Die
+  Idee, ihre Weiterentwicklung und das Thema sind der relevante Faktor; das Ganze in Software
+  zu gießen ist keine Limitation mehr. Deshalb sollte im Repo eher das Konzept (Markdown oder
+  anderes) gepflegt und weiterentwickelt werden als der eigentliche Code — den lässt man die
+  KI daraus bauen.
+  Anknüpfungspunkte: passt zu den Grenzen-Leitgedanken oben (ein Konzept besteht aus Idee
+  **und** Grenzen — genau das, was der Mensch beitragen muss); die Lehren aus dem Piloten
+  gehören dann als ausdrückliche Regeln ins Konzept, sonst lernt jeder Neubau sie neu; harte
+  Grenzen (Sandbox, Schlüssel nur serverseitig, Limits, keine Personendaten) brauchen
+  zusätzlich prüfbare Abnahmekriterien, weil ein Neubau nicht zweimal denselben Code ergibt;
+  Schulen brauchen weiterhin etwas Lauffähiges (Image) und eine Instanz mit Daten einen
+  Migrationspfad. Offener Punkt: Die ursprüngliche Ideensammlung, aus der Studio45 gebaut
+  wurde, liegt bisher nicht im Repo.
+
+## Review-Befund (2026-10-10): Serverseitige Isolation der Spielprüfung — KRITISCH, vor Konferenz/Veröffentlichung fixen
+
+Befund (bestätigt): `runtime/dom-stub.mjs` führt KI-Code per `new Function` in einem normalen
+Node-Kindprozess aus — gleicher Benutzer wie die App, geerbte Umgebung (`DATABASE_URL`,
+`DATA_DIR`), Netz offen. Die Browser-Sandbox schützt diesen Schritt nicht. Geschattet werden nur
+Browser-Namen; `process`, `globalThis.fetch` und `await import("node:fs")` bleiben erreichbar.
+Angriffsweg: Prompt-Injection über den Kinderwunsch → Modell baut Exfiltrationscode ins Spiel →
+Prüfschritt liest `/data/studio45.db` (API-Schlüssel, Session-Secret) und schickt sie raus.
+Braucht Modell-Mitwirkung, aber 8 s reichen. Schaden: Schlüssel = echtes Geld + Daten.
+
+- [ ] **Stufe 1 (klein, sofort möglich)** in `verify.ts`/`dom-stub.mjs`: Kindprozess mit leerer
+      Umgebung (`env: {}`), `cwd` im Temp-Verzeichnis, Node-Permission-Model
+      (`--experimental-permission --allow-fs-read=<tmpfile>` — in Node 22 noch „experimental",
+      sperrt fs/child_process/worker), `--max-old-space-size=256`; im Stub `globalThis.fetch`,
+      `WebSocket`, `process` vor der Ausführung entfernen; Statik-Linter VOR der Ausführung
+      (lehnt `process.`, `import(`, `require(`, `globalThis`, `Function(`, `eval(` ab — ohnehin
+      Harness-Stufe 1). Schließt Dateisystem/Schlüssel; Netz bleibt theoretisch offen.
+- [ ] **Stufe 2 (echte Isolation, eine Variante wählen)**:
+      (a) **isolated-vm**: V8-Isolate im Prozess, kein `process`/`import`/Netz, Speicher- und
+      Zeitlimit — bleibt beim Prinzip „ein Container", aber natives Addon (Build-Kopplung an
+      Node-Version, schon jetzt g++ im deps-Stage). (b) **Prüf-Sidecar**: eigener Container
+      `studio45-verify` im `internal: true`-Compose-Netz (kein Egress), `read_only`,
+      `mem_limit`, `pids_limit`, keine Volumes/Schlüssel; App POSTet HTML an `VERIFY_URL`,
+      ohne ENV lokaler Fallback. Sauberste Trennung, aber zweiter Container für Selbst-Hoster.
+      Empfehlung: Stufe 1 sofort, dann (a) — und beides gleich mit einer Semaphore (max. 3
+      parallele Prüfungen) aus dem Lasttest-Plan.
+- Passt zum Leitgedanken „Grenzen": Die Grenzen im Prompt-Kern (kein fetch, kein externes
+  Script) sind Bitten — der Prüfschritt muss sie technisch erzwingen.
+
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
