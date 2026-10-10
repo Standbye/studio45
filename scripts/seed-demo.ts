@@ -52,7 +52,6 @@ async function main() {
         totalDays: 3,
         currentDay: 1,
         phase: "STUDIO",
-        guidance: "IMPULSE",
         learningGoal: "Baue Mathe-Aufgaben der 4. Klasse (kleines Einmaleins) als Hindernisse in das Spiel ein.",
         colorPrimary: "#1d4e89",
         colorAccent: "#c9a24b",

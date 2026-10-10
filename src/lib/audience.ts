@@ -1,5 +1,5 @@
 /**
- * Zielgruppe und Unterstützungslevel — die zwei Regler der Lehrkraft.
+ * Zielgruppe, Spielraum der KI und Hilfe beim Formulieren — die drei Regler der Lehrkraft.
  *
  * Beide wirken an drei Stellen zugleich: im Metaprompt (wie die KI baut), in der
  * Schüler-Oberfläche (Optik, Ansprache, Hilfen) und in den Standardwerten.
@@ -173,31 +173,30 @@ export function alterProfil(id: AgeGroup): AltersProfil {
 }
 
 // ---------------------------------------------------------------------------
-// Unterstützungslevel 1–5
+// Spielraum der KI (Leitplanken) 1–5
+//
+// Wie viel darf die KI selbst entscheiden und ergänzen? Stufe 1 = weite Leitplanken
+// (sie denkt mit und füllt Lücken), Stufe 5 = enge (sie tut nur, was verlangt ist).
+// Je enger, desto zielgerichteter — und desto weniger Überraschung.
+//
+// Bewusst GETRENNT von der Hilfe beim Formulieren (HILFE_STUFEN unten): Ein Kind kann
+// Sprachhilfe brauchen und trotzdem selbst entscheiden wollen. Früher hing beides an
+// einem Regler; die Spalte heißt aus dieser Zeit noch `supportLevel`.
 // ---------------------------------------------------------------------------
 
 export type SupportProfil = {
   stufe: number;
   name: string;
   kurz: string;
-  /** Zeigt die Oberfläche Satz-Chips? */
-  chips: boolean;
-  /** Team-Check-Dialog vor dem Bauen? */
-  teamCheck: boolean;
-  /** Ab welcher Kürze (Zeichen) schlägt der Prompt-Coach an? 0 = nie */
-  coachAbZeichen: number;
   promptBlock: string;
 };
 
 export const SUPPORT_STUFEN: SupportProfil[] = [
   {
     stufe: 1,
-    name: "Partner",
+    name: "Weit",
     kurz: "Die KI denkt mit und ergänzt großzügig, was fehlt.",
-    chips: true,
-    teamCheck: true,
-    coachAbZeichen: 120,
-    promptBlock: `## Unterstützung: Stufe 1 von 5 — die KI denkt mit
+    promptBlock: `## Spielraum der KI: Stufe 1 von 5 — weite Leitplanken, die KI denkt mit
 
 Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
 
@@ -212,12 +211,9 @@ Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
   },
   {
     stufe: 2,
-    name: "Unterstützend",
+    name: "Eher weit",
     kurz: "Die KI ergänzt Fehlendes und macht das Spiel rund.",
-    chips: true,
-    teamCheck: false,
-    coachAbZeichen: 80,
-    promptBlock: `## Unterstützung: Stufe 2 von 5 — freundlich unterstützend
+    promptBlock: `## Spielraum der KI: Stufe 2 von 5 — freundlich unterstützend
 
 - **Lücken füllen**, damit ein rundes Spiel entsteht: Was zum Spielen fehlt, ergänzt du.
 - **Überraschungs-Budget:** genau ein kleines Extra, das niemand verlangt hat.
@@ -225,12 +221,9 @@ Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
   },
   {
     stufe: 3,
-    name: "Ausgewogen",
+    name: "Mittel",
     kurz: "Die KI ergänzt nur, was zum Spielen nötig ist.",
-    chips: true,
-    teamCheck: false,
-    coachAbZeichen: 40,
-    promptBlock: `## Unterstützung: Stufe 3 von 5 — ausgewogen
+    promptBlock: `## Spielraum der KI: Stufe 3 von 5 — ausgewogen
 
 - **Nur ergänzen, was zum Spielen nötig ist.** Wo der Wunsch offen bleibt, triffst du die
   naheliegendste Entscheidung — mehr nicht.
@@ -239,12 +232,9 @@ Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
   },
   {
     stufe: 4,
-    name: "Zurückhaltend",
+    name: "Eher eng",
     kurz: "Die KI setzt um, was dasteht — Lücken bleiben sichtbar.",
-    chips: false,
-    teamCheck: false,
-    coachAbZeichen: 0,
-    promptBlock: `## Unterstützung: Stufe 4 von 5 — zurückhaltend
+    promptBlock: `## Spielraum der KI: Stufe 4 von 5 — zurückhaltend
 
 - **Setze um, was dasteht.** Ergänze nur das absolut Notwendige, damit die Datei
   vollständig und startbar ist.
@@ -254,12 +244,9 @@ Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
   },
   {
     stufe: 5,
-    name: "Werkzeug",
+    name: "Eng",
     kurz: "Die KI macht ausschließlich, was verlangt wird.",
-    chips: false,
-    teamCheck: false,
-    coachAbZeichen: 0,
-    promptBlock: `## Unterstützung: Stufe 5 von 5 — reines Werkzeug
+    promptBlock: `## Spielraum der KI: Stufe 5 von 5 — enge Leitplanken, reines Werkzeug
 
 - **Führe exakt und ausschließlich aus, was verlangt wird.** Nichts hinzufügen, nichts
   interpretieren, nichts verschönern.
@@ -271,4 +258,55 @@ Die Klasse braucht viel Rückenwind. Sei ein mitdenkender Partner:
 
 export function supportProfil(stufe: number): SupportProfil {
   return SUPPORT_STUFEN.find((s) => s.stufe === stufe) ?? SUPPORT_STUFEN[2];
+}
+
+// ---------------------------------------------------------------------------
+// Hilfe beim Formulieren 0–3
+//
+// Was bekommt die Gruppe auf ihrem Bildschirm an sprachlicher Unterstützung? Das ändert
+// nichts daran, was die KI aus dem Wunsch macht — die Entscheidung bleibt bei der Gruppe.
+// ---------------------------------------------------------------------------
+
+export type HilfeProfil = {
+  stufe: number;
+  name: string;
+  kurz: string;
+  /** Satzanfänge/Impulse über dem Eingabefeld */
+  chips: boolean;
+  /** Team-Check mit drei Fragen vor dem Bauen */
+  teamCheck: boolean;
+  /** Ab welcher Kürze (Zeichen) schlägt die Formulierungshilfe an? 0 = nie */
+  coachAbZeichen: number;
+};
+
+export const HILFE_STUFEN: HilfeProfil[] = [
+  { stufe: 0, name: "Keine", kurz: "Nur das Eingabefeld — die Gruppe formuliert ganz allein.", chips: false, teamCheck: false, coachAbZeichen: 0 },
+  { stufe: 1, name: "Impulse", kurz: "Satzanfänge passend zum Tag und ein Tipp unter dem Eingabefeld.", chips: true, teamCheck: false, coachAbZeichen: 0 },
+  {
+    stufe: 2,
+    name: "Impulse + Formulierungshilfe",
+    kurz: "Zusätzlich schlägt Studio45 bei kurzen Wünschen eine genauere Fassung vor — die Gruppe entscheidet, ob sie sie nimmt.",
+    chips: true,
+    teamCheck: false,
+    coachAbZeichen: 80,
+  },
+  {
+    stufe: 3,
+    name: "Volle Begleitung",
+    kurz: "Dazu ein Team-Check mit drei Fragen vor jedem Bauen; die Formulierungshilfe greift schon bei längeren Wünschen.",
+    chips: true,
+    teamCheck: true,
+    coachAbZeichen: 120,
+  },
+];
+
+export function hilfeProfil(stufe: number): HilfeProfil {
+  return HILFE_STUFEN.find((h) => h.stufe === stufe) ?? HILFE_STUFEN[2];
+}
+
+/** Beim Umstieg vom alten Ein-Regler-Modell: welche Hilfe hatte ein Workshop bisher? */
+export function hilfeAusAltemLevel(supportLevel: number): number {
+  if (supportLevel <= 1) return 3;
+  if (supportLevel <= 3) return 2;
+  return 0;
 }

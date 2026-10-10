@@ -81,8 +81,12 @@ model Workshop {
 
   // Didaktik
   ageGroup     AgeGroup @default(GRUNDSCHULE)
-  /// 1 = KI hilft maximal mit, 5 = KI macht nur, was gesagt wird
+  /// Spielraum der KI (Leitplanken): 1 = weit, die KI ergänzt und entscheidet mit;
+  /// 5 = eng, sie tut nur, was gesagt wird. (Name aus der Zeit, als hieran auch die Hilfen hingen.)
   supportLevel Int      @default(2)
+  /// Hilfe beim Formulieren auf der Schüler-Seite: 0 keine · 1 Impulse · 2 + Formulierungshilfe
+  /// · 3 + Team-Check. Unabhängig vom Spielraum der KI.
+  helpLevel    Int      @default(2)
   learningGoal String   @default("") // fachlicher Auftrag der Lehrkraft
   /// Eigene didaktische Zone des Prompts. Leer = die aus Altersstufe,
   /// Unterstützungslevel und Lernziel erzeugte Fassung wird verwendet.
@@ -127,6 +131,12 @@ model Group {
   /// Seit wann läuft die Generierung — daran erkennen wir hängengebliebene Läufe
   /// (Serverneustart mitten im Bau lässt sonst die Gruppe für immer gesperrt).
   generatingSince DateTime?
+
+  /// Director's Cut: Die Lehrkraft legt der Gruppe die verdichtete Spielbeschreibung vor.
+  /// dcStatus: "" (nichts offen) · "offen" · "ja" · "nein"
+  dcSpec    String @default("")
+  dcStatus  String @default("")
+  dcHinweis String @default("")
 
   createdAt DateTime    @default(now())
   prompts   PromptLog[]

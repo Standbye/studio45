@@ -82,7 +82,10 @@ also ein `pull` plus Neustart, mehr nicht.
 git clone https://github.com/Standbye/studio45.git && cd studio45 && docker compose up -d --build
 ```
 
-Dafür in der `docker-compose.yml` die Zeile `image:` durch `build: .` ersetzen. Oder direkt:
+Dafür in der `docker-compose.yml` beim Dienst `studio45` die Zeile `image:` durch `build: .`
+ersetzen und beim Dienst `pruefer` das gebaute Image eintragen (`image: studio45-studio45` —
+so nennt Compose es, wenn das Verzeichnis `studio45` heißt). Oder direkt, dann ohne
+getrennten Prüf-Container (siehe „Sicherheit in Kürze“):
 
 ```bash
 docker build -t studio45:local . && docker run -d --name studio45 -p 3000:3000 -v studio45-data:/data studio45:local
@@ -97,6 +100,8 @@ docker build -t studio45:local . && docker run -d --name studio45 -p 3000:3000 -
 | `DATABASE_URL` | nein | `file:/data/studio45.db` | SQLite-Datei |
 | `SESSION_SECRET` | nein | wird erzeugt | Mind. 32 Zeichen. Ohne Angabe wird einmalig ein Secret in `DATA_DIR` erzeugt und wiederverwendet. |
 | `PORT` | nein | `3000` | Port im Container |
+| `VERIFY_URL` | nein | leer | Adresse des Prüf-Containers (`http://pruefer:3100`, in der `docker-compose.yml` gesetzt). Leer = Spielprüfung im eigenen Container. Ist sie gesetzt und der Dienst nicht erreichbar, werden keine Spiele veröffentlicht — es gibt bewusst keinen stillen Rückfall. |
+| `VERIFY_PARALLEL` | nein | `3` | Gleichzeitige Prüfläufe ohne Prüf-Container (im Prüf-Container: `PRUEF_PARALLEL`) |
 
 **Produktivbetrieb:** Studio45 gehört hinter einen Reverse-Proxy mit TLS (nginx, Caddy, Traefik).
 Der Container selbst spricht nur HTTP und bindet in der mitgelieferten `docker-compose.yml`
@@ -185,6 +190,12 @@ den Tagesfokus und den Merksatz des Tages.
 - Von der KI erzeugte Spiele sind **untrusted Code**: Sie laufen ausschließlich im
   `sandbox="allow-scripts"`-iframe **ohne** `allow-same-origin` und mit strikter CSP
   (`default-src 'none'`, keine Netzwerkzugriffe). Im Spiel-Kontext existieren keine Tokens.
+- Auch die **Spielprüfung auf dem Server** behandelt den Code als feindlich: Vorprüfung auf
+  Muster, die im Browser nichts zu suchen haben, dann ein Prüflauf mit leerer Umgebung und
+  Node-Permission-Model (keine Dateien, keine Prozesse) — und in der mitgelieferten
+  `docker-compose.yml` in einem **eigenen Prüf-Container ohne Internet, ohne Datenbank,
+  ohne Zugangsdaten**. Wer Studio45 mit einem einzelnen `docker run` startet, hat nur die
+  ersten beiden Schichten; der Netzwerkzugriff des Prüflaufs ist dann nicht gesperrt.
 - Gruppen-Codes sind lange Zufallswerte (kein `g1`-Schema), Fehlversuche werden begrenzt.
 - Zugangsschlüssel der KI-Verbindungen bleiben serverseitig und werden maskiert angezeigt.
 - Alle Limits und Budgets werden **serverseitig** durchgesetzt; die Pause im Frontend ist nur UX.
@@ -269,7 +280,8 @@ Kinder-App **während** der Builds (p50/p95) und mit `--ssh` die CPU-/Speichersp
 Containers — am Ende ein klares GRÜN oder ROT mit Begründung (Exit-Code ≠ 0). Optionen:
 `--runden N`, `--pause S`, `--wunsch "…"`. Der Mock lässt sich über Umgebungsvariablen
 verschärfen: `MOCK_DAUER_MS` (Bauzeit), `MOCK_FEHLERQUOTE=0.5` (jede zweite Antwort
-kaputt → Reparaturrunden), `MOCK_429_QUOTE` (Ratelimit-Antworten). Ohne Override-Datei
+kaputt → Reparaturrunden), `MOCK_429_QUOTE` (Ratelimit-Antworten), `MOCK_ANGRIFF=1` (jedes Spiel enthält Code, der
+Umgebung und Dateien auslesen will — Sicherheitsprobe: alle Builds müssen scheitern). Ohne Override-Datei
 einfach `-f docker-compose.override.yml` weglassen.
 
 Was der Mock **nicht** zeigt: die Ratelimits des echten Anbieters. Dafür den Lasttest-Workshop

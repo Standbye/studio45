@@ -2,20 +2,23 @@
 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { SUPPORT_STUFEN } from "@/lib/audience";
+import { HILFE_STUFEN, SUPPORT_STUFEN } from "@/lib/audience";
 
 /**
- * Regler 1–5 für die Unterstützung durch die KI. Die Wirkung steht direkt
- * darunter — sonst rät die Lehrkraft, was „3" bedeutet.
+ * Zwei getrennte Regler:
+ *  - Spielraum der KI (Leitplanken): Wie viel darf die KI selbst ergänzen und entscheiden?
+ *  - Hilfe beim Formulieren: Welche sprachliche Unterstützung sieht die Gruppe?
+ * Früher war das ein Regler — wer Sprachhilfe brauchte, bekam zwangsläufig eine KI, die
+ * mitentscheidet. Die Wirkung steht direkt darunter, sonst rät man, was „3" bedeutet.
  */
-export function SupportLevelWahl({ standard }: { standard: number }) {
+export function SpielraumWahl({ standard }: { standard: number }) {
   const [stufe, setStufe] = useState(standard);
   const profil = SUPPORT_STUFEN.find((s) => s.stufe === stufe) ?? SUPPORT_STUFEN[2];
 
   return (
     <div className="space-y-2">
       <Label htmlFor="supportLevel">
-        Unterstützung durch die KI: <span className="text-primary">{profil.stufe} — {profil.name}</span>
+        Spielraum der KI (Leitplanken): <span className="text-primary">{profil.stufe} — {profil.name}</span>
       </Label>
       <input
         id="supportLevel"
@@ -29,20 +32,40 @@ export function SupportLevelWahl({ standard }: { standard: number }) {
         className="w-full accent-primary"
       />
       <div className="flex justify-between text-[0.7rem] text-muted-foreground">
-        <span>1 · viel Hilfe</span>
-        <span>5 · reines Werkzeug</span>
+        <span>1 · weit: die KI denkt mit</span>
+        <span>5 · eng: nur was verlangt ist</span>
       </div>
       <p className="text-xs text-muted-foreground">
-        {profil.kurz}
-        {profil.chips || profil.teamCheck || profil.coachAbZeichen > 0 ? " Auf der Schüler-Seite: " : " Keine Hilfen auf der Schüler-Seite."}
-        {[
-          profil.chips ? "Satz-Vorschläge" : null,
-          profil.teamCheck ? "Team-Check vor dem Bauen" : null,
-          profil.coachAbZeichen > 0 ? "Formulierungshilfe bei kurzen Wünschen" : null,
-        ]
-          .filter(Boolean)
-          .join(", ")}
-        {profil.chips || profil.teamCheck || profil.coachAbZeichen > 0 ? "." : ""}
+        {profil.kurz} Je enger die Leitplanken, desto genauer trifft das Ergebnis den Wunsch — und
+        desto weniger überrascht es. Was die KI von sich aus ergänzt, sieht die Gruppe nach jedem Bau.
+      </p>
+    </div>
+  );
+}
+
+export function HilfeWahl({ standard }: { standard: number }) {
+  const [stufe, setStufe] = useState(standard);
+  const profil = HILFE_STUFEN.find((h) => h.stufe === stufe) ?? HILFE_STUFEN[2];
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="helpLevel">Hilfe beim Formulieren</Label>
+      <select
+        id="helpLevel"
+        name="helpLevel"
+        value={stufe}
+        onChange={(e) => setStufe(Number(e.target.value))}
+        className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+      >
+        {HILFE_STUFEN.map((h) => (
+          <option key={h.stufe} value={h.stufe}>
+            {h.name}
+          </option>
+        ))}
+      </select>
+      <p className="text-xs text-muted-foreground">
+        {profil.kurz} Das ändert nichts daran, was die KI aus dem Wunsch macht — entscheiden
+        darf die Gruppe selbst.
       </p>
     </div>
   );

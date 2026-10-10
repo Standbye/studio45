@@ -14,8 +14,52 @@ services:
       BASE_URL: "http://localhost:3000"
       # Optional: eigenes Session-Secret (sonst wird eins im Volume erzeugt)
       # SESSION_SECRET: "bitte-mindestens-32-zeichen-lang-eintragen"
+      # Spielprüfung im getrennten Prüf-Container (siehe unten). Ohne diese Zeile prüft
+      # Studio45 im eigenen Container — gehärtet, aber mit offenem Netzwerk.
+      VERIFY_URL: "http://pruefer:3100"
     volumes:
       - studio45-data:/data
+    networks:
+      - default
+      - pruefnetz
+    depends_on:
+      - pruefer
+
+  # Prüf-Container: Hier — und nur hier — läuft der von der KI erzeugte Spielcode auf dem
+  # Server, bevor ein Spiel veröffentlicht wird. Deshalb: kein Internet (internes Netz),
+  # keine Daten (kein Volume mit der Datenbank), keine Zugangsdaten, schreibgeschützt,
+  # knappe Grenzen für Speicher und Prozesse. Dasselbe Image, anderer Startbefehl.
+  pruefer:
+    image: ghcr.io/standbye/studio45:latest
+    container_name: studio45-pruefer
+    restart: unless-stopped
+    entrypoint: ["node", "runtime/pruefer.mjs"]
+    command: []
+    environment:
+      PRUEF_PARALLEL: "3"
+    networks:
+      - pruefnetz
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /data:size=1m
+    mem_limit: 1g
+    pids_limit: 128
+    cpus: 1.5
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3100/status').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+
+networks:
+  # Kein Weg nach draußen: Aus diesem Netz erreicht man nur die beiden Container selbst.
+  pruefnetz:
+    internal: true
 
 volumes:
   studio45-data:

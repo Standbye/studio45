@@ -128,7 +128,7 @@ export function promptBloecke(k: PromptKontext): PromptBlock[] {
       titel: "Didaktische Zone",
       herkunft: eigene
         ? "eigene Fassung dieses Workshops"
-        : `erzeugt aus: ${alter.name} · Unterstützung ${support.stufe} (${support.name})${
+        : `erzeugt aus: ${alter.name} · Spielraum der KI ${support.stufe} (${support.name})${
             k.learningGoal.trim() ? " · Lernziel" : ""
           }`,
       editierbar: true,

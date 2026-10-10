@@ -47,6 +47,10 @@ type KidState = {
     energie: string[];
   };
   challenge: { platz: number; von: number; fuehrtTokens: number } | null;
+  /** Aus dem Steckbrief des Spiels: was die Gruppe verlangt und was die KI ergänzt hat */
+  herkunft: { gruppe: string[]; ki: string[] } | null;
+  /** Die Lehrkraft legt eine Beschreibung für den Director's Cut zur Abstimmung vor */
+  directorCut: { spec: string } | null;
   branding: {
     primary: string;
     accent: string;
@@ -89,6 +93,11 @@ export function KidStudio({ code }: { code: string }) {
   const [checks, setChecks] = useState<boolean[]>([false, false, false]);
   const [coachVorschlag, setCoachVorschlag] = useState<string | null>(null);
   const [showVerbrauch, setShowVerbrauch] = useState(false);
+  const [showHerkunft, setShowHerkunft] = useState(false);
+  const [geradeGebaut, setGeradeGebaut] = useState(false);
+  const [dcNein, setDcNein] = useState(false);
+  const [dcHinweis, setDcHinweis] = useState("");
+  const [dcSendet, setDcSendet] = useState(false);
   const [coachGezeigt, setCoachGezeigt] = useState(false);
   const [coachLaeuft, setCoachLaeuft] = useState(false);
   const gameVersionRef = useRef(0);
@@ -230,6 +239,7 @@ export function KidStudio({ code }: { code: string }) {
     setBusy(true);
     setBusyMsg(WARTE_SPRUECHE[0]);
     setFeedback(null);
+    setGeradeGebaut(false);
 
     // Nicht ewig hängen bleiben, wenn die Antwort nie kommt
     const abbruch = new AbortController();
@@ -247,6 +257,7 @@ export function KidStudio({ code }: { code: string }) {
       if (out.ok) {
         setText("");
         setFeedback(state.texte.fertig);
+        setGeradeGebaut(true);
         await refresh();
       } else {
         setFeedback(`💡 ${out.reason ?? "Das hat nicht geklappt — probiert es nochmal."}`);
@@ -279,6 +290,24 @@ export function KidStudio({ code }: { code: string }) {
     await refresh();
   }
 
+  /** Antwort der Gruppe auf die vorgelegte Director's-Cut-Beschreibung */
+  async function antworteDirectorCut(antwort: "ja" | "nein") {
+    setDcSendet(true);
+    try {
+      await fetch(`/api/g/${code}/director`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ antwort, hinweis: antwort === "nein" ? dcHinweis.trim() : undefined }),
+      });
+    } catch {
+      /* die Vorlage bleibt offen und erscheint beim nächsten Abgleich wieder */
+    }
+    setDcNein(false);
+    setDcHinweis("");
+    setDcSendet(false);
+    await refresh();
+  }
+
   if (!state) {
     return (
       <main className="flex min-h-svh items-center justify-center bg-slate-100">
@@ -308,6 +337,69 @@ export function KidStudio({ code }: { code: string }) {
   const wartezeit = Math.max(bauSekunden, state.laufSekunden);
   const wartetZuLang = baut && wartezeit > Math.max(120, state.dauerSchaetzung * 2);
 
+  // Es ist das Spiel der Gruppe: Bevor die Lehrkraft daraus ein Gesamtspiel bauen lässt,
+  // sieht die Gruppe die Beschreibung und stimmt zu oder widerspricht.
+  const directorCutDialog = state.directorCut && (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 text-left text-slate-900">
+      <div className="max-h-[92svh] w-full max-w-xl space-y-4 overflow-y-auto bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }}>
+        <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+          🎬 Passt das zu eurem Spiel?
+        </h2>
+        <p className="text-sm text-slate-600">
+          Aus all euren Wünschen soll ein großes Gesamtspiel entstehen. So ist es beschrieben —
+          lest es zusammen. Es ist euer Spiel: Ihr entscheidet, ob das stimmt.
+        </p>
+        <p className="whitespace-pre-wrap rounded-lg bg-slate-100 p-4 text-base leading-relaxed">{state.directorCut.spec}</p>
+        {dcNein ? (
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold">Was soll anders sein?</label>
+            <textarea
+              value={dcHinweis}
+              onChange={(e) => setDcHinweis(e.target.value)}
+              rows={3}
+              maxLength={500}
+              placeholder="Zum Beispiel: Unsere Figur ist ein Fuchs, kein Hase."
+              className="w-full resize-none border-2 border-slate-200 p-3 text-base"
+              style={{ borderRadius: "var(--s45-radius)" }}
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setDcNein(false)} className="flex-1 border-2 border-slate-300 py-3 font-bold text-slate-600" style={{ borderRadius: "var(--s45-radius)" }}>
+                Zurück
+              </button>
+              <button
+                onClick={() => antworteDirectorCut("nein")}
+                disabled={dcSendet}
+                className="flex-1 py-3 font-black disabled:opacity-40"
+                style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
+              >
+                Abschicken
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              onClick={() => setDcNein(true)}
+              disabled={dcSendet}
+              className="flex-1 border-2 border-slate-300 py-3 font-bold text-slate-700 disabled:opacity-40"
+              style={{ borderRadius: "var(--s45-radius)" }}
+            >
+              Nein, das passt nicht
+            </button>
+            <button
+              onClick={() => antworteDirectorCut("ja")}
+              disabled={dcSendet}
+              className="flex-1 py-3 font-black disabled:opacity-40"
+              style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", borderRadius: "var(--s45-radius)" }}
+            >
+              Ja, so soll es werden
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   // Plenum-/Pause-Sperre: Kinder sehen Wartebildschirm mit Merksatz
   if (state.phase !== "STUDIO") {
     return (
@@ -315,6 +407,7 @@ export function KidStudio({ code }: { code: string }) {
         style={{ ...vars, color: state.branding.aufPrimary }}
         className="flex min-h-svh flex-col items-center justify-center gap-6 p-8 text-center"
       >
+        {directorCutDialog}
         <div className="absolute inset-0 -z-10" style={{ background: "linear-gradient(160deg, var(--s45-primary), var(--s45-primary-dunkel))" }} />
         {state.branding.hasLogo && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -417,6 +510,16 @@ export function KidStudio({ code }: { code: string }) {
       {/* Eingabe */}
       <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         {feedback && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">{feedback}</p>}
+        {geradeGebaut && state.herkunft && state.herkunft.ki.length > 0 && (
+          <div className="rounded-lg border-2 border-slate-200 px-3 py-2 text-sm">
+            <span className="font-semibold">Das hat die KI von sich aus ergänzt:</span>{" "}
+            {state.herkunft.ki.slice(0, 4).join(" · ")}
+            {state.herkunft.ki.length > 4 ? " …" : ""}{" "}
+            <button onClick={() => setShowHerkunft(true)} className="font-semibold underline underline-offset-2" style={{ color: "var(--s45-primary-text)" }}>
+              Ansehen und entscheiden
+            </button>
+          </div>
+        )}
         {cooldown > 0 && (
           <p className="rounded-lg px-3 py-2 text-center text-sm font-bold" style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}>
             ⏸️ Denkpause: Testet euer Spiel und besprecht den nächsten Schritt — weiter in {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, "0")}
@@ -497,6 +600,14 @@ export function KidStudio({ code }: { code: string }) {
             {state.challenge && <> · 🏆 Platz {state.challenge.platz} von {state.challenge.von}</>} ⓘ
           </button>
         )}
+        {state.herkunft && (
+          <button
+            onClick={() => setShowHerkunft(true)}
+            className="mx-auto block text-center text-xs text-slate-400 underline-offset-2 hover:underline"
+          >
+            🧩 Was kam von uns — was von der KI?
+          </button>
+        )}
       </footer>
 
       {/* Formulierungshilfe: der eigene Wunsch und eine genauere Fassung im Vergleich */}
@@ -557,6 +668,62 @@ export function KidStudio({ code }: { code: string }) {
               className="w-full text-center text-sm text-slate-500 underline"
             >
               Bei unserem Satz bleiben
+            </button>
+          </div>
+        </div>
+      )}
+
+      {directorCutDialog}
+
+      {/* Wer hat was entschieden? Die Gruppe soll sagen können, welche Idee ihre eigene ist. */}
+      {showHerkunft && state.herkunft && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[92svh] w-full max-w-lg space-y-4 overflow-y-auto bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+              🧩 Von uns — und von der KI
+            </h2>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Das haben wir verlangt</p>
+              {state.herkunft.gruppe.length === 0 && <p className="text-sm text-slate-500">Noch nichts eingetragen.</p>}
+              <ul className="space-y-1">
+                {state.herkunft.gruppe.map((eintrag) => (
+                  <li key={eintrag} className="rounded-lg bg-slate-100 px-3 py-2 text-base">{eintrag}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Das hat die KI von sich aus ergänzt</p>
+              {state.herkunft.ki.length === 0 && <p className="text-sm text-slate-500">Nichts — die KI hat nur gebaut, was ihr gesagt habt.</p>}
+              <ul className="space-y-1">
+                {state.herkunft.ki.map((eintrag) => (
+                  <li key={eintrag} className="flex items-center gap-2 rounded-lg border-2 border-slate-200 px-3 py-2 text-base">
+                    <span className="flex-1">{eintrag}</span>
+                    <button
+                      onClick={() => {
+                        setText(`Nimm das wieder heraus: ${eintrag}. Alles andere bleibt, wie es ist.`);
+                        setShowHerkunft(false);
+                      }}
+                      disabled={baut}
+                      className="shrink-0 rounded-full border-2 px-3 py-1 text-xs font-semibold disabled:opacity-40"
+                      style={{ borderColor: "var(--s45-primary-text)", color: "var(--s45-primary-text)" }}
+                    >
+                      Wollen wir nicht
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-xs text-slate-500">
+              Die KI schlägt vor — ihr entscheidet. Was euch gefällt, bleibt. „Wollen wir nicht“ schreibt
+              den Wunsch ins Eingabefeld; gebaut wird erst, wenn ihr ihn abschickt. Die Liste führt die KI
+              selbst — prüft im Spiel, ob sie stimmt.
+            </p>
+            <button
+              onClick={() => setShowHerkunft(false)}
+              className="w-full py-3 font-bold"
+              style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
+            >
+              Alles klar!
             </button>
           </div>
         </div>

@@ -99,11 +99,33 @@ lernaufgaben: <Ob und wie Aufgaben eingebaut sind>
 umgesetzt:
 - <erfüllter Wunsch>
 - <erfüllter Wunsch>
+von_der_gruppe:
+- <was die Gruppe ausdrücklich verlangt hat, in ihren Worten, kurz>
+von_der_ki:
+- <was DU ohne Auftrag ergänzt oder entschieden hast, kurz und konkret>
 -->
 ```
 
 Ist bereits ein Steckbrief vorhanden: übernimm ihn, ergänze den neuen Wunsch unter
 `umgesetzt` und ändere nur die Felder, die sich wirklich geändert haben.
+
+### Ehrlich trennen: Was kam von der Gruppe, was von dir?
+
+Die Gruppe soll jederzeit erklären können, welche Idee ihre eigene ist und was du
+hinzugefügt hast. Deshalb führst du die beiden Listen `von_der_gruppe` und `von_der_ki`
+gewissenhaft — sie werden der Gruppe nach jedem Bau angezeigt.
+
+- Unter `von_der_gruppe` steht nur, was ausdrücklich verlangt wurde.
+- Unter `von_der_ki` steht **alles**, was du selbst entschieden hast: jede gefüllte Lücke
+  (Titel, Farben, Gegner, Punkte, Spielende), jedes Extra, jede Politur. Auch Kleinigkeiten.
+- Jeder Eintrag ist ein kurzer Halbsatz, den ein Kind versteht („Sterne funkeln beim
+  Einsammeln"), höchstens 60 Zeichen. Keine Technik-Wörter.
+- Übernimmt die Gruppe später etwas ausdrücklich („das Funkeln gefällt uns, lass es so")
+  oder verlangt es selbst, wandert der Eintrag nach `von_der_gruppe`.
+- Verlangt die Gruppe, etwas wieder herauszunehmen: Entferne es aus dem Spiel **und** aus
+  der Liste.
+- Hast du nichts ergänzt, steht unter `von_der_ki` genau ein Eintrag: `- nichts`.
+- Höchstens zwölf Einträge je Liste — ältere, unwichtige zusammenfassen.
 
 ## Verboten, weil es Kinder ausbremst
 

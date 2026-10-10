@@ -56,58 +56,20 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Migrationspfad. Offener Punkt: Die ursprüngliche Ideensammlung, aus der Studio45 gebaut
   wurde, liegt bisher nicht im Repo.
 
-## Review-Befund (2026-10-10): Serverseitige Isolation der Spielprüfung — KRITISCH, vor Konferenz/Veröffentlichung fixen
+## Offen nach dem Bau vom 2026-10-10
 
-Befund (bestätigt): `runtime/dom-stub.mjs` führt KI-Code per `new Function` in einem normalen
-Node-Kindprozess aus — gleicher Benutzer wie die App, geerbte Umgebung (`DATABASE_URL`,
-`DATA_DIR`), Netz offen. Die Browser-Sandbox schützt diesen Schritt nicht. Geschattet werden nur
-Browser-Namen; `process`, `globalThis.fetch` und `await import("node:fs")` bleiben erreichbar.
-Angriffsweg: Prompt-Injection über den Kinderwunsch → Modell baut Exfiltrationscode ins Spiel →
-Prüfschritt liest `/data/studio45.db` (API-Schlüssel, Session-Secret) und schickt sie raus.
-Braucht Modell-Mitwirkung, aber 8 s reichen. Schaden: Schlüssel = echtes Geld + Daten.
-
-- [ ] **Stufe 1 (klein, sofort möglich)** in `verify.ts`/`dom-stub.mjs`: Kindprozess mit leerer
-      Umgebung (`env: {}`), `cwd` im Temp-Verzeichnis, Node-Permission-Model
-      (`--experimental-permission --allow-fs-read=<tmpfile>` — in Node 22 noch „experimental",
-      sperrt fs/child_process/worker), `--max-old-space-size=256`; im Stub `globalThis.fetch`,
-      `WebSocket`, `process` vor der Ausführung entfernen; Statik-Linter VOR der Ausführung
-      (lehnt `process.`, `import(`, `require(`, `globalThis`, `Function(`, `eval(` ab — ohnehin
-      Harness-Stufe 1). Schließt Dateisystem/Schlüssel; Netz bleibt theoretisch offen.
-- [ ] **Stufe 2 (echte Isolation, eine Variante wählen)**:
-      (a) **isolated-vm**: V8-Isolate im Prozess, kein `process`/`import`/Netz, Speicher- und
-      Zeitlimit — bleibt beim Prinzip „ein Container", aber natives Addon (Build-Kopplung an
-      Node-Version, schon jetzt g++ im deps-Stage). (b) **Prüf-Sidecar**: eigener Container
-      `studio45-verify` im `internal: true`-Compose-Netz (kein Egress), `read_only`,
-      `mem_limit`, `pids_limit`, keine Volumes/Schlüssel; App POSTet HTML an `VERIFY_URL`,
-      ohne ENV lokaler Fallback. Sauberste Trennung, aber zweiter Container für Selbst-Hoster.
-      Empfehlung: Stufe 1 sofort, dann (a) — und beides gleich mit einer Semaphore (max. 3
-      parallele Prüfungen) aus dem Lasttest-Plan.
-- Passt zum Leitgedanken „Grenzen": Die Grenzen im Prompt-Kern (kein fetch, kein externes
-  Script) sind Bitten — der Prüfschritt muss sie technisch erzwingen.
-
-## Review-Befunde Didaktik (2026-10-10) — bewertet, nicht gebaut
-
-- [ ] **Hilfe beim Formulieren und Spielraum der KI trennen** (Befund berechtigt, hoch).
-      Bestätigt in `audience.ts`: `supportLevel` schaltet zugleich Chips/Team-Check/Coach
-      (Hilfe für die Kinder) und Lückenfüllen/Überraschungs-Budget (Freiheit der KI). Ein Kind,
-      das Sprachhilfe braucht, bekommt zwangsläufig eine KI, die ungefragt ergänzt. Vorschlag:
-      zwei Regler — „Hilfe beim Formulieren" (aus/Impulse/Coach+Team-Check) und „Leitplanken
-      der KI" (eng … weit; = Peters Leitplanken-Gedanke). Migration: beide aus dem alten Wert
-      ableiten. Ergänzungen sichtbar machen statt jede einzeln bestätigen zu lassen (45 Minuten
-      sind knapp): Die KI führt im Steckbrief „Von euch / Von der KI ergänzt", die Kinder-App
-      zeigt das nach jedem Bau. Echte Vorab-Bestätigung nur als Option für höhere Stufen.
-      Director's Cut: heute reine Lehrkraft-Aktion — Spezifikation der Gruppe zeigen und
-      freigeben lassen. Erfolgskriterium übernehmen: Kinder können sagen, was von ihnen stammt.
-- [ ] **KI-Fehler als Lernfall** (Befund berechtigt; im Arbeitsstand schon weitgehend behoben).
-      Die zitierten Stellen stehen im committeten Stand und laufen so auf dem Server („versteht
-      dich wie ein Mensch", Bugreport nur mit Ursachen beim Kind). Im uncommitteten Arbeitsstand
-      (Material-Überarbeitung, 6 Dateien + 2 neue) sind sie korrigiert: neue Bugreport-Ursache
-      „Die KI hat trotz klarem Wunsch einen Fehler gemacht", Lernprobe im Ich-kann-Bogen,
-      Prüferfahrung im Plenum. Offen: (1) Arbeitsstand prüfen (PDF-Härtetest), committen,
-      deployen. (2) Der Lernfall ist bisher eine falsche Rechenantwort auf Papier, kein Spiel —
-      Idee: ein vorbereitetes Spiel mit klarem Auftrag und eingebautem Fehler, das die Lehrkraft
-      einer Gruppe oder dem Beamer laden kann (Basis: `runtime/mock-spiel.html`).
-      (3) Merksatz Tag 1 („versteht mich die KI") auf dieselbe Vermenschlichung prüfen.
+- [ ] **Deploy der Isolation** (auf Ansage): Auf dem Server baut die Override-Datei das Image
+      selbst — dort muss der neue Dienst `pruefer` das gebaute Image bekommen
+      (`pruefer: image: studio45-studio45` in `/opt/studio45/docker-compose.override.yml`),
+      sonst zieht er das alte GHCR-Image ohne `runtime/pruefer.mjs`. Danach prüfen: Admin-Fußzeile
+      zeigt „getrennter Prüf-Container", Sicherheitsprobe mit `MOCK_ANGRIFF=1`, Lasttest.
+- [ ] **Für Codex (Material):** Neu im Produkt und im Material noch nicht erwähnt — Lernfall-Seite
+      (`/lehrer/<id>/lernfall`, für Gruppen `/w/<slug>/lernfall`), Anzeige „Von uns — und von der KI"
+      nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe
+      beim Director's Cut; die Regler heißen jetzt „Spielraum der KI (Leitplanken)" und
+      „Hilfe beim Formulieren". Merksatz Tag 1 („versteht mich die KI") auf Vermenschlichung prüfen.
+- [ ] **Vorab-Bestätigung von KI-Ergänzungen** als Option für höhere Stufen (heute: sichtbar machen
+      und nachträglich herausnehmen) — nicht gebaut, bewusst.
 
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
@@ -166,6 +128,37 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       Hosting-Standort? (Kinder bleiben anonym, aber Lehrkraft-Daten und Schulnamen fallen an.)
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
+
+## Erledigt (gebaut am 2026-10-10)
+
+- [x] **Spielprüfung isoliert (Review „kritisch")** — drei Schichten: (1) Vorprüfung ohne
+      Ausführung in `src/lib/verify.ts` (lehnt `process.…`, `require(`, `import(`, `node:`,
+      `eval(`, Function-Konstruktor ab); (2) gehärteter Prüflauf `runtime/pruef-lauf.mjs`
+      (leere Umgebung, `--permission`, Speicher-/Zeitlimit; der Stub entfernt `process`/`fetch`);
+      (3) eigener Prüf-Container `pruefer` (`runtime/pruefer.mjs`) im internen Docker-Netz ohne
+      Ausgang, read-only, ohne Daten. Höchstens 3 Prüfläufe gleichzeitig. Fällt der Prüfdienst
+      aus, gibt es keinen stillen Rückfall, keine Reparaturrunde und eine eigene Meldung.
+      Nachgewiesen: im Server-Container (Node 22) blockiert das Permission-Model Dateien,
+      Schreiben, Kindprozesse, Worker — das Netz nicht (dafür Schicht 3); Angriffsspiel des
+      Mock-Anbieters (`MOCK_ANGRIFF=1`) wird abgelehnt. **Schicht 3 ist noch nicht auf dem
+      Server gelaufen** (lokal als Prozess getestet, Compose-Datei nur syntaktisch geprüft).
+- [x] **Regler getrennt (Review „Sprachhilfe ≠ Spielraum")** — `supportLevel` ist jetzt nur noch
+      der Spielraum der KI (Leitplanken, 1 weit … 5 eng), neu `helpLevel` 0–3 für die Hilfe beim
+      Formulieren (Impulse, Formulierungshilfe, Team-Check). Migration `20261010090000` leitet
+      den neuen Wert aus dem alten ab (nur ADD COLUMN).
+- [x] **KI-Ergänzungen sichtbar** — der Steckbrief führt `von_der_gruppe` / `von_der_ki`
+      (`prompts/kern.md`), `src/lib/steckbrief.ts` liest sie, die Schüler-Seite zeigt sie nach
+      jedem Bau und unter „Was kam von uns — was von der KI?"; „Wollen wir nicht" schreibt den
+      Rücknahme-Wunsch ins Eingabefeld. Die Liste schreibt das Modell selbst — ob echte Modelle
+      sie zuverlässig führen, ist erst mit einem echten Lauf belegt.
+- [x] **Director's Cut mit Zustimmung der Gruppe** — Lehrkraft legt die Beschreibung vor, die
+      Gruppe antwortet auf ihrem Gerät mit Ja/Nein (+ Hinweis); gebaut wird nur die zugestimmte
+      Fassung. „Ohne Abstimmung bauen" bleibt möglich und steht im Audit-Log.
+- [x] **Lernfall „Klarer Auftrag, fehlerhaftes Ergebnis"** — vorbereitetes Spiel
+      (`runtime/lernfall.html`) mit drei Abweichungen vom Auftrag; die „reparierte" zweite Fassung
+      behebt nur zwei. Seite für Gruppen/Beamer `/w/<slug>/lernfall`, Lehrkraft-Seite mit Ablauf
+      und Lösung `/lehrer/<id>/lernfall`. Verhalten beider Fassungen per Simulation bestätigt.
+- [x] **Getrennte Worktrees** für Claude und Codex (Regeln in `AGENTS.md`).
 
 ## Erledigt (gebaut am 2026-09-20)
 

@@ -11,6 +11,8 @@
 //      MOCK_FEHLERQUOTE (0..1: Anteil kaputter Antworten → Reparaturrunden)
 //      MOCK_429_QUOTE (0..1: Anteil Ratelimit-Antworten)
 //      MOCK_TOKENS_IN (9500) · MOCK_TOKENS_OUT (6500)
+//      MOCK_ANGRIFF (0/1: jedes Spiel enthält Code, der Umgebung und Dateien lesen will —
+//      Sicherheitsprobe: die Spielprüfung muss das ablehnen)
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -24,6 +26,7 @@ const FEHLERQUOTE = Number(process.env.MOCK_FEHLERQUOTE ?? 0);
 const QUOTE_429 = Number(process.env.MOCK_429_QUOTE ?? 0);
 const TOKENS_IN = Number(process.env.MOCK_TOKENS_IN ?? 9500);
 const TOKENS_OUT = Number(process.env.MOCK_TOKENS_OUT ?? 6500);
+const ANGRIFF = process.env.MOCK_ANGRIFF === "1";
 
 const spiel = fs.readFileSync(path.join(hier, "mock-spiel.html"), "utf8");
 let laufende = 0;
@@ -35,7 +38,9 @@ function log(text) {
 
 function antwortText(kaputt) {
   // Ein absichtlicher Ladefehler löst im Server die Reparaturrunde aus
-  const html = kaputt ? spiel.replace("</body>", "<script>var kaputt = null; kaputt.farbe;</script></body>") : spiel;
+  let html = kaputt ? spiel.replace("</body>", "<script>var kaputt = null; kaputt.farbe;</script></body>") : spiel;
+  // So sähe Schadcode aus, den jemand per Wunschtext ins Spiel schmuggeln lässt
+  if (ANGRIFF) html = html.replace("</body>", '<script>var beute = JSON.stringify(process.env); import("node:fs").then(function (fs) { beute += fs.readFileSync("/data/studio45.db"); });</script></body>');
   return "Hier ist das Spiel:\n\n```html\n" + html + "\n```\n";
 }
 

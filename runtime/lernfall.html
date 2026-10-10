@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Apfelkorb — Lernfall</title>
+<!--
+  STUDIO45-LERNFALL: Vorbereitetes Spiel mit ABSICHTLICH eingebauten Fehlern — kein echter KI-Lauf.
+  Der Auftrag steht auf der Seite daneben. Was falsch ist, steht in src/lib/lernfall.ts (LOESUNG).
+  FASSUNG "erste": drei Abweichungen vom Auftrag. "zweite": angeblich repariert — eine bleibt.
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #e8f4e5; font-family: system-ui, sans-serif; color: #1f2a1c; }
+  #hud { position: fixed; top: 10px; left: 14px; right: 14px; display: flex; justify-content: space-between; font-size: 20px; font-weight: 800; }
+  canvas { display: block; touch-action: none; }
+  #ende { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(232, 244, 229, .92); text-align: center; }
+  #ende.versteckt { display: none; }
+  #ende h1 { margin: 0; font-size: 38px; }
+  #nochmal { font: inherit; font-size: 22px; font-weight: 800; padding: 14px 30px; border: 0; border-radius: 16px; background: #c8102e; color: #fff; }
+</style>
+</head>
+<body>
+<div id="hud"><span>Punkte: <span id="punkte">0</span></span><span>Verpasst: <span id="verpasst">0</span>/3</span></div>
+<canvas id="spiel"></canvas>
+<div id="ende" class="versteckt">
+  <h1>Verloren!</h1>
+  <p id="ergebnis"></p>
+  <button id="nochmal">Nochmal</button>
+</div>
+<script>
+(function () {
+  var FASSUNG = "erste";
+  var canvas = document.getElementById("spiel");
+  var ctx = canvas.getContext("2d");
+  var W = 800, H = 600;
+  function groesse() {
+    W = window.innerWidth || 800;
+    H = window.innerHeight || 600;
+    canvas.width = W;
+    canvas.height = H;
+  }
+  groesse();
+  window.addEventListener("resize", groesse);
+
+  var korb = { x: W / 2, breite: 110 };
+  var aepfel = [];
+  var punkte = 0, verpasst = 0, laeuft = true, zaehler = 0;
+  var punkteEl = document.getElementById("punkte");
+  var verpasstEl = document.getElementById("verpasst");
+  var endeEl = document.getElementById("ende");
+  var ergebnisEl = document.getElementById("ergebnis");
+
+  function bewege(e) {
+    var p = e.touches ? e.touches[0] : e;
+    if (p) korb.x = p.clientX;
+  }
+  canvas.addEventListener("touchstart", function (e) { bewege(e); if (e.preventDefault) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener("touchmove", function (e) { bewege(e); if (e.preventDefault) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener("mousemove", bewege);
+
+  function zeichne() {
+    ctx.fillStyle = "#e8f4e5";
+    ctx.fillRect(0, 0, W, H);
+    for (var i = 0; i < aepfel.length; i++) {
+      ctx.fillStyle = "#c8102e";
+      ctx.beginPath();
+      ctx.arc(aepfel[i].x, aepfel[i].y, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#3d6b2f";
+      ctx.fillRect(aepfel[i].x - 2, aepfel[i].y - 26, 4, 10);
+    }
+    ctx.fillStyle = "#8a5a2b";
+    ctx.fillRect(korb.x - korb.breite / 2, H - 70, korb.breite, 34);
+  }
+
+  function schritt() {
+    if (laeuft) {
+      zaehler++;
+      if (zaehler % 55 === 0) aepfel.push({ x: 40 + Math.random() * Math.max(1, W - 80), y: -20 });
+      for (var i = aepfel.length - 1; i >= 0; i--) {
+        var a = aepfel[i];
+        a.y += 3.2;
+        var gefangen = Math.abs(a.x - korb.x) < korb.breite / 2 + 14 && a.y > H - 80 && a.y < H - 44;
+        if (gefangen) {
+          aepfel.splice(i, 1);
+          // Abweichung 1 (nur erste Fassung): ab 5 Punkten zählt ein Apfel doppelt
+          punkte += FASSUNG === "erste" && punkte >= 5 ? 2 : 1;
+          punkteEl.textContent = String(punkte);
+        } else if (a.y > H + 20) {
+          aepfel.splice(i, 1);
+          verpasst++;
+          verpasstEl.textContent = String(Math.min(verpasst, 3));
+          // Abweichung 2 (nur erste Fassung): Schluss ist erst beim VIERTEN verpassten Apfel
+          if (verpasst >= (FASSUNG === "erste" ? 4 : 3)) verloren();
+        }
+      }
+      zeichne();
+    }
+    requestAnimationFrame(schritt);
+  }
+  function verloren() {
+    laeuft = false;
+    ergebnisEl.textContent = "Ihr habt " + punkte + " Punkte.";
+    endeEl.className = "";
+  }
+  document.getElementById("nochmal").addEventListener("click", function () {
+    // Abweichung 3 (BEIDE Fassungen): Die Punkte werden beim Neustart nicht auf 0 gesetzt
+    aepfel = []; verpasst = 0; zaehler = 0; laeuft = true;
+    verpasstEl.textContent = "0";
+    endeEl.className = "versteckt";
+  });
+  requestAnimationFrame(schritt);
+})();
+</script>
+</body>
+</html>

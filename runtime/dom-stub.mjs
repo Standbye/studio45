@@ -1,19 +1,30 @@
 // Studio45 DOM-Stub: führt die <script>-Blöcke eines generierten Spiels in einer
 // Fake-Browser-Umgebung aus und meldet Ladezeit-Crashes (Exit 1) — die g3-Lehre
 // aus dem Piloten als Produktfeature. Aufruf: node dom-stub.mjs <html-datei> [frames]
+//
+// SICHERHEIT: Der Code, der hier läuft, stammt von einem Sprachmodell und ist NICHT
+// vertrauenswürdig. Dieser Stub ist keine Sicherheitsgrenze — die Grenze ziehen
+// runtime/pruef-lauf.mjs (leere Umgebung, Node-Permission-Model, Speicherlimit) und im
+// Betrieb der getrennte Prüf-Container ohne Netz und Daten. Der Stub räumt zusätzlich
+// die Node-Globals weg, damit ein Spiel sie nicht versehentlich oder absichtlich nutzt.
 import fs from "node:fs";
 
 const htmlFile = process.argv[2];
 const FRAMES = Number(process.argv[3] ?? 30);
 const html = fs.readFileSync(htmlFile, "utf8");
 
+// Ausgabe und Ende sichern — danach verschwinden process & Co. aus dem globalen Raum
+const beende = process.exit.bind(process);
+const melde = (text) => fs.writeSync(1, text + "\n");
+const meldeFehler = (text) => fs.writeSync(2, text + "\n");
+
 const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)]
   .map((m) => m[1])
   .filter((s) => s.trim());
 
 if (scripts.length === 0) {
-  console.error("VERIFY: keine Inline-Scripts gefunden");
-  process.exit(1);
+  meldeFehler("VERIFY: keine Inline-Scripts gefunden");
+  beende(1);
 }
 
 // ---- generischer Element-Stub ----------------------------------------------
@@ -214,6 +225,19 @@ const shadowNames = [
 ];
 const shadowValues = shadowNames.map((n) => windowStub[n] ?? windowStub);
 
+// Node-eigene Namen: als Parameter überschatten (wer `process` schreibt, bekommt undefined) …
+const NODE_NAMEN = ["process", "require", "module", "exports", "Buffer", "global", "globalThis", "__dirname", "__filename"];
+shadowNames.push(...NODE_NAMEN);
+shadowValues.push(...NODE_NAMEN.map((n) => (n === "global" || n === "globalThis" ? windowStub : undefined)));
+
+// … und aus dem echten globalen Objekt löschen, falls jemand über Function("return this")()
+// dorthin gelangt. import() lässt sich so nicht entfernen — dafür sorgt das Permission-Model.
+for (const name of ["process", "Buffer", "fetch", "WebSocket", "EventSource", "navigator", "require", "module",
+  "setImmediate", "clearImmediate", "Request", "Response", "Headers"]) {
+  try { delete globalThis[name]; } catch { /* nicht löschbar — bleibt hinter dem Permission-Model */ }
+  try { Object.defineProperty(globalThis, name, { value: undefined, configurable: false, writable: false }); } catch { /* egal */ }
+}
+
 try {
   for (const src of scripts) {
     const fn = new Function(...shadowNames, `"use strict";\n${src}`);
@@ -228,9 +252,9 @@ try {
     for (const cb of cbs) cb(frame * 16.7);
     if (listeners.raf.length === 0 && cbs.length === 0) break;
   }
-  console.log(`VERIFY: OK (${scripts.length} Scripts, ${FRAMES} Frames)`);
-  process.exit(0);
+  melde(`VERIFY: OK (${scripts.length} Scripts, ${FRAMES} Frames)`);
+  beende(0);
 } catch (err) {
-  console.error(`VERIFY: ${err && err.message ? err.message : err}`);
-  process.exit(1);
+  meldeFehler(`VERIFY: ${err && err.message ? String(err.message).slice(0, 400) : "Fehler beim Start"}`);
+  beende(1);
 }

@@ -36,7 +36,11 @@ const nextConfig: NextConfig = {
         source: "/g/:code/play",
         headers: securityHeaders.filter((h) => h.key !== "Content-Security-Policy"),
       },
-      { source: "/((?!g/[^/]+/play).*)", headers: securityHeaders },
+      {
+        source: "/w/:slug/lernfall/spiel",
+        headers: securityHeaders.filter((h) => h.key !== "Content-Security-Policy"),
+      },
+      { source: "/((?!g/[^/]+/play|w/[^/]+/lernfall/spiel).*)", headers: securityHeaders },
     ];
   },
 };

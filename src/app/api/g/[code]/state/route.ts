@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
-import { playVersion } from "@/lib/games";
+import { playVersion, readPlayHtml } from "@/lib/games";
+import { leseHerkunft } from "@/lib/steckbrief";
 import { dayMotto, dayTitle } from "@/lib/prompts";
-import { alterProfil, supportProfil } from "@/lib/audience";
+import { alterProfil, hilfeProfil } from "@/lib/audience";
 import { farbschema } from "@/lib/kontrast";
 import { energieVergleich, euroKosten, euroText, wattstunden } from "@/lib/verbrauch";
 
@@ -65,11 +66,16 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     optik: alterProfil(w.ageGroup).optik,
     texte: alterProfil(w.ageGroup).texte,
     chips: alterProfil(w.ageGroup).chips[Math.min(w.currentDay, 5)] ?? alterProfil(w.ageGroup).chips[1],
+    // Hilfe beim Formulieren — unabhängig davon, wie viel die KI selbst entscheiden darf
     hilfen: {
-      chips: supportProfil(w.supportLevel).chips,
-      teamCheck: supportProfil(w.supportLevel).teamCheck,
-      coachAbZeichen: supportProfil(w.supportLevel).coachAbZeichen,
+      chips: hilfeProfil(w.helpLevel).chips,
+      teamCheck: hilfeProfil(w.helpLevel).teamCheck,
+      coachAbZeichen: hilfeProfil(w.helpLevel).coachAbZeichen,
     },
+    // Was kam von der Gruppe, was hat die KI ergänzt? (aus dem Steckbrief des Spiels)
+    herkunft: leseHerkunft(readPlayHtml(group.id)),
+    // Director's Cut: Die Lehrkraft legt der Gruppe die Spielbeschreibung zur Abstimmung vor
+    directorCut: group.dcStatus === "offen" ? { spec: group.dcSpec.slice(0, 6000) } : null,
     attemptsLeft: attemptsLeft(group, w.genLimitPerLesson),
     cooldownRemaining: cooldownRemaining(group, w.cooldownSeconds),
     cooldownSeconds: w.cooldownSeconds,

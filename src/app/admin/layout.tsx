@@ -3,6 +3,7 @@ import { currentUser } from "@/lib/session";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { versionsText } from "@/lib/version";
+import { pruefModus } from "@/lib/verify";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-      <footer className="mx-auto max-w-6xl px-4 pb-6 text-xs text-muted-foreground">Studio45 {versionsText()}</footer>
+      <footer className="mx-auto max-w-6xl px-4 pb-6 text-xs text-muted-foreground">
+        Studio45 {versionsText()} · Spielprüfung:{" "}
+        {pruefModus().modus === "prüfdienst"
+          ? "getrennter Prüf-Container (kein Netz, keine Daten)"
+          : "im eigenen Container (gehärtet; für volle Isolation den Prüf-Container aus docker-compose.yml nutzen)"}
+      </footer>
     </div>
   );
 }

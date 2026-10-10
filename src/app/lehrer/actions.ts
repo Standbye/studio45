@@ -109,6 +109,7 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
     learningGoal: z.string().trim().max(4000),
     ageGroup: z.enum(["GRUNDSCHULE", "MITTELSTUFE", "OBERSTUFE"]),
     supportLevel: z.coerce.number().int().min(1).max(5),
+    helpLevel: z.coerce.number().int().min(0).max(3),
     genLimitPerLesson: z.coerce.number().int().min(1).max(20),
     cooldownSeconds: z.coerce.number().int().min(0).max(1800),
     challenge: z.boolean(),
@@ -117,12 +118,13 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
     learningGoal: formData.get("learningGoal") ?? "",
     ageGroup: formData.get("ageGroup"),
     supportLevel: formData.get("supportLevel"),
+    helpLevel: formData.get("helpLevel"),
     genLimitPerLesson: formData.get("genLimitPerLesson"),
     cooldownSeconds: formData.get("cooldownSeconds"),
     challenge: formData.get("challenge") === "1",
   });
   await db.workshop.update({ where: { id: workshop.id }, data: parsed });
-  await audit(user.id, "workshop.settings", `${workshop.name} · ${parsed.ageGroup} · Stufe ${parsed.supportLevel}`);
+  await audit(user.id, "workshop.settings", `${workshop.name} · ${parsed.ageGroup} · Spielraum ${parsed.supportLevel} · Hilfe ${parsed.helpLevel}`);
   revalidatePath(`/lehrer/${workshop.id}`);
 }
 

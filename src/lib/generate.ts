@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { buildOrEditGame } from "@/lib/llm";
-import { verifyGameHtml } from "@/lib/verify";
+import { verifyGameHtml, type VerifyResult } from "@/lib/verify";
 import { publishGame, readPlayHtml } from "@/lib/games";
 
 export type GenerateOutcome =
@@ -131,10 +131,14 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
     let result = await buildOrEditGame({ ...params, currentHtml, userPrompt: prompt });
     let tokensIn = result.tokensIn;
     let tokensOut = result.tokensOut;
-    let verify = result.html ? await verifyGameHtml(result.html) : { ok: false, detail: result.error ?? "keine Antwort" };
+    let verify: VerifyResult = result.html
+      ? await verifyGameHtml(result.html)
+      : { ok: false, detail: result.error ?? "keine Antwort" };
 
-    // Ein automatischer Reparatur-Versuch, wenn das Spiel beim Laden crasht
-    if (result.html && !verify.ok) {
+    // Ein automatischer Reparatur-Versuch, wenn das Spiel beim Laden crasht — aber nicht,
+    // wenn die Prüfung selbst ausgefallen ist: Dann ist das Spiel nicht „kaputt", und eine
+    // Reparaturrunde würde nur Tokens verbrennen.
+    if (result.html && !verify.ok && !verify.technisch) {
       const repair = await buildOrEditGame({
         ...params,
         currentHtml: result.html,
@@ -171,6 +175,9 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
       },
     });
 
+    if (!success && verify.technisch) {
+      return { ok: false, reason: "Die Spielprüfung ist gerade nicht erreichbar — das liegt nicht an euch. Sagt bitte eurer Lehrkraft Bescheid; euer Versuch ist nicht verbraucht.", attemptsLeft: left };
+    }
     if (!success) {
       // Fehlschlag zählt NICHT gegen das Kontingent
       return { ok: false, reason: "Die KI hat es diesmal nicht geschafft — euer Versuch ist nicht verbraucht. Probiert es nochmal, vielleicht mit anderen Worten.", attemptsLeft: left };

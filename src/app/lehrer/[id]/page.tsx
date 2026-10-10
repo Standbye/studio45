@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALTERSSTUFEN } from "@/lib/audience";
 import { promptBloecke, didaktikStandard } from "@/lib/prompts";
 import { euroKosten, euroText, tokenText } from "@/lib/verbrauch";
-import { SupportLevelWahl } from "./support-level";
+import { HilfeWahl, SpielraumWahl } from "./support-level";
 import { FarbVorschau } from "./farb-vorschau";
 import { PromptVorschau } from "./prompt-vorschau";
 import { Textarea } from "@/components/ui/textarea";
@@ -128,6 +128,9 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
         </Link>
         <Link href={`/lehrer/${w.id}/material`} className="text-sm text-primary underline-offset-2 hover:underline">
           Materialien 🖨️
+        </Link>
+        <Link href={`/lehrer/${w.id}/lernfall`} className="text-sm text-primary underline-offset-2 hover:underline">
+          Lernfall 🔎
         </Link>
       </div>
 
@@ -289,7 +292,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Workshop-Einstellungen</CardTitle>
-              <CardDescription>Zielgruppe, Unterstützung durch die KI, Lernziel und Limits.</CardDescription>
+              <CardDescription>Zielgruppe, Spielraum der KI, Hilfe beim Formulieren, Lernziel und Limits.</CardDescription>
             </CardHeader>
             <CardContent>
               <form action={updateSettingsAction} className="space-y-4">
@@ -316,8 +319,9 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                       Steuert Optik und Ansprache der Schüler-Seite — und wie die KI baut.
                     </p>
                   </div>
-                  <SupportLevelWahl standard={w.supportLevel} />
+                  <SpielraumWahl standard={w.supportLevel} />
                 </div>
+                <HilfeWahl standard={w.helpLevel} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="genLimit">Versuche pro Stunde/Gruppe</Label>
