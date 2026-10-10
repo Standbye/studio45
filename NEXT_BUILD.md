@@ -85,6 +85,30 @@ Braucht Modell-Mitwirkung, aber 8 s reichen. Schaden: Schlüssel = echtes Geld +
 - Passt zum Leitgedanken „Grenzen": Die Grenzen im Prompt-Kern (kein fetch, kein externes
   Script) sind Bitten — der Prüfschritt muss sie technisch erzwingen.
 
+## Review-Befunde Didaktik (2026-10-10) — bewertet, nicht gebaut
+
+- [ ] **Hilfe beim Formulieren und Spielraum der KI trennen** (Befund berechtigt, hoch).
+      Bestätigt in `audience.ts`: `supportLevel` schaltet zugleich Chips/Team-Check/Coach
+      (Hilfe für die Kinder) und Lückenfüllen/Überraschungs-Budget (Freiheit der KI). Ein Kind,
+      das Sprachhilfe braucht, bekommt zwangsläufig eine KI, die ungefragt ergänzt. Vorschlag:
+      zwei Regler — „Hilfe beim Formulieren" (aus/Impulse/Coach+Team-Check) und „Leitplanken
+      der KI" (eng … weit; = Peters Leitplanken-Gedanke). Migration: beide aus dem alten Wert
+      ableiten. Ergänzungen sichtbar machen statt jede einzeln bestätigen zu lassen (45 Minuten
+      sind knapp): Die KI führt im Steckbrief „Von euch / Von der KI ergänzt", die Kinder-App
+      zeigt das nach jedem Bau. Echte Vorab-Bestätigung nur als Option für höhere Stufen.
+      Director's Cut: heute reine Lehrkraft-Aktion — Spezifikation der Gruppe zeigen und
+      freigeben lassen. Erfolgskriterium übernehmen: Kinder können sagen, was von ihnen stammt.
+- [ ] **KI-Fehler als Lernfall** (Befund berechtigt; im Arbeitsstand schon weitgehend behoben).
+      Die zitierten Stellen stehen im committeten Stand und laufen so auf dem Server („versteht
+      dich wie ein Mensch", Bugreport nur mit Ursachen beim Kind). Im uncommitteten Arbeitsstand
+      (Material-Überarbeitung, 6 Dateien + 2 neue) sind sie korrigiert: neue Bugreport-Ursache
+      „Die KI hat trotz klarem Wunsch einen Fehler gemacht", Lernprobe im Ich-kann-Bogen,
+      Prüferfahrung im Plenum. Offen: (1) Arbeitsstand prüfen (PDF-Härtetest), committen,
+      deployen. (2) Der Lernfall ist bisher eine falsche Rechenantwort auf Papier, kein Spiel —
+      Idee: ein vorbereitetes Spiel mit klarem Auftrag und eingebautem Fehler, das die Lehrkraft
+      einer Gruppe oder dem Beamer laden kann (Basis: `runtime/mock-spiel.html`).
+      (3) Merksatz Tag 1 („versteht mich die KI") auf dieselbe Vermenschlichung prüfen.
+
 ## Gesammelt für den nächsten Build (2026-08-12): Eigener Generierungs-Harness
 
 Peters Anstoß: Wir nutzen nur einen Metaprompt und rufen die APIs ohne echten Harness.
