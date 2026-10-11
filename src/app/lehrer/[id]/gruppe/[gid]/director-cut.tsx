@@ -162,7 +162,7 @@ export function DirectorCutDialog({ groupId, studioName }: { groupId: string; st
           </label>
 
           <Button onClick={() => ruf("bauen")} disabled={busy !== "" || !zugestimmt} className="w-full">
-            {busy === "bauen" ? `Spiel wird gebaut … (${sekunden}s — kann 2–3 Minuten dauern)` : "3. Spiel bauen & veröffentlichen"}
+            {busy === "bauen" ? `Spiel wird gebaut … (${sekunden}s — kann mehrere Minuten dauern)` : "3. Spiel bauen & veröffentlichen"}
           </Button>
           {!zugestimmt && text.length >= 30 && (
             <button

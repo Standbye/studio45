@@ -168,6 +168,10 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       gezählt); (3) die Fehlermeldung nennt „abgeschnitten" statt „kein vollständiges HTML".
       Lokal mit dem Mock nachgestellt (`MOCK_ABGESCHNITTEN=1`). Nicht geprüft: echter
       Director's Cut mit dem echten Modell.
+      Nachtrag auf Peters Ansage: Ausgabegrenze des Director's Cut auf **150.000 Tokens**
+      (Obergrenze, kein Ziel); lehnt ein Modell so viel ab, zweiter Anlauf mit 48.000. Offen:
+      nginx wartet 900 s auf die Antwort — sehr große Spiele (grob über 45.000–70.000 Tokens)
+      laufen im Hintergrund fertig, die Seite meldet aber vorher eine Zeitüberschreitung.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.

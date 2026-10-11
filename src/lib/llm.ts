@@ -13,8 +13,11 @@ const MAX_TOKENS = 32000; // Lehre aus dem Piloten: 8k schneidet Spiele mitten i
 // danach nicht abgeschnitten wird.
 const MAX_TOKENS_GRUENDLICH = 48000;
 // Der Director's Cut baut aus allen Wünschen ein großes Gesamtspiel (oft in 3D) — er bekommt
-// die größere Ausgabe, aber ohne zusätzliches Nachdenken (siehe buildFromSpec).
-const MAX_TOKENS_DIRECTOR = 48000;
+// sehr viel Ausgabe (Vorgabe Peter, 11.10.2026), aber ohne zusätzliches Nachdenken (siehe
+// buildFromSpec). Das ist eine Obergrenze, kein Ziel: Bezahlt wird, was das Spiel braucht.
+const MAX_TOKENS_DIRECTOR = 150000;
+// Erlaubt ein Modell so viel Ausgabe nicht, lehnt der Dienst den Aufruf ab — dann mit dieser Grenze.
+const MAX_TOKENS_DIRECTOR_RUECKFALL = 48000;
 
 /** Zugangsdaten einer vom Admin gepflegten Verbindung. */
 export type Verbindung = {
@@ -422,7 +425,10 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
   // Bewusst ohne „Gründlichkeit hoch": Der Director's Cut nutzt schon das stärkste Modell, und
   // bei manchen Anbietern frisst das zusätzliche Nachdenken den Großteil der Ausgabe — das
   // große Gesamtspiel wird dann abgeschnitten (so geschehen am 11.10.2026: 48.000 Tokens, kein Spiel).
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS_DIRECTOR, false);
+  let antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS_DIRECTOR, false);
+  if (antwort.error && !antwort.text) {
+    antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS_DIRECTOR_RUECKFALL, false);
+  }
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   let html = extractHtml(antwort.text);
   if (html && p.engine3d) html = injectThreeJs(html);
