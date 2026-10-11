@@ -77,8 +77,8 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe
       beim Director's Cut; die Regler heißen jetzt „Spielraum der KI (Leitplanken)" und
       „Hilfe beim Formulieren". Merksatz Tag 1 („versteht mich die KI") auf Vermenschlichung prüfen.
-- [x] **Lernfall neu aufgebaut: von der Lehrkraft gesteuert** (Peter, 2026-10-11; gebaut, noch nicht
-      deployt). Auslöser: Der Link stand fest auf der Beamer-Seite, die zweite Fassung ließ sich
+- [x] **Lernfall neu aufgebaut: von der Lehrkraft gesteuert** (Peter, 2026-10-11; deployt 2026-10-11,
+      Server meldet `v1.1.0-25-ge011b5d`). Auslöser: Der Link stand fest auf der Beamer-Seite, die zweite Fassung ließ sich
       sofort laden, Befunde landeten nirgends.
       1. **Schalter mit Stufen** (`Workshop.lernfallStufe`, Standard aus): aus → erste Fassung →
          zweite Fassung → Auflösung, auf `/lehrer/<id>/lernfall`. Aus = Seite, Spiel und Beamer-Link
@@ -100,8 +100,8 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Migration (`20261011150000_lernfall_steuerung`, nur ADD COLUMN) mit dem Container-Migrator.
       **Nicht gebaut (bewusst):** echter KI-Lauf als Lernfall, Katalog mehrerer Lernfälle,
       Punkte/Rangliste, automatische KI-Bewertung der Freitexte.
-- [x] **Kinder-Studio: Spiel links im Rahmen, Bedienung rechts** (Peter, 2026-10-11; gebaut, noch
-      nicht deployt). Ab 1024 px Breite (Tablet quer, Laptop) steht das Spiel links über die volle
+- [x] **Kinder-Studio: Spiel links im Rahmen, Bedienung rechts** (Peter, 2026-10-11; deployt
+      2026-10-11). Ab 1024 px Breite (Tablet quer, Laptop) steht das Spiel links über die volle
       Höhe, rechts Bausteine, Eingabe, Mikrofon und Bau-Knopf; die Seite scrollt nicht mehr und
       die Eingabe verdeckt nichts (bei 1180 × 820: Spiel 784 × 738). Hochformat bleibt
       untereinander. Dazu im Kern-Prompt verschärft: alles Spielbare passt ohne Scrollen in den
