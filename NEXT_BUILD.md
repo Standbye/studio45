@@ -138,7 +138,7 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       „Gründlichkeit hoch" beim echten Anbieter.
       **Nicht gebaut (bewusst):** fertige Spielvorlagen zum Anklicken, Avatare/Belohnungen,
       „wieder vor" nach einem Schritt zurück.
-- [x] **Ton in den Spielen hörbar gemacht** (Peter, 2026-10-11; gebaut, noch nicht deployt).
+- [x] **Ton in den Spielen hörbar gemacht** (Peter, 2026-10-11; deployt, Server meldet `v1.1.0-34-gffed0d8`).
       Befund: Musik und Geräusche waren eingebaut, aber beim Start aus und mit 1–5 % Lautstärke
       praktisch stumm — Folge unserer Anweisung „leise starten". Neu im Kern-Prompt, Abschnitt
       „Ton": nach dem Startknopf **an**, konkrete Lautstärken über einen Hauptregler (Geräusche
@@ -147,7 +147,7 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       „Ton an" war Empfehlung, von Peter nicht ausdrücklich gewählt — eine Zeile im Kern, falls
       es im Klassenraum zu laut wird. Nicht geprüft: Ergebnis mit dem echten Modell.
 - [x] **Speichern sichtbar machen; Auswahlfelder sprangen nach dem Speichern zurück** (Peter,
-      2026-10-11; gebaut, noch nicht deployt). Ursache: React setzt ein Formular nach einer
+      2026-10-11; deployt mit `v1.1.0-34-gffed0d8`). Ursache: React setzt ein Formular nach einer
       Server-Action zurück, ein `<select>` zeigt danach wieder den Eintrag vom Seitenaufbau —
       gespeichert war richtig, angezeigt wurde der alte Wert. Betroffen: Gründlichkeit (Admin),
       Zielgruppe und „Hilfe beim Formulieren" (Workshop-Einstellungen; dort hätte ein zweites
