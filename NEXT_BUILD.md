@@ -149,7 +149,7 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       Spielraum der Gruppe angehängt. Die Schüler-Seite bekommt nur die Schalter, keine Stufe.
       Hinweis bei der Token-Spar-Challenge, wenn Gruppen unterschiedlichen Spielraum haben.
       Der Mock-Anbieter protokolliert jetzt, welcher Spielraum im Auftrag stand.
-      **Noch nicht deployt.**
+      Deployt am 2026-10-11 (Server meldet `v1.1.0-20-g21a18a7`).
 
 ## Erledigt (gebaut am 2026-10-10)
 
