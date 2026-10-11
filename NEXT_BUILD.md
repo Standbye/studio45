@@ -113,7 +113,7 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Endergebnisse (Chrome/Android) und eine neu beginnende Liste nach Sprechpause (Safari) sind
       abgefangen. Geprüft per Nachspielen von Ereignisfolgen — nicht mit echtem Mikrofon am iPad.
 - [x] **Fokus der Stunde, aufwändigere Spiele, mehr Hilfe für die Kleinen** (Peter, 2026-10-11;
-      gebaut, noch nicht deployt). Drei Themen in einem Bau:
+      deployt, Server meldet `v1.1.0-31-gfddad63`). Drei Themen in einem Bau:
       **Fokus:** Karte „🎯 Heute: … / Heute geht es um … / Merksatz" dauerhaft in der Bedienspalte,
       derselbe Satz am Beamer und im Plenum-Bildschirm (`src/lib/tagesfokus.ts`). Satzanfänge,
       Formulierungshilfe und die dritte Team-Check-Frage hängen jetzt am Schwerpunkt des Termins
