@@ -106,9 +106,12 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
         >
           🌳 Zur begehbaren Schule
         </a>
-        <a href={`/w/${w.slug}/lernfall`} className="font-semibold underline underline-offset-4 opacity-90 hover:opacity-100">
-          🔎 Lernfall: Findet den Fehler der KI
-        </a>
+        {/* Nur solange die Lehrkraft den Lernfall freigegeben hat */}
+        {w.lernfallStufe > 0 && (
+          <a href={`/w/${w.slug}/lernfall`} className="font-semibold underline underline-offset-4 opacity-90 hover:opacity-100">
+            🔎 Lernfall: Findet den Fehler der KI
+          </a>
+        )}
         <span className="opacity-70">
           {w.phase === "STUDIO" ? "🎮 Studio-Phase läuft — baut los!" : w.phase === "PAUSE" ? "⏸️ Pause" : "🗣️ Plenum — Blick nach vorne!"}
           <span className="mx-3">·</span> Studio45

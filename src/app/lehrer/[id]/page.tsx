@@ -12,6 +12,7 @@ import {
   renameStudioAction,
   setDayAction,
   setPhaseAction,
+  setLernfallStufeAction,
   toggleLockAction,
   updateBrandingAction,
   updateSettingsAction,
@@ -27,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ALTERSSTUFEN } from "@/lib/audience";
 import { promptBloecke, didaktikStandard } from "@/lib/prompts";
 import { euroKosten, euroText, tokenText } from "@/lib/verbrauch";
+import { stufenName } from "@/lib/lernfall";
 import { HilfeWahl, SpielraumWahl } from "./support-level";
 import { AlleZuruecksetzen, GruppenRegler } from "./gruppen-regler";
 import { wirksameStufen } from "@/lib/audience";
@@ -138,6 +140,27 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
           Lernfall 🔎
         </Link>
       </div>
+
+      {/* Der Lernfall ersetzt auf den Geräten das Studio — daran soll niemand vergessen werden */}
+      {w.lernfallStufe > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <span>
+            <b>🔎 Lernfall läuft ({stufenName(w.lernfallStufe)}).</b> Die Gruppen sehen ihn statt ihres Studios.
+          </span>
+          <span className="flex items-center gap-2">
+            <Link href={`/lehrer/${w.id}/lernfall`} className="font-medium underline underline-offset-2">
+              Zur Steuerung
+            </Link>
+            <form action={setLernfallStufeAction}>
+              <input type="hidden" name="workshopId" value={w.id} />
+              <input type="hidden" name="stufe" value={0} />
+              <Button type="submit" size="sm" variant="outline">
+                Beenden
+              </Button>
+            </form>
+          </span>
+        </div>
+      )}
 
       {/* Steuerung */}
       <Card>

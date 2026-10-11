@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
 
 type KidState = {
   studioName: string;
@@ -50,6 +51,8 @@ type KidState = {
   herkunft: { gruppe: string[]; ki: string[] } | null;
   /** Die Lehrkraft legt eine Beschreibung für den Director's Cut zur Abstimmung vor */
   directorCut: { spec: string } | null;
+  /** Von der Lehrkraft freigegebener Lernfall — ersetzt solange das Studio */
+  lernfall: LernfallState | null;
   branding: {
     primary: string;
     accent: string;
@@ -398,6 +401,16 @@ export function KidStudio({ code }: { code: string }) {
       </div>
     </div>
   );
+
+  // Lernfall: Hat die Lehrkraft ihn freigegeben, arbeitet die Gruppe daran statt im Studio —
+  // auch im Plenum. Nur die Pause deckt ihn zu.
+  if (state.lernfall && state.phase !== "PAUSE") {
+    return (
+      <LernfallAnsicht code={code} lernfall={state.lernfall} studioName={state.studioName} hasLogo={state.branding.hasLogo} style={vars}>
+        {directorCutDialog}
+      </LernfallAnsicht>
+    );
+  }
 
   // Plenum-/Pause-Sperre: Kinder sehen Wartebildschirm mit Merksatz
   if (state.phase !== "STUDIO") {

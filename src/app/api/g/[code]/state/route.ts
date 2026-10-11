@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
 import { playVersion, readPlayHtml } from "@/lib/games";
 import { leseHerkunft } from "@/lib/steckbrief";
+import { LERNFALL, fassungZurStufe, leseBefunde, loesung } from "@/lib/lernfall";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { alterProfil, hilfeProfil, wirksameStufen } from "@/lib/audience";
 import { farbschema } from "@/lib/kontrast";
@@ -52,6 +53,23 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
       challenge = { platz: platz + 1, von: rangliste.length, fuehrtTokens: rangliste[0].tokens };
     }
   }
+  // Lernfall: Solange die Lehrkraft ihn freigegeben hat, sieht die Gruppe ihn statt des Studios.
+  // Die Lösung geht erst mit der Auflösung (Stufe 3) aufs Gerät.
+  const befunde = w.lernfallStufe > 0 ? leseBefunde(group.lernfallBefunde) : null;
+  const lernfall = befunde
+    ? {
+        stufe: w.lernfallStufe,
+        fassung: fassungZurStufe(w.lernfallStufe),
+        titel: LERNFALL.titel,
+        regeln: LERNFALL.regeln.map((r) => r.text),
+        spielPfad: `/w/${w.slug}/lernfall/spiel`,
+        runde: befunde.runde,
+        befunde: { erste: befunde.erste, zweite: befunde.zweite },
+        loesung: w.lernfallStufe >= 3 ? loesung() : null,
+        merksatz: w.lernfallStufe >= 3 ? LERNFALL.merksatz : null,
+      }
+    : null;
+
   return NextResponse.json({
     studioName: group.studioName || `Gruppe ${group.index}`,
     groupIndex: group.index,
@@ -78,6 +96,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     herkunft: leseHerkunft(readPlayHtml(group.id)),
     // Director's Cut: Die Lehrkraft legt der Gruppe die Spielbeschreibung zur Abstimmung vor
     directorCut: group.dcStatus === "offen" ? { spec: group.dcSpec.slice(0, 6000) } : null,
+    lernfall,
     attemptsLeft: attemptsLeft(group, w.genLimitPerLesson),
     cooldownRemaining: cooldownRemaining(group, w.cooldownSeconds),
     cooldownSeconds: w.cooldownSeconds,

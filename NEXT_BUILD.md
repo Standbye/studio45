@@ -77,27 +77,32 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe
       beim Director's Cut; die Regler heißen jetzt „Spielraum der KI (Leitplanken)" und
       „Hilfe beim Formulieren". Merksatz Tag 1 („versteht mich die KI") auf Vermenschlichung prüfen.
-- [ ] **Lernfall neu aufbauen: von der Lehrkraft gesteuert** (Peter, 2026-10-11). Auslöser: Der Link
-      „🔎 Lernfall" steht fest im Fuß von `/w/<slug>` und ist jederzeit erreichbar. Schwächen heute:
-      keine Steuerung; die zweite Fassung („alles repariert") kann jede Gruppe sofort laden und die
-      Prüfung überspringen; Befunde landen nirgends, die Lehrkraft sieht nicht, wer was gefunden hat;
-      der Lernfall hängt neben dem Studio statt in der Kinder-App. Vorschlag in drei Teilen:
-      1. **Schalter mit Stufen** (ein Workshop-Feld, Standard aus): aus → Fassung 1 → Fassung 2 →
-         Auflösung. Lehrkraft schaltet im Dashboard weiter. Aus = Seite und Spiel nicht erreichbar,
-         kein Link am Beamer. Fassung 2 gibt nur die Lehrkraft frei, nicht die Gruppe.
-      2. **Hürden im Ablauf — Prüfliste je Gruppe in der Kinder-App** (`/g/<code>`, kein Extra-QR):
-         je Regel des Auftrags „hält sich dran / hält sich nicht dran" plus ein Satz „erwartet /
-         passiert". Lehrkraft sieht je Gruppe, welche Abweichungen gefunden sind. In Fassung 2
-         dieselbe Liste noch einmal („Stimmt ‚alles repariert'?"). Auflösung am Beamer zeigt Lösung
-         neben den Befunden der Gruppen. Liefert den Beleg zum Erfolgskriterium aus dem Review.
-      3. **Hindernisse im Spiel** (falls so gemeint — Rückfrage an Peter offen): eine fünfte Regel,
-         z. B. „Faule Äpfel nicht fangen, sonst 1 Punkt Abzug", mit einer weiteren eingebauten
-         Abweichung. Höchstens eine Zusatzregel; mindestens eine Regel muss das Spiel korrekt
-         erfüllen, damit die Gruppen auch „stimmt" bestätigen müssen.
-      Staffelung (Leitgedanke Klassenstufen): untere Stufen gemeinsam am Beamer, nur Fassung 1;
-      höhere Stufen in Gruppen mit Fassung 2. Über den Schalter abbildbar, kein eigener Regler.
-      **Nicht bauen:** echter KI-Lauf als Lernfall (nicht wiederholbar), Katalog mehrerer Lernfälle,
-      Punkte/Rangliste der Gruppen, automatische KI-Bewertung der Freitexte.
+- [x] **Lernfall neu aufgebaut: von der Lehrkraft gesteuert** (Peter, 2026-10-11; gebaut, noch nicht
+      deployt). Auslöser: Der Link stand fest auf der Beamer-Seite, die zweite Fassung ließ sich
+      sofort laden, Befunde landeten nirgends.
+      1. **Schalter mit Stufen** (`Workshop.lernfallStufe`, Standard aus): aus → erste Fassung →
+         zweite Fassung → Auflösung, auf `/lehrer/<id>/lernfall`. Aus = Seite, Spiel und Beamer-Link
+         nicht erreichbar; die zweite Fassung gibt es erst ab Stufe 2 (serverseitig geprüft). Die
+         eigene Lehrkraft kann beide Fassungen jederzeit selbst ausprobieren. Hinweis mit
+         „Beenden" im Dashboard, solange der Lernfall läuft.
+      2. **Prüfliste je Gruppe in der Kinder-App** (`Group.lernfallBefunde`): Der Lernfall ersetzt
+         auf den Geräten das Studio (auch im Plenum; Pause deckt ihn zu), kein QR nötig. Je Regel
+         „Stimmt / Stimmt nicht" plus Satz „erwartet / passiert", gespeichert nur für die gerade
+         freigegebene Fassung. Lehrkraft sieht je Gruppe ✓/✗/offen und die Notizen (lädt von selbst
+         nach), kann die Prüflisten leeren. Auflösung: Kinder sehen ihre Urteile neben der Lösung,
+         der Beamer (`/w/<slug>/lernfall`) die Lösung mit „x von y Gruppen haben das so gesehen" —
+         bewusst keine Rangliste. Die Lösung geht erst mit Stufe 3 an die Geräte.
+      3. **Hindernis im Spiel:** fünfte Regel „Braune Äpfel sind faul: fangen kostet 1 Punkt,
+         durchlassen zählt nicht als verpasst". Erste Fassung: 3 Regeln verletzt, 2 eingehalten.
+         Zweite Fassung: 2 behoben, 1 nicht — und die Faule-Äpfel-Regel ist **neu kaputt** (kein
+         Abzug mehr). Lehre: nach einer Reparatur alles prüfen, nicht nur das Gemeldete.
+      Geprüft: beide Fassungen per Simulation, Freigabe-Logik per API, Oberflächen im Browser,
+      Migration (`20261011150000_lernfall_steuerung`, nur ADD COLUMN) mit dem Container-Migrator.
+      **Nicht gebaut (bewusst):** echter KI-Lauf als Lernfall, Katalog mehrerer Lernfälle,
+      Punkte/Rangliste, automatische KI-Bewertung der Freitexte.
+- [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
+      Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
+      einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
 - [ ] **Vorab-Bestätigung von KI-Ergänzungen** als Option für höhere Stufen (heute: sichtbar machen
       und nachträglich herausnehmen) — nicht gebaut, bewusst.
 

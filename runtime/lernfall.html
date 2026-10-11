@@ -7,7 +7,8 @@
 <!--
   STUDIO45-LERNFALL: Vorbereitetes Spiel mit ABSICHTLICH eingebauten Fehlern — kein echter KI-Lauf.
   Der Auftrag steht auf der Seite daneben. Was falsch ist, steht in src/lib/lernfall.ts (LOESUNG).
-  FASSUNG "erste": drei Abweichungen vom Auftrag. "zweite": angeblich repariert — eine bleibt.
+  FASSUNG "erste": drei Abweichungen vom Auftrag. "zweite": angeblich repariert — eine bleibt,
+  und eine Regel, die vorher stimmte (faule Äpfel), ist dabei neu kaputtgegangen.
 -->
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #e8f4e5; font-family: system-ui, sans-serif; color: #1f2a1c; }
@@ -44,7 +45,7 @@
 
   var korb = { x: W / 2, breite: 110 };
   var aepfel = [];
-  var punkte = 0, verpasst = 0, laeuft = true, zaehler = 0;
+  var punkte = 0, verpasst = 0, laeuft = true, zaehler = 0, gefallen = 0;
   var punkteEl = document.getElementById("punkte");
   var verpasstEl = document.getElementById("verpasst");
   var endeEl = document.getElementById("ende");
@@ -62,11 +63,20 @@
     ctx.fillStyle = "#e8f4e5";
     ctx.fillRect(0, 0, W, H);
     for (var i = 0; i < aepfel.length; i++) {
-      ctx.fillStyle = "#c8102e";
+      var faul = aepfel[i].faul;
+      ctx.fillStyle = faul ? "#6b4423" : "#c8102e";
       ctx.beginPath();
       ctx.arc(aepfel[i].x, aepfel[i].y, 18, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#3d6b2f";
+      if (faul) {
+        // Faule Stellen, damit der braune Apfel auch ohne Farbe zu erkennen ist
+        ctx.fillStyle = "#3a2410";
+        ctx.beginPath();
+        ctx.arc(aepfel[i].x - 6, aepfel[i].y - 3, 4, 0, Math.PI * 2);
+        ctx.arc(aepfel[i].x + 5, aepfel[i].y + 6, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = faul ? "#5b5b3a" : "#3d6b2f";
       ctx.fillRect(aepfel[i].x - 2, aepfel[i].y - 26, 4, 10);
     }
     ctx.fillStyle = "#8a5a2b";
@@ -76,18 +86,29 @@
   function schritt() {
     if (laeuft) {
       zaehler++;
-      if (zaehler % 55 === 0) aepfel.push({ x: 40 + Math.random() * Math.max(1, W - 80), y: -20 });
+      if (zaehler % 55 === 0) {
+        gefallen++;
+        // Jeder vierte Apfel ist faul (braun)
+        aepfel.push({ x: 40 + Math.random() * Math.max(1, W - 80), y: -20, faul: gefallen % 4 === 0 });
+      }
       for (var i = aepfel.length - 1; i >= 0; i--) {
         var a = aepfel[i];
         a.y += 3.2;
         var gefangen = Math.abs(a.x - korb.x) < korb.breite / 2 + 14 && a.y > H - 80 && a.y < H - 44;
         if (gefangen) {
           aepfel.splice(i, 1);
-          // Abweichung 1 (nur erste Fassung): ab 5 Punkten zählt ein Apfel doppelt
-          punkte += FASSUNG === "erste" && punkte >= 5 ? 2 : 1;
+          if (a.faul) {
+            // Abweichung 4 (nur ZWEITE Fassung — beim „Reparieren" neu kaputtgegangen): kein Abzug mehr
+            if (FASSUNG === "erste") punkte = Math.max(0, punkte - 1);
+          } else {
+            // Abweichung 1 (nur erste Fassung): ab 5 Punkten zählt ein Apfel doppelt
+            punkte += FASSUNG === "erste" && punkte >= 5 ? 2 : 1;
+          }
           punkteEl.textContent = String(punkte);
         } else if (a.y > H + 20) {
           aepfel.splice(i, 1);
+          // Faule Äpfel durchzulassen ist richtig — sie zählen nicht als verpasst
+          if (a.faul) continue;
           verpasst++;
           verpasstEl.textContent = String(Math.min(verpasst, 3));
           // Abweichung 2 (nur erste Fassung): Schluss ist erst beim VIERTEN verpassten Apfel
@@ -105,7 +126,7 @@
   }
   document.getElementById("nochmal").addEventListener("click", function () {
     // Abweichung 3 (BEIDE Fassungen): Die Punkte werden beim Neustart nicht auf 0 gesetzt
-    aepfel = []; verpasst = 0; zaehler = 0; laeuft = true;
+    aepfel = []; verpasst = 0; zaehler = 0; gefallen = 0; laeuft = true;
     verpasstEl.textContent = "0";
     endeEl.className = "versteckt";
   });

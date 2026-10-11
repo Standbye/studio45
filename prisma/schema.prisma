@@ -104,6 +104,10 @@ model Workshop {
   tokenBudget       Int @default(2000000) // harte Obergrenze (Input+Output-Tokens)
   tokensUsed        Int @default(0)
 
+  /// Lernfall „Klarer Auftrag, fehlerhaftes Ergebnis" — die Lehrkraft schaltet ihn frei:
+  /// 0 aus · 1 erste Fassung · 2 zweite Fassung („alles repariert") · 3 Auflösung
+  lernfallStufe Int @default(0)
+
   // Branding
   colorPrimary String @default("#1d4e89")
   colorAccent  String @default("#c9a24b")
@@ -142,6 +146,9 @@ model Group {
   dcSpec    String @default("")
   dcStatus  String @default("")
   dcHinweis String @default("")
+
+  /// Prüfliste der Gruppe zum Lernfall als JSON (siehe src/lib/lernfall.ts) — leer = noch nichts geprüft
+  lernfallBefunde String @default("")
 
   createdAt DateTime    @default(now())
   prompts   PromptLog[]

@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { dataPath } from "@/lib/env";
 import { restoreSnapshot } from "@/lib/games";
+import { leereBefunde, stufenName } from "@/lib/lernfall";
 
 /** Mandanten-Isolation: Workshop nur, wenn er der angemeldeten Lehrkraft gehört. */
 async function ownWorkshop(workshopId: string) {
@@ -48,6 +49,24 @@ export async function setPhaseAction(formData: FormData): Promise<void> {
   await db.workshop.update({ where: { id: workshop.id }, data: { phase } });
   await audit(user.id, "workshop.phase", `${workshop.name} → ${phase}`);
   revalidatePath(`/lehrer/${workshop.id}`);
+}
+
+/** Lernfall freigeben, weiterschalten oder beenden (0 aus · 1 · 2 · 3 Auflösung). */
+export async function setLernfallStufeAction(formData: FormData): Promise<void> {
+  const stufe = z.coerce.number().int().min(0).max(3).parse(formData.get("stufe"));
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  await db.workshop.update({ where: { id: workshop.id }, data: { lernfallStufe: stufe } });
+  await audit(user.id, "workshop.lernfall", `${workshop.name} → ${stufenName(stufe)}`);
+  revalidatePath(`/lehrer/${workshop.id}`);
+  revalidatePath(`/lehrer/${workshop.id}/lernfall`);
+}
+
+/** Prüflisten aller Gruppen leeren — für einen neuen Durchgang oder nach dem eigenen Ausprobieren. */
+export async function resetLernfallBefundeAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  await db.group.updateMany({ where: { workshopId: workshop.id }, data: { lernfallBefunde: leereBefunde() } });
+  await audit(user.id, "workshop.lernfall-reset", workshop.name);
+  revalidatePath(`/lehrer/${workshop.id}/lernfall`);
 }
 
 /** Neue Schulstunde: setzt die Generierungs-Kontingente aller Gruppen zurück. */
