@@ -77,6 +77,12 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe
       beim Director's Cut; die Regler heißen jetzt „Spielraum der KI (Leitplanken)" und
       „Hilfe beim Formulieren". Merksatz Tag 1 („versteht mich die KI") auf Vermenschlichung prüfen.
+- [ ] **Lernfall nicht dauerhaft auf der Beamer-Seite** (Peter, 2026-10-11): Der Link
+      „🔎 Lernfall: Findet den Fehler der KI" steht fest im Fuß von `/w/<slug>` — jede Gruppe kann
+      ihn jederzeit antippen, auch lange vor oder nach der Übung. Vorschlag: Link dort entfernen;
+      die Lehrkraft startet den Lernfall bewusst über `/lehrer/<id>/lernfall` (QR und Link sind
+      dort schon vorhanden), den Hinweis „steht auch unten auf der Beamer-Seite" streichen.
+      Alternative, falls gewünscht: Schalter „Lernfall am Beamer zeigen" (braucht ein Workshop-Feld).
 - [ ] **Vorab-Bestätigung von KI-Ergänzungen** als Option für höhere Stufen (heute: sichtbar machen
       und nachträglich herausnehmen) — nicht gebaut, bewusst.
 
