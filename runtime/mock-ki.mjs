@@ -134,7 +134,10 @@ const server = http.createServer((req, res) => {
     const dauer = bauzeit();
     const text = antwortText(kaputt);
     laufende++;
-    log(`#${nr} Spiel${kaputt ? " (absichtlich kaputt)" : ""} in ${(dauer / 1000).toFixed(1)} s · parallel: ${laufende}`);
+    // Welcher Spielraum stand im Auftrag? Hilft beim Prüfen der Regler (Workshop und Gruppe).
+    const auftrag = (anfrage.messages ?? []).map((m) => (typeof m.content === "string" ? m.content : "")).join("\n");
+    const spielraum = [...auftrag.matchAll(/## Spielraum der KI: Stufe (\d) von 5/g)].map((m) => m[1]);
+    log(`#${nr} Spiel${kaputt ? " (absichtlich kaputt)" : ""} in ${(dauer / 1000).toFixed(1)} s · parallel: ${laufende} · Spielraum im Auftrag: ${spielraum.length ? spielraum.join("+") : "keiner"}`);
     const fertig = () => {
       laufende--;
       log(`#${nr} fertig · parallel: ${laufende}`);

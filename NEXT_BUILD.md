@@ -56,31 +56,6 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Migrationspfad. Offener Punkt: Die ursprüngliche Ideensammlung, aus der Studio45 gebaut
   wurde, liegt bisher nicht im Repo.
 
-## Gesammelt für den nächsten Build (2026-10-11)
-
-- [ ] **Regler pro Gruppe** (Peter) — unterschiedlich starke Gruppen sollen unterschiedlich
-      eingestellt werden können. Beide Regler („Spielraum der KI" und „Hilfe beim Formulieren")
-      bleiben am Workshop als Standard; jede Gruppe kann davon abweichen.
-      - Daten: `Group.supportLevel` und `Group.helpLevel`, beide optional (leer = wie Workshop).
-        Migration nur ADD COLUMN.
-      - Lehrkraft: auf der Gruppenkarte zwei kleine Auswahlfelder mit „wie Workshop" als erste
-        Option; abweichende Gruppen bekommen eine dezente Markierung im Dashboard.
-      - Wirkung: Schüler-Seite (Impulse, Formulierungshilfe, Team-Check), Coach-Route und die
-        Generierung lesen den Wert der Gruppe, sonst den des Workshops.
-      - **Alle Gruppen auf Workshop-Einstellung** (Peter): ein Knopf bei den Workshop-Einstellungen,
-        der die Abweichungen aller Gruppen auf einmal löscht — mit Rückfrage und nur sichtbar,
-        wenn mindestens eine Gruppe abweicht („3 Gruppen weichen ab"). Zusätzlich lässt sich
-        jede einzelne Gruppe über „wie Workshop" zurückstellen.
-      - Stolperstein: Hat die Lehrkraft die didaktische Zone der KI-Anweisung selbst
-        überschrieben, steckt der Spielraum-Block nicht mehr darin. Dann den Block der Gruppe
-        an die eigene Fassung anhängen — sonst bliebe der Gruppen-Regler dort wirkungslos.
-      - Für die Kinder unsichtbar: keine Stufe, kein Etikett auf ihrem Gerät (keine Gruppe soll
-        sich als „die Schwachen" markiert sehen).
-      - Token-Spar-Challenge: Gruppen mit engerem Spielraum verbrauchen weniger — bei
-        gemischten Einstellungen ist die Rangliste nicht fair; Hinweis für die Lehrkraft.
-      - Passt zu den Leitgedanken (Leitplanken, Grenzen nach Klassenstufe) und zur
-        Differenzierung aus der Konzeptphase.
-
 ## Offen nach dem Bau vom 2026-10-10
 
 - [x] **Deploy der Isolation** (2026-10-11, Stand `v1.1.0-15-g91c4a7a`): Server-Override um
@@ -162,6 +137,19 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       Hosting-Standort? (Kinder bleiben anonym, aber Lehrkraft-Daten und Schulnamen fallen an.)
 - [ ] **Passwort des Admin-Kontos** wechseln, falls es in dem kurzen Zeitfenster ohne TLS
       auch anderswo genutzt wird.
+
+## Erledigt (gebaut am 2026-10-11)
+
+- [x] **Regler pro Gruppe** — `Group.supportLevel` / `Group.helpLevel` (leer = wie Workshop,
+      Migration `20261011090000`, nur ADD COLUMN); `wirksameStufen()` in `audience.ts` ist die
+      eine Stelle, die alle fragen (Schüler-Seite, Coach, Generierung). Lehrkraft stellt auf der
+      Gruppenkarte ein (speichert sofort, Markierung „eigene Einstellung"); in den
+      Workshop-Einstellungen steht, welche Gruppen abweichen, mit Knopf „Alle Gruppen auf
+      Workshop-Einstellung" (Rückfrage). Hat der Workshop eine eigene KI-Anweisung, wird der
+      Spielraum der Gruppe angehängt. Die Schüler-Seite bekommt nur die Schalter, keine Stufe.
+      Hinweis bei der Token-Spar-Challenge, wenn Gruppen unterschiedlichen Spielraum haben.
+      Der Mock-Anbieter protokolliert jetzt, welcher Spielraum im Auftrag stand.
+      **Noch nicht deployt.**
 
 ## Erledigt (gebaut am 2026-10-10)
 

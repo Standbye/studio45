@@ -132,6 +132,11 @@ model Group {
   /// (Serverneustart mitten im Bau lässt sonst die Gruppe für immer gesperrt).
   generatingSince DateTime?
 
+  /// Eigene Regler dieser Gruppe — leer = es gilt die Einstellung des Workshops.
+  /// So lassen sich unterschiedlich starke Gruppen unterschiedlich begleiten.
+  supportLevel Int?
+  helpLevel    Int?
+
   /// Director's Cut: Die Lehrkraft legt der Gruppe die verdichtete Spielbeschreibung vor.
   /// dcStatus: "" (nichts offen) · "offen" · "ja" · "nein"
   dcSpec    String @default("")

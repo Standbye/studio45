@@ -4,7 +4,7 @@ import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } 
 import { playVersion, readPlayHtml } from "@/lib/games";
 import { leseHerkunft } from "@/lib/steckbrief";
 import { dayMotto, dayTitle } from "@/lib/prompts";
-import { alterProfil, hilfeProfil } from "@/lib/audience";
+import { alterProfil, hilfeProfil, wirksameStufen } from "@/lib/audience";
 import { farbschema } from "@/lib/kontrast";
 import { energieVergleich, euroKosten, euroText, wattstunden } from "@/lib/verbrauch";
 
@@ -21,6 +21,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
   }
   const w = group.workshop;
   const dauerSchaetzung = await schaetzeDauerSekunden(w.id);
+  const hilfe = hilfeProfil(wirksameStufen(group, w).helpLevel);
 
   // Token-Transparenz: Summe der Gruppe + letzter Bau; Euro nur, wenn der
   // Admin Preise hinterlegt hat. Energiewerte sind bewusst grobe Schätzungen.
@@ -62,15 +63,16 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     phase: w.phase,
     locked: group.locked,
     ageGroup: w.ageGroup,
-    supportLevel: w.supportLevel,
     optik: alterProfil(w.ageGroup).optik,
     texte: alterProfil(w.ageGroup).texte,
     chips: alterProfil(w.ageGroup).chips[Math.min(w.currentDay, 5)] ?? alterProfil(w.ageGroup).chips[1],
     // Hilfe beim Formulieren — unabhängig davon, wie viel die KI selbst entscheiden darf
+    // Bewusst nur die Schalter, keine Stufe: Auf dem Gerät soll keine Gruppe ablesen können,
+    // wie sie eingestuft ist (die Regler lassen sich pro Gruppe einstellen).
     hilfen: {
-      chips: hilfeProfil(w.helpLevel).chips,
-      teamCheck: hilfeProfil(w.helpLevel).teamCheck,
-      coachAbZeichen: hilfeProfil(w.helpLevel).coachAbZeichen,
+      chips: hilfe.chips,
+      teamCheck: hilfe.teamCheck,
+      coachAbZeichen: hilfe.coachAbZeichen,
     },
     // Was kam von der Gruppe, was hat die KI ergänzt? (aus dem Steckbrief des Spiels)
     herkunft: leseHerkunft(readPlayHtml(group.id)),

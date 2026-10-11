@@ -77,6 +77,12 @@ export type PromptKontext = {
   learningGoal: string;
   /** Eigene Fassung der didaktischen Zone; leer = erzeugte Fassung */
   promptDidactic: string;
+  /**
+   * Der Spielraum kommt von der Gruppe, nicht vom Workshop. Wichtig, wenn die Lehrkraft die
+   * didaktische Zone selbst geschrieben hat: Dann steckt kein Spielraum-Block mehr darin,
+   * und der Regler der Gruppe bliebe ohne Wirkung — er wird deshalb angehängt.
+   */
+  spielraumVonGruppe?: boolean;
   day: number;
   totalDays: number;
 };
@@ -132,7 +138,11 @@ export function promptBloecke(k: PromptKontext): PromptBlock[] {
             k.learningGoal.trim() ? " · Lernziel" : ""
           }`,
       editierbar: true,
-      text: eigene || didaktikStandard(k),
+      text: eigene
+        ? k.spielraumVonGruppe
+          ? `${eigene}\n\n${support.promptBlock}\n\nDieser Spielraum gilt für diese Gruppe und geht allem vor, was oben zum Spielraum der KI steht.`
+          : eigene
+        : didaktikStandard(k),
     },
   ];
 }

@@ -13,7 +13,6 @@ type KidState = {
   phase: "PLENUM" | "STUDIO" | "PAUSE";
   locked: boolean;
   ageGroup: "GRUNDSCHULE" | "MITTELSTUFE" | "OBERSTUFE";
-  supportLevel: number;
   optik: {
     verspielt: boolean;
     radius: string;

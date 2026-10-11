@@ -310,3 +310,25 @@ export function hilfeAusAltemLevel(supportLevel: number): number {
   if (supportLevel <= 3) return 2;
   return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Regler pro Gruppe
+//
+// Der Workshop gibt den Standard vor; eine Gruppe kann bei beiden Reglern abweichen
+// (leer = wie Workshop). ALLE Stellen, die eine Stufe brauchen, fragen hier — sonst
+// gilt auf der Schüler-Seite etwas anderes als in der Generierung.
+// ---------------------------------------------------------------------------
+
+type GruppenRegler = { supportLevel: number | null; helpLevel: number | null };
+type WorkshopRegler = { supportLevel: number; helpLevel: number };
+
+export function wirksameStufen(gruppe: GruppenRegler, workshop: WorkshopRegler) {
+  return {
+    supportLevel: gruppe.supportLevel ?? workshop.supportLevel,
+    helpLevel: gruppe.helpLevel ?? workshop.helpLevel,
+    /** Hat diese Gruppe einen eigenen Spielraum (nicht nur zufällig denselben Wert)? */
+    eigenerSpielraum: gruppe.supportLevel !== null,
+    eigeneHilfe: gruppe.helpLevel !== null,
+    weichtAb: gruppe.supportLevel !== null || gruppe.helpLevel !== null,
+  };
+}

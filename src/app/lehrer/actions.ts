@@ -76,6 +76,36 @@ export async function toggleLockAction(formData: FormData): Promise<void> {
   revalidatePath(`/lehrer/${group.workshopId}`);
 }
 
+/**
+ * Eigene Regler einer Gruppe setzen. Leeres Feld = wieder die Einstellung des Workshops.
+ */
+export async function setGroupLevelsAction(formData: FormData): Promise<void> {
+  const leerOderZahl = (min: number, max: number) =>
+    z.union([z.literal(""), z.coerce.number().int().min(min).max(max)]).transform((v) => (v === "" ? null : v));
+  const parsed = z
+    .object({ supportLevel: leerOderZahl(1, 5), helpLevel: leerOderZahl(0, 3) })
+    .parse({ supportLevel: formData.get("supportLevel") ?? "", helpLevel: formData.get("helpLevel") ?? "" });
+  const { user, group } = await ownGroup(String(formData.get("groupId")));
+  await db.group.update({ where: { id: group.id }, data: parsed });
+  await audit(
+    user.id,
+    "group.levels",
+    `Gruppe ${group.index}: Spielraum ${parsed.supportLevel ?? "wie Workshop"} · Hilfe ${parsed.helpLevel ?? "wie Workshop"}`
+  );
+  revalidatePath(`/lehrer/${group.workshopId}`);
+}
+
+/** Alle Gruppen auf die Einstellung des Workshops zurückstellen. */
+export async function resetGroupLevelsAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  const geaendert = await db.group.updateMany({
+    where: { workshopId: workshop.id, OR: [{ supportLevel: { not: null } }, { helpLevel: { not: null } }] },
+    data: { supportLevel: null, helpLevel: null },
+  });
+  await audit(user.id, "workshop.levels-reset", `${workshop.name}: ${geaendert.count} Gruppe(n) zurückgestellt`);
+  revalidatePath(`/lehrer/${workshop.id}`);
+}
+
 export async function renameStudioAction(formData: FormData): Promise<void> {
   const name = z.string().trim().max(40).parse(formData.get("studioName"));
   const { user, group } = await ownGroup(String(formData.get("groupId")));

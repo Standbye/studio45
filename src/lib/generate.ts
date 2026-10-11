@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { buildOrEditGame } from "@/lib/llm";
 import { verifyGameHtml, type VerifyResult } from "@/lib/verify";
+import { wirksameStufen } from "@/lib/audience";
 import { publishGame, readPlayHtml } from "@/lib/games";
 
 export type GenerateOutcome =
@@ -108,6 +109,7 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
   if (locked.count === 0) return { ok: false, reason: "Es läuft schon eine Generierung — kurz warten!" };
 
   const startzeit = Date.now();
+  const stufen = wirksameStufen(group, w);
   try {
     const currentHtml = readPlayHtml(groupId);
     const params = {
@@ -120,7 +122,8 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
       studioName: group.studioName || `Gruppe ${group.index}`,
       kontext: {
         ageGroup: w.ageGroup,
-        supportLevel: w.supportLevel,
+        supportLevel: stufen.supportLevel,
+        spielraumVonGruppe: stufen.eigenerSpielraum,
         learningGoal: w.learningGoal,
         promptDidactic: w.promptDidactic,
         day: w.currentDay,

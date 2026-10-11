@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { coachWunsch } from "@/lib/llm";
 import { readPlayHtml } from "@/lib/games";
-import { hilfeProfil } from "@/lib/audience";
+import { hilfeProfil, wirksameStufen } from "@/lib/audience";
 import { DEVICE_COOKIE, deviceIdFrom, rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/g/[code]/coach"
 
   const w = group.workshop;
   if (!w.apiKey) return NextResponse.json({ error: "keine Verbindung" }, { status: 400 });
-  if (hilfeProfil(w.helpLevel).coachAbZeichen === 0) {
+  if (hilfeProfil(wirksameStufen(group, w).helpLevel).coachAbZeichen === 0) {
     return NextResponse.json({ error: "nicht aktiv" }, { status: 400 });
   }
   if (w.tokensUsed >= w.tokenBudget) {

@@ -28,6 +28,8 @@ import { ALTERSSTUFEN } from "@/lib/audience";
 import { promptBloecke, didaktikStandard } from "@/lib/prompts";
 import { euroKosten, euroText, tokenText } from "@/lib/verbrauch";
 import { HilfeWahl, SpielraumWahl } from "./support-level";
+import { AlleZuruecksetzen, GruppenRegler } from "./gruppen-regler";
+import { wirksameStufen } from "@/lib/audience";
 import { FarbVorschau } from "./farb-vorschau";
 import { PromptVorschau } from "./prompt-vorschau";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,6 +91,9 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
   ) as Record<string, string>;
 
   const budgetPct = Math.min(100, Math.round((w.tokensUsed / w.tokenBudget) * 100));
+  // Gruppen mit eigenen Reglern (abweichend von der Einstellung des Workshops)
+  const abweichend = w.groups.filter((g) => wirksameStufen(g, w).weichtAb);
+  const eigenerSpielraum = w.groups.some((g) => g.supportLevel !== null && g.supportLevel !== w.supportLevel);
   const alleWerte = [...verbrauchProGruppe.values()];
   const budgetKosten = euroKosten(
     alleWerte.reduce((a, v) => a + v.in, 0),
@@ -246,7 +251,10 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                       )}
                     </CardDescription>
                   </div>
-                  {g.locked && <Badge variant="destructive">gesperrt</Badge>}
+                  <div className="flex flex-col items-end gap-1">
+                    {g.locked && <Badge variant="destructive">gesperrt</Badge>}
+                    {wirksameStufen(g, w).weichtAb && <Badge variant="secondary">eigene Einstellung</Badge>}
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-start gap-3">
@@ -267,6 +275,14 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                       </form>
                     </div>
                   </div>
+                  <GruppenRegler
+                    key={`${g.id}-${g.supportLevel}-${g.helpLevel}-${w.supportLevel}-${w.helpLevel}`}
+                    groupId={g.id}
+                    supportLevel={g.supportLevel}
+                    helpLevel={g.helpLevel}
+                    workshopSupport={w.supportLevel}
+                    workshopHelp={w.helpLevel}
+                  />
                   <div className="flex flex-wrap gap-2">
                     <form action={addBonusAction}>
                       <input type="hidden" name="groupId" value={g.id} />
@@ -294,7 +310,16 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
               <CardTitle className="text-base">Workshop-Einstellungen</CardTitle>
               <CardDescription>Zielgruppe, Spielraum der KI, Hilfe beim Formulieren, Lernziel und Limits.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 p-3 text-sm">
+                <p className="min-w-0 flex-1">
+                  <span className="font-medium">Regler pro Gruppe: </span>
+                  {abweichend.length === 0
+                    ? "Alle Gruppen nutzen die Einstellung dieses Workshops. Abweichen lässt sich auf jeder Gruppenkarte — für stärkere oder schwächere Gruppen."
+                    : `${abweichend.length === 1 ? "Eine Gruppe hat" : `${abweichend.length} Gruppen haben`} eigene Einstellungen (${abweichend.map((g) => g.studioName || `Gruppe ${g.index}`).join(", ")}). Was du hier einstellst, gilt für die übrigen.`}
+                </p>
+                {abweichend.length > 0 && <AlleZuruecksetzen workshopId={w.id} anzahl={abweichend.length} />}
+              </div>
               <form action={updateSettingsAction} className="space-y-4">
                 <input type="hidden" name="workshopId" value={w.id} />
                 <div className="space-y-2">
@@ -341,6 +366,13 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     Zeigt den Gruppen eine Rangliste, wer mit den wenigsten Tokens baut — gedacht für die
                     Oberstufe als Anreiz für präzise Prompts. Bei jüngeren Stufen besser aus: dort soll
                     Ausprobieren nicht bestraft wirken. Fehlgeschlagene Builds kosten weiterhin keinen Versuch.
+                    {eigenerSpielraum && (
+                      <>
+                        {" "}
+                        <b>Achtung:</b> Gruppen haben unterschiedlichen Spielraum — wer enger eingestellt
+                        ist, verbraucht weniger. Die Rangliste ist dann nicht fair vergleichbar.
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="rounded-lg border bg-muted/40 p-3 text-sm">
