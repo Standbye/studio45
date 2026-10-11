@@ -112,6 +112,23 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Ereignis vollständig aus der Ergebnisliste aufgebaut (`src/lib/diktat.ts`); kumulative
       Endergebnisse (Chrome/Android) und eine neu beginnende Liste nach Sprechpause (Safari) sind
       abgefangen. Geprüft per Nachspielen von Ereignisfolgen — nicht mit echtem Mikrofon am iPad.
+- [ ] **Motto und Fokus der Stunde im Kinder-Studio zeigen; Vorschläge passend dazu** (Peter,
+      2026-10-11). Stand heute: Im Studio steht nur „Tag 2/5 · Spielregel" klein im Kopf; den
+      Merksatz sehen die Gruppen nur im Plenum-/Pause-Bildschirm. Worauf es heute ankommt, steht
+      nirgends. Vorschlag:
+      1. **Fokus-Karte** oben in der Bedienspalte (im Hochformat über der Eingabe): Titel des
+         Tages, ein Satz „Heute geht es um …" in Kindersprache je Altersstufe, darunter der
+         Merksatz. Dieselbe Quelle für Kinder-App, Beamer und Plenum-Bildschirm.
+      2. **Vorschläge an den Fokus binden:** Die Satzanfänge (Chips) hängen heute an der
+         Tagesnummer 1–5. Im 3-Tage-Format zeigt Tag 3 („Feinschliff & Release") deshalb die
+         Chips von „Hübsch & Hörbar" — das passt nicht. Chips künftig über den Fokus des Tages
+         wählen (wie der KI-Tagesfokus es schon tut), nicht über die Nummer.
+      3. **Formulierungshilfe kennt den Fokus:** Die genauere Fassung des Wunsches soll in
+         Richtung des Tagesfokus präzisieren (Tag „Spielregel": nach Gewinnen/Verlieren fragen,
+         nicht nach Farben). Heute bekommt sie den Tag nicht mit.
+      4. Team-Check: dritte Frage aus dem Fokus des Tages (optional, klein).
+      Zu klären mit Peter: Soll die Karte dauerhaft sichtbar sein oder einklappbar? Titel/Mottos
+      liegen bei Codex (`workshop-days.ts` in dessen Baum) — Quelle vor dem Bau abstimmen.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
