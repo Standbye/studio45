@@ -58,11 +58,15 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 
 ## Offen nach dem Bau vom 2026-10-10
 
-- [ ] **Deploy der Isolation** (auf Ansage): Auf dem Server baut die Override-Datei das Image
-      selbst — dort muss der neue Dienst `pruefer` das gebaute Image bekommen
-      (`pruefer: image: studio45-studio45` in `/opt/studio45/docker-compose.override.yml`),
-      sonst zieht er das alte GHCR-Image ohne `runtime/pruefer.mjs`. Danach prüfen: Admin-Fußzeile
-      zeigt „getrennter Prüf-Container", Sicherheitsprobe mit `MOCK_ANGRIFF=1`, Lasttest.
+- [x] **Deploy der Isolation** (2026-10-11, Stand `v1.1.0-15-g91c4a7a`): Server-Override um
+      `pruefer: image: studio45-studio45` ergänzt. Auf dem Server nachgewiesen: Prüf-Container hat
+      kein Internet (Name und IP), keine Datenbank, schreibgeschütztes Dateisystem, ist von außen
+      nicht erreichbar; Angriffsspiel (`MOCK_ANGRIFF=1`) wird vor jeder Ausführung abgelehnt.
+      **Lasttest grün:** 10 Gruppen gleichzeitig, 2 Runden, 20/20 Builds ok (36–55 s bei 45 s
+      Mock-Bauzeit), Kinder-App p95 180 ms, 0 Fehler, Container-Spitze 15 % CPU / 204 MiB
+      (Server: 4 Kerne, 7,7 GB). Noch offen: derselbe Lauf mit echtem Anbieter-Schlüssel
+      (Ratelimits bei 10 parallelen Streams). DB-Sicherung von vor dem Deploy liegt im Volume
+      (`/data/studio45.db.vor-deploy-2026-10-11`).
 - [ ] **Für Codex (Material):** Neu im Produkt und im Material noch nicht erwähnt — Lernfall-Seite
       (`/lehrer/<id>/lernfall`, für Gruppen `/w/<slug>/lernfall`), Anzeige „Von uns — und von der KI"
       nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe

@@ -22,4 +22,6 @@ services:
       MOCK_STREUUNG: "${MOCK_STREUUNG:-0.2}"
       MOCK_FEHLERQUOTE: "${MOCK_FEHLERQUOTE:-0}"
       MOCK_429_QUOTE: "${MOCK_429_QUOTE:-0}"
+      # Sicherheitsprobe: 1 = jedes Spiel enthält Auslese-Code und muss abgelehnt werden
+      MOCK_ANGRIFF: "${MOCK_ANGRIFF:-0}"
     # Bewusst kein `ports:` — der Mock ist nur aus dem Compose-Netz erreichbar.
