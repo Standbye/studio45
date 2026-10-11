@@ -138,6 +138,17 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       „Gründlichkeit hoch" beim echten Anbieter.
       **Nicht gebaut (bewusst):** fertige Spielvorlagen zum Anklicken, Avatare/Belohnungen,
       „wieder vor" nach einem Schritt zurück.
+- [ ] **Ton in den Spielen ist praktisch nicht zu hören** (Peter, 2026-10-11). Befund am Spiel
+      „Neo springt" (Gruppe 2, Test-Workshop): Musik und Geräusche sind eingebaut (erzeugte Töne
+      per Web Audio, keine Audiodateien), aber (a) der Ton ist beim Start **aus** und muss im Spiel
+      über „Ton: aus" eingeschaltet werden, (b) die Musik läuft mit Lautstärke 0,008–0,012 (rund
+      1 %), Geräusche mit 0,045 — auf einem Tablet kaum hörbar. Ursache sind unsere Anweisungen:
+      Kern „Nie automatisch laute Musik beim Laden. Ton startet leise und hat einen sichtbaren
+      Schalter" und Tag 3 „Sounds müssen leise starten". Das Modell macht daraus „aus und fast
+      stumm". Vorschlag: im Kern konkrete Werte statt „leise" (Geräusche etwa 0,15–0,25, Musik
+      etwa 0,06–0,10, Gesamtregler), Ton-Schalter groß und eindeutig; zu entscheiden: Ton nach
+      dem Startknopf **an** (empfohlen, mit Schalter) oder weiter standardmäßig aus. Zusätzlich
+      prüfen: iPad-Stummschaltung dämpft Web Audio.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
