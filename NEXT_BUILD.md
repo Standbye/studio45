@@ -106,6 +106,12 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       die Eingabe verdeckt nichts (bei 1180 × 820: Spiel 784 × 738). Hochformat bleibt
       untereinander. Dazu im Kern-Prompt verschärft: alles Spielbare passt ohne Scrollen in den
       Rahmen, keine festen Pixelhöhen — wirkt nur auf neu gebaute Spiele.
+- [x] **Fehler Spracheingabe: Gesagtes wurde immer wieder angehängt** (Peter, 2026-10-11; behoben
+      und deployt, Server meldet `v1.1.0-27-g05c715f`). Ursache: Der gesammelte Endtext wurde bei
+      jedem Erkennungs-Ereignis komplett hinten angehängt statt ersetzt. Jetzt wird der Text je
+      Ereignis vollständig aus der Ergebnisliste aufgebaut (`src/lib/diktat.ts`); kumulative
+      Endergebnisse (Chrome/Android) und eine neu beginnende Liste nach Sprechpause (Safari) sind
+      abgefangen. Geprüft per Nachspielen von Ereignisfolgen — nicht mit echtem Mikrofon am iPad.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
