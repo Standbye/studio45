@@ -64,8 +64,13 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       nicht erreichbar; Angriffsspiel (`MOCK_ANGRIFF=1`) wird vor jeder Ausführung abgelehnt.
       **Lasttest grün:** 10 Gruppen gleichzeitig, 2 Runden, 20/20 Builds ok (36–55 s bei 45 s
       Mock-Bauzeit), Kinder-App p95 180 ms, 0 Fehler, Container-Spitze 15 % CPU / 204 MiB
-      (Server: 4 Kerne, 7,7 GB). Noch offen: derselbe Lauf mit echtem Anbieter-Schlüssel
-      (Ratelimits bei 10 parallelen Streams). DB-Sicherung von vor dem Deploy liegt im Volume
+      (Server: 4 Kerne, 7,7 GB). **Mit echtem Anbieter (2026-10-11, OpenRouter, `openai/gpt-5.6-terra`):**
+      10 Gruppen gleichzeitig, eine Runde Erstbau + eine Runde Änderungswunsch: 20/20 ok, keine
+      Ratelimits, keine Reparaturrunde, Bauzeit 19–40 s, Kinder-App p95 123 ms, Container-Spitze
+      47 % CPU / 239 MiB; 192.945 Tokens = 0,70 € laut hinterlegten Preisen. Das Modell führt
+      `von_der_gruppe`/`von_der_ki` in 10 von 10 Spielen und schreibt sie beim Ändern fort.
+      Der Workshop `lasttest` (10 echte Spiele) liegt noch auf dem Server — entfernen mit
+      `docker exec studio45 node runtime/lasttest-seed.mjs --entfernen`. DB-Sicherung von vor dem Deploy liegt im Volume
       (`/data/studio45.db.vor-deploy-2026-10-11`).
 - [ ] **Für Codex (Material):** Neu im Produkt und im Material noch nicht erwähnt — Lernfall-Seite
       (`/lehrer/<id>/lernfall`, für Gruppen `/w/<slug>/lernfall`), Anzeige „Von uns — und von der KI"
