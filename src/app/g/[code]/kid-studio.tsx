@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
+import { diktatSitzung } from "@/lib/diktat";
 
 type KidState = {
   studioName: string;
@@ -173,25 +174,17 @@ export function KidStudio({ code }: { code: string }) {
     rec.lang = "de-DE";
     rec.interimResults = true;
     rec.continuous = true;
-    let finalText = "";
-    rec.onresult = (e: { resultIndex: number; results: { isFinal: boolean; 0: { transcript: string } }[] }) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (r.isFinal) finalText += r[0].transcript;
-        else interim += r[0].transcript;
-      }
-      setText((prev) => {
-        const base = prev.replace(/⏳.*$/, "");
-        return (base + finalText + (interim ? `⏳${interim}` : "")).trimStart();
-      });
-      if (finalText) {
-        setText((prev) => prev.replace(/⏳.*$/, ""));
-      }
+    // Der Text wird bei jedem Ergebnis komplett neu aufgebaut (siehe lib/diktat) —
+    // ⏳ markiert das noch Vorläufige, das beim Bauen nicht mitgeschickt wird.
+    const sitzung = diktatSitzung(text.replace(/⏳.*$/, ""));
+    rec.onresult = (e: { results: Parameters<typeof sitzung.ergebnis>[0] }) => {
+      const { text: stand, vorlaeufig } = sitzung.ergebnis(e.results);
+      setText(vorlaeufig ? `${stand} ⏳${vorlaeufig}`.trimStart() : stand);
     };
     rec.onend = () => {
       setListening(false);
-      setText((prev) => prev.replace(/⏳.*$/, "").trim() + " ");
+      // Was beim Stopp noch vorläufig war, bleibt stehen — die Gruppe hat es gesehen
+      setText((prev) => prev.replace(/\s*⏳/, " ").trim() + " ");
     };
     rec.onerror = () => setListening(false);
     recRef.current = rec;
