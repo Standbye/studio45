@@ -77,12 +77,27 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       nach jedem Bau (passt zur Reflexionsfrage „Was hat die KI ergänzt?"), Abstimmung der Gruppe
       beim Director's Cut; die Regler heißen jetzt „Spielraum der KI (Leitplanken)" und
       „Hilfe beim Formulieren". Merksatz Tag 1 („versteht mich die KI") auf Vermenschlichung prüfen.
-- [ ] **Lernfall nicht dauerhaft auf der Beamer-Seite** (Peter, 2026-10-11): Der Link
-      „🔎 Lernfall: Findet den Fehler der KI" steht fest im Fuß von `/w/<slug>` — jede Gruppe kann
-      ihn jederzeit antippen, auch lange vor oder nach der Übung. Vorschlag: Link dort entfernen;
-      die Lehrkraft startet den Lernfall bewusst über `/lehrer/<id>/lernfall` (QR und Link sind
-      dort schon vorhanden), den Hinweis „steht auch unten auf der Beamer-Seite" streichen.
-      Alternative, falls gewünscht: Schalter „Lernfall am Beamer zeigen" (braucht ein Workshop-Feld).
+- [ ] **Lernfall neu aufbauen: von der Lehrkraft gesteuert** (Peter, 2026-10-11). Auslöser: Der Link
+      „🔎 Lernfall" steht fest im Fuß von `/w/<slug>` und ist jederzeit erreichbar. Schwächen heute:
+      keine Steuerung; die zweite Fassung („alles repariert") kann jede Gruppe sofort laden und die
+      Prüfung überspringen; Befunde landen nirgends, die Lehrkraft sieht nicht, wer was gefunden hat;
+      der Lernfall hängt neben dem Studio statt in der Kinder-App. Vorschlag in drei Teilen:
+      1. **Schalter mit Stufen** (ein Workshop-Feld, Standard aus): aus → Fassung 1 → Fassung 2 →
+         Auflösung. Lehrkraft schaltet im Dashboard weiter. Aus = Seite und Spiel nicht erreichbar,
+         kein Link am Beamer. Fassung 2 gibt nur die Lehrkraft frei, nicht die Gruppe.
+      2. **Hürden im Ablauf — Prüfliste je Gruppe in der Kinder-App** (`/g/<code>`, kein Extra-QR):
+         je Regel des Auftrags „hält sich dran / hält sich nicht dran" plus ein Satz „erwartet /
+         passiert". Lehrkraft sieht je Gruppe, welche Abweichungen gefunden sind. In Fassung 2
+         dieselbe Liste noch einmal („Stimmt ‚alles repariert'?"). Auflösung am Beamer zeigt Lösung
+         neben den Befunden der Gruppen. Liefert den Beleg zum Erfolgskriterium aus dem Review.
+      3. **Hindernisse im Spiel** (falls so gemeint — Rückfrage an Peter offen): eine fünfte Regel,
+         z. B. „Faule Äpfel nicht fangen, sonst 1 Punkt Abzug", mit einer weiteren eingebauten
+         Abweichung. Höchstens eine Zusatzregel; mindestens eine Regel muss das Spiel korrekt
+         erfüllen, damit die Gruppen auch „stimmt" bestätigen müssen.
+      Staffelung (Leitgedanke Klassenstufen): untere Stufen gemeinsam am Beamer, nur Fassung 1;
+      höhere Stufen in Gruppen mit Fassung 2. Über den Schalter abbildbar, kein eigener Regler.
+      **Nicht bauen:** echter KI-Lauf als Lernfall (nicht wiederholbar), Katalog mehrerer Lernfälle,
+      Punkte/Rangliste der Gruppen, automatische KI-Bewertung der Freitexte.
 - [ ] **Vorab-Bestätigung von KI-Ergänzungen** als Option für höhere Stufen (heute: sichtbar machen
       und nachträglich herausnehmen) — nicht gebaut, bewusst.
 
