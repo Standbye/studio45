@@ -115,6 +115,7 @@ export function KidStudio({ code }: { code: string }) {
   const [rueckfrage, setRueckfrage] = useState<{ frage: string; antworten: string[] } | null>(null);
   const [showFehler, setShowFehler] = useState(false);
   const [zurueckLaeuft, setZurueckLaeuft] = useState(false);
+  const [showMehr, setShowMehr] = useState(false);
   const gameVersionRef = useRef(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recRef = useRef<any>(null);
@@ -366,6 +367,36 @@ export function KidStudio({ code }: { code: string }) {
   const wartezeit = Math.max(bauSekunden, state.laufSekunden);
   const wartetZuLang = baut && wartezeit > Math.max(120, state.dauerSchaetzung * 2);
 
+  // Die Grenzen in einem Satz — sie stehen direkt am Bau-Knopf, damit niemand rätselt,
+  // warum er gerade nicht geht.
+  const pauseText = `${Math.floor(cooldown / 60)}:${String(cooldown % 60).padStart(2, "0")}`;
+  const versuche = `Noch ${state.attemptsLeft} ${state.attemptsLeft === 1 ? "Versuch" : "Versuche"}`;
+  const grenze = state.locked
+    ? { warnung: true, text: "🔒 Eure Gruppe ist gerade gesperrt — fragt eure Lehrkraft." }
+    : state.attemptsLeft <= 0
+      ? { warnung: true, text: "Keine Versuche mehr in dieser Stunde — eure Lehrkraft kann nachladen." }
+      : cooldown > 0
+        ? { warnung: true, text: `⏸ Denkpause ${pauseText} — testet euer Spiel. ${versuche}.` }
+        : { warnung: false, text: `${versuche} in dieser Stunde` };
+
+  // Nach dem Bau reicht eine Karte: das Wichtigste in je einer Zeile, der Rest im Dialog.
+  const kiErgaenzt = state.herkunft?.ki.length ?? 0;
+  const nachBau =
+    state.letzterBau || kiErgaenzt > 0
+      ? {
+          neu: state.letzterBau?.neu[0] ?? "",
+          probiert: state.letzterBau?.ausprobieren[0] ?? "",
+          kiAnzahl: kiErgaenzt,
+          vorlesen: [
+            state.letzterBau?.neu.length ? `Das ist neu: ${state.letzterBau.neu.join(". ")}.` : "",
+            state.letzterBau?.ausprobieren.length ? `Probiert das aus: ${state.letzterBau.ausprobieren.join(". ")}.` : "",
+            kiErgaenzt > 0 ? `Das hat die KI von sich aus ergänzt: ${state.herkunft?.ki.join(". ")}.` : "",
+          ]
+            .filter(Boolean)
+            .join(" "),
+        }
+      : null;
+
   // Es ist das Spiel der Gruppe: Bevor die Lehrkraft daraus ein Gesamtspiel bauen lässt,
   // sieht die Gruppe die Beschreibung und stimmt zu oder widerspricht.
   const directorCutDialog = state.directorCut && (
@@ -552,92 +583,61 @@ export function KidStudio({ code }: { code: string }) {
         )}
       </div>
 
-      {/* Eingabe */}
+      {/* Bedienung — bewusst knapp: Thema, Eingabe, Grenzen. Alles Weitere liegt unter „Mehr". */}
       <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] max-lg:max-h-[58svh] max-lg:overflow-y-auto lg:flex lg:w-[23rem] lg:shrink-0 lg:flex-col lg:space-y-3 lg:overflow-hidden lg:border-l lg:border-t-0 lg:p-4 xl:w-[26rem]">
         {/* Hinweise oben scrollen für sich — die Eingabe darunter bleibt immer sichtbar */}
-        <div className="space-y-2 lg:min-h-0 lg:flex-1 lg:space-y-3 lg:overflow-y-auto">
-        {/* Worauf es heute ankommt — immer sichtbar, damit Wünsche und Vorschläge dazu passen */}
-        <div className="flex items-start gap-2 border-2 px-3 py-2" style={{ borderColor: "var(--s45-primary-text)", borderRadius: "var(--s45-radius)" }}>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-black uppercase tracking-wide" style={{ color: "var(--s45-primary-text)" }}>
-              🎯 Heute: {state.dayTitle}
-            </p>
-            <p className="text-sm font-semibold lg:text-base">{state.fokus.heute}</p>
-            <p className="mt-1 text-xs text-slate-500 max-lg:hidden">Merksatz: „{state.motto}“</p>
-          </div>
-          {state.hilfen.vorlesen && <Vorlesen text={`Heute: ${state.dayTitle}. ${state.fokus.heute} Merksatz: ${state.motto}`} />}
-        </div>
-        {feedback && (
-          <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
-            <p className="flex-1">{feedback}</p>
-            {state.hilfen.vorlesen && <Vorlesen text={feedback.replace(/^[^\p{L}]+/u, "")} />}
-          </div>
-        )}
-        {/* Nach dem Bau: Was ist neu — und was soll die Gruppe jetzt ausprobieren? */}
-        {geradeGebaut && state.letzterBau && (
-          <div className="flex items-start gap-2 rounded-lg border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-            <div className="min-w-0 flex-1 space-y-1">
-              {state.letzterBau.neu.length > 0 && (
-                <div>
-                  <p className="font-black">✨ Das ist neu</p>
-                  <ul className="list-disc pl-5">
-                    {state.letzterBau.neu.map((z) => (
-                      <li key={z}>{z}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {state.letzterBau.ausprobieren.length > 0 && (
-                <div>
-                  <p className="font-black">🕹️ Probiert das aus</p>
-                  <ul className="list-disc pl-5">
-                    {state.letzterBau.ausprobieren.map((z) => (
-                      <li key={z}>{z}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+        <div className="space-y-2 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          {/* Worauf es heute ankommt */}
+          <div className="flex items-start gap-2 border-2 px-3 py-2" style={{ borderColor: "var(--s45-primary-text)", borderRadius: "var(--s45-radius)" }}>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black uppercase tracking-wide" style={{ color: "var(--s45-primary-text)" }}>
+                🎯 Heute: {state.dayTitle}
+              </p>
+              <p className="text-sm font-semibold">{state.fokus.heute}</p>
             </div>
-            {state.hilfen.vorlesen && (
-              <Vorlesen
-                text={[
-                  state.letzterBau.neu.length ? `Das ist neu: ${state.letzterBau.neu.join(". ")}.` : "",
-                  state.letzterBau.ausprobieren.length ? `Probiert das aus: ${state.letzterBau.ausprobieren.join(". ")}.` : "",
-                ].join(" ")}
-              />
-            )}
+            {state.hilfen.vorlesen && <Vorlesen text={`Heute: ${state.dayTitle}. ${state.fokus.heute}`} />}
           </div>
-        )}
-        {geradeGebaut && state.herkunft && state.herkunft.ki.length > 0 && (
-          <div className="rounded-lg border-2 border-slate-200 px-3 py-2 text-sm">
-            <span className="font-semibold">Das hat die KI von sich aus ergänzt:</span>{" "}
-            {state.herkunft.ki.slice(0, 4).join(" · ")}
-            {state.herkunft.ki.length > 4 ? " …" : ""}{" "}
-            <button onClick={() => setShowHerkunft(true)} className="font-semibold underline underline-offset-2" style={{ color: "var(--s45-primary-text)" }}>
-              Ansehen und entscheiden
-            </button>
-            {state.hilfen.vorlesen && (
-              <span className="ml-2 inline-block align-middle">
-                <Vorlesen text={`Das hat die KI von sich aus ergänzt: ${state.herkunft.ki.join(". ")}.`} />
-              </span>
-            )}
-          </div>
-        )}
-        {cooldown > 0 && (
-          <p className="rounded-lg px-3 py-2 text-center text-sm font-bold" style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}>
-            ⏸️ Denkpause: Testet euer Spiel und besprecht den nächsten Schritt — weiter in {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, "0")}
-          </p>
-        )}
+          {feedback && (
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
+              <p className="flex-1">{feedback}</p>
+              {state.hilfen.vorlesen && <Vorlesen text={feedback.replace(/^[^\p{L}]+/u, "")} />}
+            </div>
+          )}
+          {/* Nach dem Bau, in einer Karte: was neu ist, was zu testen ist, was die KI ergänzt hat */}
+          {geradeGebaut && nachBau && (
+            <div className="flex items-start gap-2 rounded-lg border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+              <div className="min-w-0 flex-1 space-y-0.5">
+                {nachBau.neu && (
+                  <p>
+                    <b>✨ Neu:</b> {nachBau.neu}
+                  </p>
+                )}
+                {nachBau.probiert && (
+                  <p>
+                    <b>🕹️ Probiert:</b> {nachBau.probiert}
+                  </p>
+                )}
+                <button onClick={() => setShowHerkunft(true)} className="font-semibold underline underline-offset-2">
+                  {nachBau.kiAnzahl > 0
+                    ? `Die KI hat ${nachBau.kiAnzahl === 1 ? "eine Sache" : `${nachBau.kiAnzahl} Sachen`} ergänzt — ansehen`
+                    : "Alles ansehen"}
+                </button>
+              </div>
+              {state.hilfen.vorlesen && <Vorlesen text={nachBau.vorlesen} />}
+            </div>
+          )}
         </div>
+
+        {/* Satzanfänge passend zum Thema — eine Zeile, zur Seite wischbar */}
         {state.hilfen.chips && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {state.hilfen.vorlesen && <Vorlesen text={`So könnt ihr anfangen: ${state.chips.join(". ")}.`} />}
             {state.chips.map((chip) => (
               <button
                 key={chip}
                 onClick={() => setText((t) => (t ? t.replace(/⏳.*$/, "").trim() + " — " + chip : chip))}
                 disabled={baut}
-                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40 lg:whitespace-normal lg:text-left"
+                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
                 style={{ borderColor: "var(--s45-primary-text)", color: "var(--s45-primary-text)" }}
               >
                 {chip}
@@ -645,6 +645,7 @@ export function KidStudio({ code }: { code: string }) {
             ))}
           </div>
         )}
+
         <div className="flex items-end gap-2 lg:flex-wrap">
           <button
             onClick={toggleMic}
@@ -685,56 +686,36 @@ export function KidStudio({ code }: { code: string }) {
             className="shrink-0 px-5 text-lg font-black shadow disabled:opacity-40 lg:flex-1"
             style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", height: "var(--s45-knopf)", borderRadius: "var(--s45-radius)" }}
           >
-            {baut || coachLaeuft ? "…" : state.texte.bauKnopf}
+            {baut || coachLaeuft ? "…" : cooldown > 0 ? `⏸ ${pauseText}` : state.texte.bauKnopf}
           </button>
         </div>
-        {state.hilfen.chips && (
-          <p className="text-center text-xs text-slate-400">{state.texte.tipp}</p>
-        )}
-        {state.verbrauch.gesamtTokens > 0 && (
+
+        {/* Die Grenzen stehen direkt am Bau-Knopf: Versuche, Denkpause, Sperre */}
+        <p
+          role="status"
+          className={`rounded-lg px-3 py-1.5 text-center text-sm font-bold ${grenze.warnung ? "" : "bg-slate-100 text-slate-700"}`}
+          style={grenze.warnung ? { background: "var(--s45-primary)", color: "var(--s45-auf-primary)" } : undefined}
+        >
+          {grenze.text}
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-2">
+          {state.gameVersion > 0 && state.hilfen.fehlerMelden && (
+            <button
+              onClick={() => setShowFehler(true)}
+              disabled={baut}
+              className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-40"
+            >
+              🐞 Etwas geht nicht
+            </button>
+          )}
           <button
-            onClick={() => setShowVerbrauch(true)}
-            className="mx-auto block text-center text-xs text-slate-400 underline-offset-2 hover:underline"
+            onClick={() => setShowMehr(true)}
+            className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700"
           >
-            ⚡ {state.verbrauch.letzterTokens > 0 && (
-              <>Letzter Bau: {state.verbrauch.letzterTokens.toLocaleString("de-DE")} · </>
-            )}
-            Gesamt: {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
-            {state.verbrauch.gesamtEuro && <> ({state.verbrauch.gesamtEuro})</>}
-            {state.challenge && <> · 🏆 Platz {state.challenge.platz} von {state.challenge.von}</>} ⓘ
+            ⋯ Mehr
           </button>
-        )}
-        {state.herkunft && (
-          <button
-            onClick={() => setShowHerkunft(true)}
-            className="mx-auto block text-center text-xs text-slate-400 underline-offset-2 hover:underline"
-          >
-            🧩 Was kam von uns — was von der KI?
-          </button>
-        )}
-        {/* Wenn etwas schiefgeht: genau beschreiben oder zur Fassung davor zurück */}
-        {state.gameVersion > 0 && ((state.hilfen.fehlerMelden) || state.kannZurueck) && (
-          <div className="flex flex-wrap justify-center gap-2 pt-1">
-            {state.hilfen.fehlerMelden && (
-              <button
-                onClick={() => setShowFehler(true)}
-                disabled={baut}
-                className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-40"
-              >
-                🐞 Etwas geht nicht
-              </button>
-            )}
-            {state.kannZurueck && (
-              <button
-                onClick={einenSchrittZurueck}
-                disabled={baut || zurueckLaeuft || state.locked}
-                className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-40"
-              >
-                ↩︎ Einen Schritt zurück
-              </button>
-            )}
-          </div>
-        )}
+        </div>
       </footer>
       </div>
 
@@ -842,12 +823,38 @@ export function KidStudio({ code }: { code: string }) {
       {directorCutDialog}
 
       {/* Wer hat was entschieden? Die Gruppe soll sagen können, welche Idee ihre eigene ist. */}
-      {showHerkunft && state.herkunft && (
+      {showHerkunft && (state.herkunft || state.letzterBau) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="max-h-[92svh] w-full max-w-lg space-y-4 overflow-y-auto bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }}>
             <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
-              🧩 Von uns — und von der KI
+              🧩 Unser Spiel: neu, von uns, von der KI
             </h2>
+            {state.letzterBau && (
+              <div className="space-y-2 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-3 text-base text-emerald-950">
+                {state.letzterBau.neu.length > 0 && (
+                  <div>
+                    <p className="font-black">✨ Das ist neu</p>
+                    <ul className="list-disc pl-5">
+                      {state.letzterBau.neu.map((z) => (
+                        <li key={z}>{z}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {state.letzterBau.ausprobieren.length > 0 && (
+                  <div>
+                    <p className="font-black">🕹️ Probiert das aus</p>
+                    <ul className="list-disc pl-5">
+                      {state.letzterBau.ausprobieren.map((z) => (
+                        <li key={z}>{z}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            {state.herkunft && (
+            <>
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Das haben wir verlangt</p>
               {state.herkunft.gruppe.length === 0 && <p className="text-sm text-slate-500">Noch nichts eingetragen.</p>}
@@ -884,12 +891,83 @@ export function KidStudio({ code }: { code: string }) {
               den Wunsch ins Eingabefeld; gebaut wird erst, wenn ihr ihn abschickt. Die Liste führt die KI
               selbst — prüft im Spiel, ob sie stimmt.
             </p>
+            </>
+            )}
             <button
               onClick={() => setShowHerkunft(false)}
               className="w-full py-3 font-bold"
               style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
             >
               Alles klar!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* „Mehr": was nicht ständig gebraucht wird, liegt hier — die Bedienspalte bleibt knapp */}
+      {showMehr && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 text-slate-900" onClick={() => setShowMehr(false)}>
+          <div className="max-h-[92svh] w-full max-w-md space-y-3 overflow-y-auto bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }} onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+              Mehr
+            </h2>
+            <div className="flex items-start gap-2 rounded-lg bg-slate-100 p-3 text-base">
+              <p className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">Merksatz</span>
+                „{state.motto}“
+                {state.hilfen.chips && <span className="mt-1 block text-sm text-slate-600">{state.texte.tipp}</span>}
+              </p>
+              {state.hilfen.vorlesen && <Vorlesen text={`Merksatz: ${state.motto}`} />}
+            </div>
+            {(state.herkunft || state.letzterBau) && (
+              <button
+                onClick={() => {
+                  setShowMehr(false);
+                  setShowHerkunft(true);
+                }}
+                className="w-full border-2 border-slate-200 p-3 text-left text-base font-semibold"
+                style={{ borderRadius: "var(--s45-radius)" }}
+              >
+                🧩 Was ist neu — was kam von uns, was von der KI?
+              </button>
+            )}
+            {state.kannZurueck && (
+              <button
+                onClick={() => {
+                  setShowMehr(false);
+                  void einenSchrittZurueck();
+                }}
+                disabled={baut || zurueckLaeuft || state.locked}
+                className="w-full border-2 border-slate-200 p-3 text-left text-base font-semibold disabled:opacity-40"
+                style={{ borderRadius: "var(--s45-radius)" }}
+              >
+                ↩︎ Einen Schritt zurück
+                <span className="block text-sm font-normal text-slate-500">Holt das Spiel von vor dem letzten Bau zurück. Kostet keinen Versuch.</span>
+              </button>
+            )}
+            {state.verbrauch.gesamtTokens > 0 && (
+              <button
+                onClick={() => {
+                  setShowMehr(false);
+                  setShowVerbrauch(true);
+                }}
+                className="w-full border-2 border-slate-200 p-3 text-left text-base font-semibold"
+                style={{ borderRadius: "var(--s45-radius)" }}
+              >
+                ⚡ Was verbraucht unser Bauen?
+                <span className="block text-sm font-normal text-slate-500">
+                  Bisher {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
+                  {state.verbrauch.gesamtEuro && <> ({state.verbrauch.gesamtEuro})</>}
+                  {state.challenge && <> · 🏆 Platz {state.challenge.platz} von {state.challenge.von}</>}
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowMehr(false)}
+              className="w-full py-3 font-bold"
+              style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
+            >
+              Schließen
             </button>
           </div>
         </div>

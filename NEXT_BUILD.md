@@ -172,6 +172,15 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       (Obergrenze, kein Ziel); lehnt ein Modell so viel ab, zweiter Anlauf mit 48.000. Offen:
       nginx wartet 900 s auf die Antwort — sehr große Spiele (grob über 45.000–70.000 Tokens)
       laufen im Hintergrund fertig, die Seite meldet aber vorher eine Zeitüberschreitung.
+- [x] **Bedienspalte im Kinder-Studio verdichtet; Grenzen sichtbar** (Peter, 2026-10-11; gebaut,
+      noch nicht deployt). Rückmeldung: mit geführten Vorschlägen zu voll, die Limitierungen
+      gingen unter. Jetzt dauerhaft sichtbar nur noch: Thema des Termins, Satzanfänge in einer
+      wischbaren Zeile, Eingabe mit Mikrofon und Bau-Knopf, direkt darunter eine Grenzen-Zeile
+      (Versuche, Denkpause mit Restzeit, Sperre; die Restzeit steht auch im Bau-Knopf), dazu
+      „🐞 Etwas geht nicht" und „⋯ Mehr". Nach dem Bau eine statt zwei Karten (je eine Zeile
+      Neu / Probiert, „Die KI hat n Sachen ergänzt — ansehen"). Unter „Mehr": Merksatz und Tipp,
+      „Was ist neu / von uns / von der KI", „Einen Schritt zurück", Verbrauch. Im Browser geprüft
+      (Quer- und Hochformat, vor und nach einem Bau).
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
