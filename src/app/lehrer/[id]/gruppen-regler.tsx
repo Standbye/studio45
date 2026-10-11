@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Auswahl } from "@/components/auswahl";
 import { HILFE_STUFEN, SUPPORT_STUFEN } from "@/lib/audience";
 import { resetGroupLevelsAction, setGroupLevelsAction } from "../actions";
 
@@ -32,10 +33,10 @@ export function GruppenRegler({
       <input type="hidden" name="groupId" value={groupId} />
       <label className="space-y-1 text-xs text-muted-foreground">
         Spielraum der KI
-        <select
+        <Auswahl
           name="supportLevel"
-          defaultValue={supportLevel ?? ""}
-          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+          wert={String(supportLevel ?? "")}
+          onWert={(_, feld) => feld.form?.requestSubmit()}
           className={`${feld} ${supportLevel !== null ? eigen : ""}`}
         >
           <option value="">wie Workshop ({wsSpielraum?.stufe} — {wsSpielraum?.name})</option>
@@ -44,14 +45,14 @@ export function GruppenRegler({
               {s.stufe} — {s.name}
             </option>
           ))}
-        </select>
+        </Auswahl>
       </label>
       <label className="space-y-1 text-xs text-muted-foreground">
         Hilfe beim Formulieren
-        <select
+        <Auswahl
           name="helpLevel"
-          defaultValue={helpLevel ?? ""}
-          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+          wert={String(helpLevel ?? "")}
+          onWert={(_, feld) => feld.form?.requestSubmit()}
           className={`${feld} ${helpLevel !== null ? eigen : ""}`}
         >
           <option value="">wie Workshop ({wsHilfe?.name})</option>
@@ -60,7 +61,7 @@ export function GruppenRegler({
               {h.name}
             </option>
           ))}
-        </select>
+        </Auswahl>
       </label>
     </form>
   );

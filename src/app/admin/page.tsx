@@ -11,6 +11,7 @@ import {
   TestApiKeyButton,
 } from "./forms";
 import { Badge } from "@/components/ui/badge";
+import { SpeichernKnopf } from "@/components/speichern-knopf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,7 +88,7 @@ export default async function AdminPage() {
                   defaultValue={w.tokenBudget}
                   className="h-8 w-32 text-sm"
                 />
-                <Button type="submit" size="sm" variant="outline">OK</Button>
+                <SpeichernKnopf size="sm" variant="outline" fertigText="gespeichert">OK</SpeichernKnopf>
               </form>
             </CardContent>
           </Card>
@@ -169,6 +170,7 @@ export default async function AdminPage() {
                   </TableCell>
                   <TableCell className="text-xs">
                     <div>👧 {k.modelKid}</div>
+                    {k.gruendlich === "hoch" && <div className="text-xs text-muted-foreground">🧠 Gründlichkeit hoch</div>}
                     <div className="text-muted-foreground">🎬 {k.modelDirector}</div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">••••{k.secret.slice(-4)}</TableCell>

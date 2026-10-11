@@ -18,6 +18,8 @@ import {
   updateSettingsAction,
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
+import { SpeichernKnopf } from "@/components/speichern-knopf";
+import { Auswahl } from "@/components/auswahl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -294,7 +296,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                       <form action={renameStudioAction} className="flex gap-2">
                         <input type="hidden" name="groupId" value={g.id} />
                         <Input name="studioName" defaultValue={g.studioName} placeholder="Studio-Name" className="h-8 text-sm" maxLength={40} />
-                        <Button type="submit" size="sm" variant="outline">OK</Button>
+                        <SpeichernKnopf size="sm" variant="outline" fertigText="gespeichert">OK</SpeichernKnopf>
                       </form>
                     </div>
                   </div>
@@ -358,11 +360,11 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="ageGroup">Zielgruppe</Label>
-                    <select id="ageGroup" name="ageGroup" defaultValue={w.ageGroup} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
+                    <Auswahl id="ageGroup" name="ageGroup" wert={w.ageGroup} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
                       {Object.values(ALTERSSTUFEN).map((a) => (
                         <option key={a.id} value={a.id}>{a.name} · {a.klassen}</option>
                       ))}
-                    </select>
+                    </Auswahl>
                     <p className="text-xs text-muted-foreground">
                       Steuert Optik und Ansprache der Schüler-Seite — und wie die KI baut.
                     </p>
@@ -415,7 +417,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     Anbieter, Endpunkt und Modelle pflegt der Admin — so bleiben Zugangsdaten an einer Stelle.
                   </p>
                 </div>
-                <Button type="submit">Speichern</Button>
+                <SpeichernKnopf>Speichern</SpeichernKnopf>
               </form>
             </CardContent>
           </Card>
@@ -439,7 +441,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                   eigeneFassung={w.promptDidactic}
                   standardFassung={standardDidaktik}
                 />
-                <Button type="submit">KI-Anweisung speichern</Button>
+                <SpeichernKnopf>KI-Anweisung speichern</SpeichernKnopf>
               </form>
             </CardContent>
           </Card>
@@ -468,7 +470,7 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     </label>
                   )}
                 </div>
-                <Button type="submit">Branding speichern</Button>
+                <SpeichernKnopf>Branding speichern</SpeichernKnopf>
               </form>
             </CardContent>
           </Card>

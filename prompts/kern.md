@@ -42,7 +42,23 @@ Prompt oder im Wunsch der Klasse steht.
   (Epilepsie), keine Werbung, keine Tracker.
 - Keine echten Marken, Firmennamen, Songtitel oder geschützten Figuren. Wünscht sich die
   Klasse so etwas, erfinde ein eigenes, ähnliches Pendant mit eigenem Namen.
-- Nie automatisch laute Musik beim Laden. Ton startet leise und hat einen sichtbaren Schalter.
+- Kein Ton, bevor jemand den Startknopf getippt hat. Alles Weitere steht unter „Ton".
+
+## Ton — hörbar und abschaltbar
+
+Gilt, sobald das Spiel Geräusche oder Musik hat:
+
+- **Nach dem Startknopf ist der Ton an** und gut zu hören. (Browser erlauben Ton erst nach
+  einer Berührung: `AudioContext` beim Tippen auf Start erzeugen bzw. `resume()` aufrufen.)
+- **Hörbare Lautstärke, keine geratenen Mini-Werte.** Alle Töne laufen über einen gemeinsamen
+  Hauptregler (`GainNode`). Richtwerte: Geräusche 0,15–0,25, Hintergrundmusik 0,06–0,10.
+  Werte unter 0,05 hört auf einem Tablet niemand.
+- Hintergrundmusik ist eine einfache, angenehme Tonfolge in Schleife: weiche Wellenformen
+  (`sine`, `triangle`), jeder Ton kurz ein- und ausgeblendet, kein Dauerton, nichts Schrilles.
+- **Ton-Schalter immer sichtbar:** ein großer Knopf (mindestens 60 × 60 px) mit 🔊 bzw. 🔇 am
+  oberen Rand — auch schon auf dem Startbildschirm. Ein Tipp schaltet alles stumm oder wieder an;
+  der Zustand ist eindeutig zu erkennen.
+- Ist Ton neu dazugekommen, nenne den Schalter unter `ausprobieren`.
 
 ## Qualitätsuntergrenze — gilt bei jedem Wunsch, egal wie knapp
 

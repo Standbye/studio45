@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Auswahl } from "@/components/auswahl";
 import { HILFE_STUFEN, SUPPORT_STUFEN } from "@/lib/audience";
 
 /**
@@ -50,11 +51,11 @@ export function HilfeWahl({ standard }: { standard: number }) {
   return (
     <div className="space-y-2">
       <Label htmlFor="helpLevel">Hilfe beim Formulieren</Label>
-      <select
+      <Auswahl
         id="helpLevel"
         name="helpLevel"
-        value={stufe}
-        onChange={(e) => setStufe(Number(e.target.value))}
+        wert={String(standard)}
+        onWert={(wert) => setStufe(Number(wert))}
         className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
       >
         {HILFE_STUFEN.map((h) => (
@@ -62,7 +63,7 @@ export function HilfeWahl({ standard }: { standard: number }) {
             {h.name}
           </option>
         ))}
-      </select>
+      </Auswahl>
       <p className="text-xs text-muted-foreground">
         {profil.kurz} Das ändert nichts daran, was die KI aus dem Wunsch macht — entscheiden
         darf die Gruppe selbst.

@@ -138,17 +138,25 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       „Gründlichkeit hoch" beim echten Anbieter.
       **Nicht gebaut (bewusst):** fertige Spielvorlagen zum Anklicken, Avatare/Belohnungen,
       „wieder vor" nach einem Schritt zurück.
-- [ ] **Ton in den Spielen ist praktisch nicht zu hören** (Peter, 2026-10-11). Befund am Spiel
-      „Neo springt" (Gruppe 2, Test-Workshop): Musik und Geräusche sind eingebaut (erzeugte Töne
-      per Web Audio, keine Audiodateien), aber (a) der Ton ist beim Start **aus** und muss im Spiel
-      über „Ton: aus" eingeschaltet werden, (b) die Musik läuft mit Lautstärke 0,008–0,012 (rund
-      1 %), Geräusche mit 0,045 — auf einem Tablet kaum hörbar. Ursache sind unsere Anweisungen:
-      Kern „Nie automatisch laute Musik beim Laden. Ton startet leise und hat einen sichtbaren
-      Schalter" und Tag 3 „Sounds müssen leise starten". Das Modell macht daraus „aus und fast
-      stumm". Vorschlag: im Kern konkrete Werte statt „leise" (Geräusche etwa 0,15–0,25, Musik
-      etwa 0,06–0,10, Gesamtregler), Ton-Schalter groß und eindeutig; zu entscheiden: Ton nach
-      dem Startknopf **an** (empfohlen, mit Schalter) oder weiter standardmäßig aus. Zusätzlich
-      prüfen: iPad-Stummschaltung dämpft Web Audio.
+- [x] **Ton in den Spielen hörbar gemacht** (Peter, 2026-10-11; gebaut, noch nicht deployt).
+      Befund: Musik und Geräusche waren eingebaut, aber beim Start aus und mit 1–5 % Lautstärke
+      praktisch stumm — Folge unserer Anweisung „leise starten". Neu im Kern-Prompt, Abschnitt
+      „Ton": nach dem Startknopf **an**, konkrete Lautstärken über einen Hauptregler (Geräusche
+      0,15–0,25, Musik 0,06–0,10), einfache weiche Tonfolge als Musik, großer 🔊/🔇-Schalter oben
+      am Rand auch auf dem Startbildschirm. Wirkt nur auf neu gebaute oder geänderte Spiele.
+      „Ton an" war Empfehlung, von Peter nicht ausdrücklich gewählt — eine Zeile im Kern, falls
+      es im Klassenraum zu laut wird. Nicht geprüft: Ergebnis mit dem echten Modell.
+- [x] **Speichern sichtbar machen; Auswahlfelder sprangen nach dem Speichern zurück** (Peter,
+      2026-10-11; gebaut, noch nicht deployt). Ursache: React setzt ein Formular nach einer
+      Server-Action zurück, ein `<select>` zeigt danach wieder den Eintrag vom Seitenaufbau —
+      gespeichert war richtig, angezeigt wurde der alte Wert. Betroffen: Gründlichkeit (Admin),
+      Zielgruppe und „Hilfe beim Formulieren" (Workshop-Einstellungen; dort hätte ein zweites
+      Speichern den falsch angezeigten Wert übernommen), Regler pro Gruppe. Behoben mit
+      gemeinsamem Auswahlfeld `src/components/auswahl.tsx`. Dazu Rückmeldung
+      `src/components/speichern-knopf.tsx` („Wird gespeichert …" → „✓ Gespeichert") an
+      Einstellungen, KI-Anweisung, Branding, Studio-Name und Budget; Verbindungs-Dialoge im Admin
+      schließen nach Erfolg, die Zeile zeigt „✓ gespeichert" und „🧠 Gründlichkeit hoch".
+      Im Browser geprüft (Lehrkraft und Admin, auch zweimal Speichern ohne Änderung).
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.

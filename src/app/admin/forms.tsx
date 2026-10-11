@@ -12,6 +12,7 @@ import {
 } from "./actions";
 import { ANBIETER, anbieterVorlage } from "@/lib/providers";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Auswahl } from "@/components/auswahl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -161,32 +162,32 @@ function VerbindungsFelder({
     <>
       <div className="space-y-2">
         <Label htmlFor="k-anbieter">Anbieter</Label>
-        <select
+        <Auswahl
           id="k-anbieter"
-          value={anbieterId}
-          onChange={(e) => waehleAnbieter(e.target.value)}
+          wert={anbieterId}
+          onWert={(wert) => waehleAnbieter(wert)}
           className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
         >
           {ANBIETER.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
-        </select>
+        </Auswahl>
         {anbieter && <p className="text-xs text-muted-foreground">{anbieter.hinweis}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="k-protocol">Protokoll</Label>
-          <select
+          <Auswahl
             id="k-protocol"
             name="protocol"
-            value={protocol}
-            onChange={(e) => setProtocol(e.target.value)}
+            wert={protocol}
+            onWert={(wert) => setProtocol(wert)}
             className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="anthropic">Anthropic (Messages)</option>
             <option value="openai">OpenAI (chat/completions)</option>
-          </select>
+          </Auswahl>
         </div>
         <div className="space-y-2">
           <Label htmlFor="k-label">Bezeichnung</Label>
@@ -238,15 +239,15 @@ function VerbindungsFelder({
 
       <div className="space-y-2">
         <Label htmlFor="k-gruendlich">Gründlichkeit beim Bauen</Label>
-        <select
+        <Auswahl
           id="k-gruendlich"
           name="gruendlich"
-          defaultValue={vorhanden?.gruendlich === "hoch" ? "hoch" : ""}
+          wert={vorhanden?.gruendlich === "hoch" ? "hoch" : ""}
           className="h-9 w-full rounded-md border bg-background px-3 text-sm"
         >
           <option value="">Normal — schneller, sparsamer</option>
           <option value="hoch">Hoch — das Modell denkt länger nach</option>
-        </select>
+        </Auswahl>
         <p className="text-xs text-muted-foreground">
           „Hoch“ liefert bei anspruchsvollen Wünschen stimmigere Spiele, kostet aber mehr Tokens und
           verlängert die Wartezeit der Gruppen. Kennt ein Modell die Angabe nicht, wird ohne sie gebaut.
@@ -301,9 +302,15 @@ function VerbindungsFelder({
 }
 
 export function CreateApiKeyDialog() {
-  const [state, action, pending] = useActionState(createApiKeyAction, IDLE);
+  const [offen, setOffen] = useState(false);
+  // Nach erfolgreichem Anlegen schließt der Dialog — die neue Verbindung steht dann in der Liste.
+  const [state, action, pending] = useActionState(async (prev: ActionState, formData: FormData) => {
+    const ergebnis = await createApiKeyAction(prev, formData);
+    if (ergebnis.ok) setOffen(false);
+    return ergebnis;
+  }, IDLE);
   return (
-    <Dialog>
+    <Dialog open={offen} onOpenChange={setOffen}>
       <DialogTrigger className={buttonVariants({ size: "sm" })}>+ Verbindung</DialogTrigger>
       <DialogContent className="max-h-[90svh] overflow-y-auto">
         <DialogHeader>
@@ -317,7 +324,6 @@ export function CreateApiKeyDialog() {
           {state.error && (
             <Alert variant="destructive"><AlertDescription>{state.error}</AlertDescription></Alert>
           )}
-          {state.ok && <Alert><AlertDescription>Verbindung gespeichert.</AlertDescription></Alert>}
           <VerbindungsFelder />
           <div className="space-y-2">
             <Label htmlFor="k-secret">Zugangsschlüssel</Label>
@@ -348,9 +354,16 @@ export function EditApiKeyDialog({
     gruendlich: string;
   };
 }) {
-  const [state, action, pending] = useActionState(updateApiKeyAction, IDLE);
+  const [offen, setOffen] = useState(false);
+  // Nach erfolgreichem Speichern schließt der Dialog — die Zeile dahinter zeigt den neuen Stand.
+  const [state, action, pending] = useActionState(async (prev: ActionState, formData: FormData) => {
+    const ergebnis = await updateApiKeyAction(prev, formData);
+    if (ergebnis.ok) setOffen(false);
+    return ergebnis;
+  }, IDLE);
   return (
-    <Dialog>
+    <Dialog open={offen} onOpenChange={setOffen}>
+      {state.ok && !offen && <span role="status" className="mr-2 text-xs font-medium text-emerald-700">✓ gespeichert</span>}
       <DialogTrigger className={buttonVariants({ variant: "outline", size: "sm" })}>Bearbeiten</DialogTrigger>
       <DialogContent className="max-h-[90svh] overflow-y-auto">
         <DialogHeader>
@@ -364,7 +377,6 @@ export function EditApiKeyDialog({
           {state.error && (
             <Alert variant="destructive"><AlertDescription>{state.error}</AlertDescription></Alert>
           )}
-          {state.ok && <Alert><AlertDescription>Gespeichert.</AlertDescription></Alert>}
           <VerbindungsFelder vorhanden={verbindung} />
           <div className="space-y-2">
             <Label htmlFor="k-secret-edit">Neuer Zugangsschlüssel (optional)</Label>

@@ -5,7 +5,7 @@
 **Worauf du dich konzentrierst:**
 - Bessere Farben, Hintergründe, Verläufe, Schatten
 - Figuren mit mehr Charakter (Augen, Animation, Wackeln, kleine Bewegung)
-- Geräusche/Sounds: per Web Audio API selbst erzeugen (kurze Bleeps, Bloops, Töne) — niemals automatisch laute Musik
+- Geräusche/Sounds: per Web Audio API selbst erzeugen (kurze Bleeps, Bloops, Töne), auf Wunsch eine einfache Hintergrundmelodie — gut hörbar, siehe „Ton" im Kern
 - Übergänge, Partikel-Effekte (kleine Sterne, Wolken), zarte Animationen
 
 **Was die Gruppe ausdrücklich verlangt, baust du — auch wenn es über den heutigen Schwerpunkt hinausgeht.**
@@ -23,4 +23,4 @@ Der Schwerpunkt bestimmt nur, was du *von dir aus* ergänzt und wohin du offene 
 - Beim Erfolg: kleine Sternchen/Konfetti
 - Beim Fehler: kurzes Schütteln + ein "boing"-Sound
 
-**Wichtig:** Erhalte die bestehende Spielregel, solange die Gruppe keine Änderung verlangt. Sounds müssen leise starten und einen sichtbaren Aus-Knopf haben (Lautsprecher-Symbol oben rechts).
+**Wichtig:** Erhalte die bestehende Spielregel, solange die Gruppe keine Änderung verlangt. Für den Ton gelten die Regeln aus dem Kern: nach dem Startknopf an, gut hörbar, großer Schalter oben am Rand.
