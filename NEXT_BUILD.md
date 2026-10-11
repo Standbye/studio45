@@ -157,8 +157,8 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Einstellungen, KI-Anweisung, Branding, Studio-Name und Budget; Verbindungs-Dialoge im Admin
       schließen nach Erfolg, die Zeile zeigt „✓ gespeichert" und „🧠 Gründlichkeit hoch".
       Im Browser geprüft (Lehrkraft und Admin, auch zweimal Speichern ohne Änderung).
-- [x] **Director's Cut schlug fehl: Antwort abgeschnitten** (Peter, 2026-10-11; behoben, noch nicht
-      deployt). Befund auf dem Server: Der Lauf um 16:06 UTC hat exakt 48.000 Ausgabe-Tokens
+- [x] **Director's Cut schlug fehl: Antwort abgeschnitten** (Peter, 2026-10-11; behoben und
+      deployt mit `v1.1.0-37-ge7cd394`). Befund auf dem Server: Der Lauf um 16:06 UTC hat exakt 48.000 Ausgabe-Tokens
       verbraucht — unsere Obergrenze bei „Gründlichkeit hoch". Kein Abbruch der Verbindung und
       kein Kontextfenster: Das zusätzliche Nachdenken (bei Claude-Modellen über OpenRouter
       vermutlich ein fester Großteil der Ausgabe) hat das Budget aufgebraucht, das Spiel-HTML
