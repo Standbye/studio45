@@ -157,6 +157,17 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Einstellungen, KI-Anweisung, Branding, Studio-Name und Budget; Verbindungs-Dialoge im Admin
       schließen nach Erfolg, die Zeile zeigt „✓ gespeichert" und „🧠 Gründlichkeit hoch".
       Im Browser geprüft (Lehrkraft und Admin, auch zweimal Speichern ohne Änderung).
+- [x] **Director's Cut schlug fehl: Antwort abgeschnitten** (Peter, 2026-10-11; behoben, noch nicht
+      deployt). Befund auf dem Server: Der Lauf um 16:06 UTC hat exakt 48.000 Ausgabe-Tokens
+      verbraucht — unsere Obergrenze bei „Gründlichkeit hoch". Kein Abbruch der Verbindung und
+      kein Kontextfenster: Das zusätzliche Nachdenken (bei Claude-Modellen über OpenRouter
+      vermutlich ein fester Großteil der Ausgabe) hat das Budget aufgebraucht, das Spiel-HTML
+      brach mittendrin ab. Behoben: (1) Der Director's Cut baut ohne „Gründlichkeit hoch", mit
+      48.000 Tokens Ausgabe; (2) wird ein Bau der Gruppen wegen der Ausgabegrenze abgeschnitten,
+      baut Studio45 automatisch noch einmal ohne Zusatz-Nachdenken (Tokens beider Anläufe werden
+      gezählt); (3) die Fehlermeldung nennt „abgeschnitten" statt „kein vollständiges HTML".
+      Lokal mit dem Mock nachgestellt (`MOCK_ABGESCHNITTEN=1`). Nicht geprüft: echter
+      Director's Cut mit dem echten Modell.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.

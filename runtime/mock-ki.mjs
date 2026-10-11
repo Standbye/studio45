@@ -27,6 +27,9 @@ const QUOTE_429 = Number(process.env.MOCK_429_QUOTE ?? 0);
 const TOKENS_IN = Number(process.env.MOCK_TOKENS_IN ?? 9500);
 const TOKENS_OUT = Number(process.env.MOCK_TOKENS_OUT ?? 6500);
 const ANGRIFF = process.env.MOCK_ANGRIFF === "1";
+// MOCK_ABGESCHNITTEN=1: Mit „Gründlichkeit hoch" (reasoning_effort) bricht die Antwort an der
+// Ausgabegrenze ab — so, als hätte das Nachdenken die Ausgabe aufgebraucht.
+const ABGESCHNITTEN = process.env.MOCK_ABGESCHNITTEN === "1";
 
 const spiel = fs.readFileSync(path.join(hier, "mock-spiel.html"), "utf8");
 let laufende = 0;
@@ -54,7 +57,7 @@ function chunk(basis, delta, finish) {
 }
 
 /** Streamt den Text gleichmäßig über die Bauzeit — wie ein echter Anbieter tröpfelt. */
-function streame(res, text, dauer, usage, model) {
+function streame(res, text, dauer, usage, model, ende = "stop") {
   res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
   const basis = { id: `chatcmpl-${Date.now().toString(36)}`, object: "chat.completion.chunk", created: Math.floor(Date.now() / 1000), model };
   const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
@@ -70,7 +73,7 @@ function streame(res, text, dauer, usage, model) {
       return;
     }
     clearInterval(timer);
-    send(chunk(basis, {}, "stop"));
+    send(chunk(basis, {}, ende));
     send({ ...basis, choices: [], usage });
     res.write("data: [DONE]\n\n");
     res.end();
@@ -147,6 +150,9 @@ const server = http.createServer((req, res) => {
     };
     res.on("close", fertig);
 
+    if (ABGESCHNITTEN && anfrage.reasoning_effort && anfrage.stream) {
+      return streame(res, text.slice(0, Math.floor(text.length / 3)), dauer, usage(maxTokens), model, "length");
+    }
     if (anfrage.stream) return streame(res, text, dauer, usage(TOKENS_OUT), model);
     setTimeout(() => {
       json(res, 200, {

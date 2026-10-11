@@ -250,7 +250,9 @@ function VerbindungsFelder({
         </Auswahl>
         <p className="text-xs text-muted-foreground">
           „Hoch“ liefert bei anspruchsvollen Wünschen stimmigere Spiele, kostet aber mehr Tokens und
-          verlängert die Wartezeit der Gruppen. Kennt ein Modell die Angabe nicht, wird ohne sie gebaut.
+          verlängert die Wartezeit der Gruppen. Gilt für das Bauen der Gruppen, nicht für den
+          Director’s Cut. Kennt ein Modell die Angabe nicht oder reicht die Ausgabe dann nicht für
+          das Spiel, wird automatisch noch einmal ohne sie gebaut.
         </p>
       </div>
 

@@ -12,6 +12,9 @@ const MAX_TOKENS = 32000; // Lehre aus dem Piloten: 8k schneidet Spiele mitten i
 // Mit „Gründlichkeit hoch" zählt das Nachdenken des Modells mit — mehr Luft, damit das Spiel
 // danach nicht abgeschnitten wird.
 const MAX_TOKENS_GRUENDLICH = 48000;
+// Der Director's Cut baut aus allen Wünschen ein großes Gesamtspiel (oft in 3D) — er bekommt
+// die größere Ausgabe, aber ohne zusätzliches Nachdenken (siehe buildFromSpec).
+const MAX_TOKENS_DIRECTOR = 48000;
 
 /** Zugangsdaten einer vom Admin gepflegten Verbindung. */
 export type Verbindung = {
@@ -26,6 +29,8 @@ export type LlmAntwort = {
   text: string;
   tokensIn: number;
   tokensOut: number;
+  /** Die Ausgabegrenze war erreicht — die Antwort bricht mittendrin ab */
+  abgeschnitten?: boolean;
   error?: string;
 };
 
@@ -50,10 +55,19 @@ async function rufeModell(
   gruendlich = false
 ): Promise<LlmAntwort> {
   const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich);
+  if (!gruendlich) return antwort;
+
   // Nicht jedes Modell und jedes Gateway kennt die Gründlichkeits-Angabe. Lehnt der Dienst
   // den Aufruf deshalb ab, bauen wir ohne sie — ein Spiel ist besser als eine Fehlermeldung.
-  if (gruendlich && antwort.error && !antwort.text) {
-    return rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, false);
+  if (antwort.error && !antwort.text) {
+    return rufeModellEinmal(v, model, anweisungen, userMsg, Math.min(maxTokens, MAX_TOKENS), false);
+  }
+  // Das Nachdenken zählt zur Ausgabe. Hat es so viel verbraucht, dass das Spiel abgeschnitten
+  // wurde, bauen wir noch einmal ohne — dann steht die ganze Ausgabe für das Spiel bereit.
+  // Die Tokens des ersten Anlaufs sind verbraucht und werden mitgezählt.
+  if (antwort.abgeschnitten) {
+    const zweite = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, false);
+    return { ...zweite, tokensIn: zweite.tokensIn + antwort.tokensIn, tokensOut: zweite.tokensOut + antwort.tokensOut };
   }
   return antwort;
 }
@@ -95,6 +109,7 @@ async function rufeModellEinmal(
           .join(""),
         tokensIn: msg.usage.input_tokens,
         tokensOut: msg.usage.output_tokens,
+        abgeschnitten: msg.stop_reason === "max_tokens",
       };
     }
 
@@ -118,17 +133,26 @@ async function rufeModellEinmal(
     let text = "";
     let tokensIn = 0;
     let tokensOut = 0;
+    let abgeschnitten = false;
     for await (const teil of stream) {
       text += teil.choices?.[0]?.delta?.content ?? "";
+      if (teil.choices?.[0]?.finish_reason === "length") abgeschnitten = true;
       if (teil.usage) {
         tokensIn = teil.usage.prompt_tokens ?? 0;
         tokensOut = teil.usage.completion_tokens ?? 0;
       }
     }
-    return { text, tokensIn, tokensOut };
+    return { text, tokensIn, tokensOut, abgeschnitten };
   } catch (err) {
     return { text: "", tokensIn: 0, tokensOut: 0, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+/** Warum kam kein vollständiges Spiel an? Abgeschnitten ist etwas anderes als „kein HTML". */
+function unvollstaendig(antwort: LlmAntwort): string {
+  return antwort.abgeschnitten
+    ? "Die Antwort wurde abgeschnitten: Das Spiel ist größer geworden, als die KI am Stück ausgeben darf. Mit kleinerem Umfang noch einmal versuchen."
+    : "Die Antwort enthielt kein vollständiges HTML.";
 }
 
 function extractHtml(text: string): string | null {
@@ -185,7 +209,7 @@ export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
     html,
     tokensIn: antwort.tokensIn,
     tokensOut: antwort.tokensOut,
-    ...(html ? {} : { error: "Die Antwort enthielt kein vollständiges HTML." }),
+    ...(html ? {} : { error: unvollstaendig(antwort) }),
   };
 }
 
@@ -395,8 +419,10 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
       : `\n\nBaue daraus die KOMPLETTE HTML-Datei (eine Datei, HTML+CSS+JS inline), in genau einem \`\`\`html ... \`\`\`-Block. Keine Erklärungen.`,
   ].join("");
 
-  const gruendlich = Boolean(p.verbindung.gruendlich);
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich);
+  // Bewusst ohne „Gründlichkeit hoch": Der Director's Cut nutzt schon das stärkste Modell, und
+  // bei manchen Anbietern frisst das zusätzliche Nachdenken den Großteil der Ausgabe — das
+  // große Gesamtspiel wird dann abgeschnitten (so geschehen am 11.10.2026: 48.000 Tokens, kein Spiel).
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS_DIRECTOR, false);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   let html = extractHtml(antwort.text);
   if (html && p.engine3d) html = injectThreeJs(html);
@@ -404,6 +430,6 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
     html,
     tokensIn: antwort.tokensIn,
     tokensOut: antwort.tokensOut,
-    ...(html ? {} : { error: "Die Antwort enthielt kein vollständiges HTML." }),
+    ...(html ? {} : { error: unvollstaendig(antwort) }),
   };
 }
