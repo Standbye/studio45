@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
 import { diktatSitzung } from "@/lib/diktat";
+import { Vorlesen } from "./vorlesen";
+import { FehlerMelden } from "./fehler-melden";
+import { RueckfrageDialog } from "./rueckfrage";
 
 type KidState = {
   studioName: string;
@@ -32,7 +35,13 @@ type KidState = {
     tipp: string;
   };
   chips: string[];
-  hilfen: { chips: boolean; teamCheck: boolean; coachAbZeichen: number };
+  hilfen: { chips: boolean; teamCheck: boolean; coachAbZeichen: number; vorlesen: boolean; fehlerMelden: boolean };
+  /** Worauf es heute ankommt — in der Sprache der Altersstufe */
+  fokus: { heute: string; teamFrage: string };
+  /** Aus dem Steckbrief: was der letzte Bau geändert hat und was die Gruppe testen soll */
+  letzterBau: { neu: string[]; ausprobieren: string[] } | null;
+  /** Gibt es eine frühere Fassung, zu der die Gruppe zurückgehen kann? */
+  kannZurueck: boolean;
   attemptsLeft: number;
   cooldownRemaining: number;
   cooldownSeconds: number;
@@ -68,10 +77,10 @@ type KidState = {
   };
 };
 
+/** Die dritte Frage des Team-Checks kommt aus dem Schwerpunkt des Termins (state.fokus.teamFrage). */
 const CHECKFRAGEN = [
   "Habt ihr zusammen besprochen, was sich ändern soll?",
   "Sagt euer Satz WAS passieren soll und WIE es aussehen soll?",
-  "Habt ihr das Spiel vorher ausprobiert?",
 ];
 
 const WARTE_SPRUECHE = [
@@ -103,6 +112,9 @@ export function KidStudio({ code }: { code: string }) {
   const [dcSendet, setDcSendet] = useState(false);
   const [coachGezeigt, setCoachGezeigt] = useState(false);
   const [coachLaeuft, setCoachLaeuft] = useState(false);
+  const [rueckfrage, setRueckfrage] = useState<{ frage: string; antworten: string[] } | null>(null);
+  const [showFehler, setShowFehler] = useState(false);
+  const [zurueckLaeuft, setZurueckLaeuft] = useState(false);
   const gameVersionRef = useRef(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recRef = useRef<any>(null);
@@ -206,6 +218,11 @@ export function KidStudio({ code }: { code: string }) {
       });
       if (!res.ok) return false;
       const out = await res.json();
+      // Grundschule: Rückfrage mit Antworten zum Antippen; sonst eine genauere Fassung
+      if (out.rueckfrage?.frage && Array.isArray(out.rueckfrage.antworten)) {
+        setRueckfrage(out.rueckfrage);
+        return true;
+      }
       if (!out.vorschlag) return false;
       setCoachVorschlag(out.vorschlag);
       return true;
@@ -230,6 +247,7 @@ export function KidStudio({ code }: { code: string }) {
     }
     setShowCheck(false);
     setCoachVorschlag(null);
+    setRueckfrage(null);
     setCoachGezeigt(false);
     setBusy(true);
     setBusyMsg(WARTE_SPRUECHE[0]);
@@ -282,6 +300,22 @@ export function KidStudio({ code }: { code: string }) {
       /* egal — der Serverlauf gibt sich spätestens per Timeout selbst frei */
     }
     setFeedback("⏹️ Warten beendet. Ihr könnt es gleich noch einmal versuchen.");
+    await refresh();
+  }
+
+  /** Einen Schritt zurück: die Fassung vor dem letzten Bau wiederholen — kostet keinen Versuch. */
+  async function einenSchrittZurueck() {
+    if (!window.confirm("Wirklich einen Schritt zurück? Dann seht ihr wieder das Spiel von vorher.")) return;
+    setZurueckLaeuft(true);
+    setGeradeGebaut(false);
+    try {
+      const res = await fetch(`/api/g/${code}/zurueck`, { method: "POST" });
+      const out = await res.json().catch(() => ({}));
+      setFeedback(out.ok ? "↩︎ Das ist wieder euer Spiel von vorher." : `💡 ${out.reason ?? "Das hat nicht geklappt."}`);
+    } catch {
+      setFeedback("💡 Verbindungsproblem — probiert es gleich nochmal.");
+    }
+    setZurueckLaeuft(false);
     await refresh();
   }
 
@@ -423,7 +457,9 @@ export function KidStudio({ code }: { code: string }) {
           {state.phase === "PAUSE" ? "Pause — gleich geht's weiter! 🍎" : "Gerade ist Plenum — schaut nach vorne! 👀"}
         </p>
         <div className="max-w-xl rounded-2xl bg-white/15 p-6 text-xl backdrop-blur">
-          <span className="mb-1 block text-sm uppercase tracking-widest opacity-80">Merksatz Tag {state.day}</span>
+          <span className="mb-1 block text-sm uppercase tracking-widest opacity-80">Heute: {state.dayTitle}</span>
+          <span className="mb-4 block text-lg">{state.fokus.heute}</span>
+          <span className="mb-1 block text-sm uppercase tracking-widest opacity-80">Merksatz</span>
           „{state.motto}"
         </div>
       </main>
@@ -517,8 +553,61 @@ export function KidStudio({ code }: { code: string }) {
       </div>
 
       {/* Eingabe */}
-      <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:w-[23rem] lg:shrink-0 lg:space-y-3 lg:overflow-y-auto lg:border-l lg:border-t-0 lg:p-4 xl:w-[26rem]">
-        {feedback && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">{feedback}</p>}
+      <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] max-lg:max-h-[58svh] max-lg:overflow-y-auto lg:flex lg:w-[23rem] lg:shrink-0 lg:flex-col lg:space-y-3 lg:overflow-hidden lg:border-l lg:border-t-0 lg:p-4 xl:w-[26rem]">
+        {/* Hinweise oben scrollen für sich — die Eingabe darunter bleibt immer sichtbar */}
+        <div className="space-y-2 lg:min-h-0 lg:flex-1 lg:space-y-3 lg:overflow-y-auto">
+        {/* Worauf es heute ankommt — immer sichtbar, damit Wünsche und Vorschläge dazu passen */}
+        <div className="flex items-start gap-2 border-2 px-3 py-2" style={{ borderColor: "var(--s45-primary-text)", borderRadius: "var(--s45-radius)" }}>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-black uppercase tracking-wide" style={{ color: "var(--s45-primary-text)" }}>
+              🎯 Heute: {state.dayTitle}
+            </p>
+            <p className="text-sm font-semibold lg:text-base">{state.fokus.heute}</p>
+            <p className="mt-1 text-xs text-slate-500 max-lg:hidden">Merksatz: „{state.motto}“</p>
+          </div>
+          {state.hilfen.vorlesen && <Vorlesen text={`Heute: ${state.dayTitle}. ${state.fokus.heute} Merksatz: ${state.motto}`} />}
+        </div>
+        {feedback && (
+          <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
+            <p className="flex-1">{feedback}</p>
+            {state.hilfen.vorlesen && <Vorlesen text={feedback.replace(/^[^\p{L}]+/u, "")} />}
+          </div>
+        )}
+        {/* Nach dem Bau: Was ist neu — und was soll die Gruppe jetzt ausprobieren? */}
+        {geradeGebaut && state.letzterBau && (
+          <div className="flex items-start gap-2 rounded-lg border-2 border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+            <div className="min-w-0 flex-1 space-y-1">
+              {state.letzterBau.neu.length > 0 && (
+                <div>
+                  <p className="font-black">✨ Das ist neu</p>
+                  <ul className="list-disc pl-5">
+                    {state.letzterBau.neu.map((z) => (
+                      <li key={z}>{z}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {state.letzterBau.ausprobieren.length > 0 && (
+                <div>
+                  <p className="font-black">🕹️ Probiert das aus</p>
+                  <ul className="list-disc pl-5">
+                    {state.letzterBau.ausprobieren.map((z) => (
+                      <li key={z}>{z}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {state.hilfen.vorlesen && (
+              <Vorlesen
+                text={[
+                  state.letzterBau.neu.length ? `Das ist neu: ${state.letzterBau.neu.join(". ")}.` : "",
+                  state.letzterBau.ausprobieren.length ? `Probiert das aus: ${state.letzterBau.ausprobieren.join(". ")}.` : "",
+                ].join(" ")}
+              />
+            )}
+          </div>
+        )}
         {geradeGebaut && state.herkunft && state.herkunft.ki.length > 0 && (
           <div className="rounded-lg border-2 border-slate-200 px-3 py-2 text-sm">
             <span className="font-semibold">Das hat die KI von sich aus ergänzt:</span>{" "}
@@ -527,6 +616,11 @@ export function KidStudio({ code }: { code: string }) {
             <button onClick={() => setShowHerkunft(true)} className="font-semibold underline underline-offset-2" style={{ color: "var(--s45-primary-text)" }}>
               Ansehen und entscheiden
             </button>
+            {state.hilfen.vorlesen && (
+              <span className="ml-2 inline-block align-middle">
+                <Vorlesen text={`Das hat die KI von sich aus ergänzt: ${state.herkunft.ki.join(". ")}.`} />
+              </span>
+            )}
           </div>
         )}
         {cooldown > 0 && (
@@ -534,8 +628,10 @@ export function KidStudio({ code }: { code: string }) {
             ⏸️ Denkpause: Testet euer Spiel und besprecht den nächsten Schritt — weiter in {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, "0")}
           </p>
         )}
+        </div>
         {state.hilfen.chips && (
-          <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible">
+            {state.hilfen.vorlesen && <Vorlesen text={`So könnt ihr anfangen: ${state.chips.join(". ")}.`} />}
             {state.chips.map((chip) => (
               <button
                 key={chip}
@@ -576,7 +672,7 @@ export function KidStudio({ code }: { code: string }) {
                   ? "Sprecht jetzt …"
                   : state.texte.eingabeHinweis
             }
-            className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400 min-h-[var(--s45-knopf)] lg:order-first lg:min-h-40 lg:basis-full"
+            className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400 min-h-[var(--s45-knopf)] lg:order-first lg:min-h-32 lg:basis-full"
             style={{
               borderColor: !baut && promptText ? "var(--s45-primary-text)" : undefined,
               borderRadius: "var(--s45-radius)",
@@ -615,6 +711,29 @@ export function KidStudio({ code }: { code: string }) {
           >
             🧩 Was kam von uns — was von der KI?
           </button>
+        )}
+        {/* Wenn etwas schiefgeht: genau beschreiben oder zur Fassung davor zurück */}
+        {state.gameVersion > 0 && ((state.hilfen.fehlerMelden) || state.kannZurueck) && (
+          <div className="flex flex-wrap justify-center gap-2 pt-1">
+            {state.hilfen.fehlerMelden && (
+              <button
+                onClick={() => setShowFehler(true)}
+                disabled={baut}
+                className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-40"
+              >
+                🐞 Etwas geht nicht
+              </button>
+            )}
+            {state.kannZurueck && (
+              <button
+                onClick={einenSchrittZurueck}
+                disabled={baut || zurueckLaeuft || state.locked}
+                className="rounded-full border-2 border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-40"
+              >
+                ↩︎ Einen Schritt zurück
+              </button>
+            )}
+          </div>
         )}
       </footer>
       </div>
@@ -680,6 +799,44 @@ export function KidStudio({ code }: { code: string }) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Rückfrage statt Textvorschlag (Grundschule): antippen, was zur eigenen Idee passt */}
+      {rueckfrage && (
+        <RueckfrageDialog
+          wunsch={promptText}
+          frage={rueckfrage.frage}
+          antworten={rueckfrage.antworten}
+          vorlesen={state.hilfen.vorlesen}
+          onAntwort={(antwort) => {
+            setText(`${promptText.replace(/[\s—-]+$/, "")}${/[.!?…]$/.test(promptText.trim()) ? "" : "."} ${antwort}`);
+            setRueckfrage(null);
+            setCoachGezeigt(true);
+            setFeedback("👍 Euer Wunsch ist jetzt genauer. Lest ihn noch einmal — dann drückt auf Bauen.");
+          }}
+          onSelbst={() => {
+            setRueckfrage(null);
+            setCoachGezeigt(true);
+          }}
+          onEgal={() => {
+            setRueckfrage(null);
+            setCoachGezeigt(true);
+            void submit();
+          }}
+        />
+      )}
+
+      {showFehler && (
+        <FehlerMelden
+          vorlesen={state.hilfen.vorlesen}
+          onZu={() => setShowFehler(false)}
+          onFertig={(wunsch) => {
+            setText(wunsch);
+            setShowFehler(false);
+            setCoachGezeigt(true); // der Wunsch ist schon genau — keine Rückfrage obendrauf
+            setFeedback("🐞 Eure Fehlermeldung steht im Wunsch. Lest sie noch einmal — dann drückt auf Bauen.");
+          }}
+        />
       )}
 
       {directorCutDialog}
@@ -806,10 +963,13 @@ export function KidStudio({ code }: { code: string }) {
       {showCheck && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
           <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6">
-            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
-              Kurzer Team-Check ✋
-            </h2>
-            {CHECKFRAGEN.map((frage, i) => (
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+                Kurzer Team-Check ✋
+              </h2>
+              {state.hilfen.vorlesen && <Vorlesen text={[...CHECKFRAGEN, state.fokus.teamFrage].join(" ")} />}
+            </div>
+            {[...CHECKFRAGEN, state.fokus.teamFrage].map((frage, i) => (
               <label key={frage} className="flex cursor-pointer items-start gap-3 text-base">
                 <input
                   type="checkbox"

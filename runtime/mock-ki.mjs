@@ -117,10 +117,13 @@ const server = http.createServer((req, res) => {
     }
 
     // Kurze Aufrufe (Verbindungstest, Prompt-Coach) sofort beantworten
-    if (maxTokens > 0 && maxTokens <= 1000) {
+    if (maxTokens > 0 && maxTokens <= 2000) {
+      const systemText = (anfrage.messages ?? []).filter((m) => m.role === "system").map((m) => String(m.content)).join("\n");
       const text = maxTokens <= 100
         ? "bereit"
-        : "Wir wollen ein Spiel, in dem ein Fänger fallende Sterne einsammelt. Jeder Stern gibt einen Punkt, nach drei verpassten Sternen ist Schluss.";
+        : systemText.includes("FRAGE:")
+          ? "FRAGE: Was passiert, wenn man einen Stern verpasst?\nA: Wer drei Sterne verpasst, hat verloren.\nB: Für jeden verpassten Stern geht ein Punkt weg.\nC: Verpasste Sterne sind egal, es zählt nur die Zeit."
+          : "Wir wollen ein Spiel, in dem ein Fänger fallende Sterne einsammelt. Jeder Stern gibt einen Punkt, nach drei verpassten Sternen ist Schluss.";
       log(`#${nr} kurz (${maxTokens} Tokens) → sofort`);
       if (anfrage.stream) return streame(res, text, 300, usage(30), model);
       return json(res, 200, {
@@ -132,12 +135,12 @@ const server = http.createServer((req, res) => {
 
     const kaputt = Math.random() < FEHLERQUOTE;
     const dauer = bauzeit();
-    const text = antwortText(kaputt);
+    const text = antwortText(kaputt).replace("<title>Sternenfänger</title>", `<title>Sternenfänger (Bau ${nr})</title>`);
     laufende++;
     // Welcher Spielraum stand im Auftrag? Hilft beim Prüfen der Regler (Workshop und Gruppe).
     const auftrag = (anfrage.messages ?? []).map((m) => (typeof m.content === "string" ? m.content : "")).join("\n");
     const spielraum = [...auftrag.matchAll(/## Spielraum der KI: Stufe (\d) von 5/g)].map((m) => m[1]);
-    log(`#${nr} Spiel${kaputt ? " (absichtlich kaputt)" : ""} in ${(dauer / 1000).toFixed(1)} s · parallel: ${laufende} · Spielraum im Auftrag: ${spielraum.length ? spielraum.join("+") : "keiner"}`);
+    log(`#${nr} Spiel${kaputt ? " (absichtlich kaputt)" : ""} in ${(dauer / 1000).toFixed(1)} s · parallel: ${laufende} · Spielraum im Auftrag: ${spielraum.length ? spielraum.join("+") : "keiner"} · Gründlichkeit: ${anfrage.reasoning_effort ?? "normal"} · max ${maxTokens}`);
     const fertig = () => {
       laufende--;
       log(`#${nr} fertig · parallel: ${laufende}`);

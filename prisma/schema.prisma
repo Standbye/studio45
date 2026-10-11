@@ -58,6 +58,9 @@ model ApiKey {
   eurPerMTokensOut Float @default(0)
   /// Energie-Schätzfaktor in Wh pro 1 Mio Tokens — 0 = eingebauter Standardwert
   whPerMTokens     Float @default(0)
+  /// Gründlichkeit beim Bauen: "" = normal, "hoch" = das Modell denkt länger nach
+  /// (mehr Tokens, längere Wartezeit, dafür stimmigere Spiele)
+  gruendlich       String @default("")
 
   createdAt DateTime   @default(now())
   workshops Workshop[]

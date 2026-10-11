@@ -131,6 +131,7 @@ function VerbindungsFelder({
     eurPerMTokensIn: number;
     eurPerMTokensOut: number;
     whPerMTokens: number;
+    gruendlich: string;
   };
 }) {
   const start =
@@ -236,6 +237,23 @@ function VerbindungsFelder({
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="k-gruendlich">Gründlichkeit beim Bauen</Label>
+        <select
+          id="k-gruendlich"
+          name="gruendlich"
+          defaultValue={vorhanden?.gruendlich === "hoch" ? "hoch" : ""}
+          className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+        >
+          <option value="">Normal — schneller, sparsamer</option>
+          <option value="hoch">Hoch — das Modell denkt länger nach</option>
+        </select>
+        <p className="text-xs text-muted-foreground">
+          „Hoch“ liefert bei anspruchsvollen Wünschen stimmigere Spiele, kostet aber mehr Tokens und
+          verlängert die Wartezeit der Gruppen. Kennt ein Modell die Angabe nicht, wird ohne sie gebaut.
+        </p>
+      </div>
+
+      <div className="space-y-2">
         <Label>Kosten- & Energie-Transparenz (optional)</Label>
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
@@ -327,6 +345,7 @@ export function EditApiKeyDialog({
     eurPerMTokensIn: number;
     eurPerMTokensOut: number;
     whPerMTokens: number;
+    gruendlich: string;
   };
 }) {
   const [state, action, pending] = useActionState(updateApiKeyAction, IDLE);
@@ -436,7 +455,7 @@ export function CreateWorkshopDialog({
                   min={10_000}
                   max={100_000_000}
                   step={10_000}
-                  defaultValue={2_000_000}
+                  defaultValue={5_000_000}
                   list="budget-stufen"
                   required
                 />
@@ -446,8 +465,9 @@ export function CreateWorkshopDialog({
                   ))}
                 </datalist>
                 <p className="text-xs text-muted-foreground">
-                  Eine Generierung kostet grob 20.000–60.000 Tokens. 2 Mio. reichen für einen
-                  Workshop mit fünf Gruppen.
+                  Ein Bau kostet grob 10.000–30.000 Tokens, mit „Gründlichkeit hoch“ mehr — und
+                  je größer das Spiel wird, desto mehr. 5 Mio. reichen für fünf Gruppen über fünf
+                  Termine mit Luft.
                 </p>
               </div>
             </div>

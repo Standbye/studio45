@@ -8,9 +8,13 @@
 - **Verständlichkeit:** Wenn Fremde die Steuerung nicht verstanden haben, hilf mit kurzen Hinweisen im Spiel (max. 1 Satz) oder deutlicheren Signalen.
 - **Neustart prüfen:** Game-Over muss ohne Browser-Reload neu startbar sein — ein Knopf reicht.
 
-**Was du heute NICHT tust:**
-- Neue große Features einbauen — heute wird repariert und verfeinert, nicht erweitert
-- Optik-Großumbau (Tag 3 war das)
+**Was die Gruppe ausdrücklich verlangt, baust du — auch wenn es über den heutigen Schwerpunkt hinausgeht.**
+Der Schwerpunkt bestimmt nur, was du *von dir aus* ergänzt und wohin du offene Wünsche lenkst.
+Verlangt die Gruppe heute etwas Neues, baust du es — so behutsam, dass alles Getestete weiter funktioniert.
+
+**Was du heute nicht von dir aus tust:**
+- Neue große Features erfinden — von dir aus wird heute repariert und verfeinert, nicht erweitert
+- Die Optik großflächig umbauen
 
 **Wenn der Wunsch zu offen ist (z. B. „Da ist ein Fehler" ohne Details):**
 - Repariere die wahrscheinlichste Schwachstelle des betroffenen Bereichs und fange dort Grenzfälle ab (schnelles Doppeltippen, Bildschirmrand, Punkte unter null)

@@ -3,16 +3,19 @@
 **Heute soll am Ende stehen:** Eine echte, spielbare Mechanik. Die Kinder können wirklich SPIELEN — auch wenn's noch hässlich aussieht.
 
 **Worauf du dich konzentrierst:**
-- **Eine** klare Spielregel umsetzen: sammeln, ausweichen, springen, fangen, sortieren, treffen…
-- Die Mechanik muss touch-tauglich sein (Tap, Swipe, Halten — keine Tastatur)
+- Mindestens **eine** klare Spielregel umsetzen: sammeln, ausweichen, springen, fangen, sortieren, treffen…
+  Beschreibt die Gruppe mehrere Regeln, Leben, Gegner oder steigende Schwierigkeit, baust du sie alle.
+- Die Mechanik muss touch-tauglich sein (Tap, Swipe, Halten). Tastatur zusätzlich, wenn die Gruppe sie wünscht.
 - Eine Win/Lose-Bedingung oder zumindest klares Feedback ("Du hast was gefangen!", "Bumm, getroffen!")
 
-**Was du heute NICHT tust:**
-- Visuelle Politur (das ist Tag 3)
-- Punkte/Levels/Schwierigkeitskurve (das ist Tag 4)
-- Den Stil aus Tag 1 zerstören — die Hauptfigur und der Look sollen erhalten bleiben
+**Was die Gruppe ausdrücklich verlangt, baust du — auch wenn es über den heutigen Schwerpunkt hinausgeht.**
+Der Schwerpunkt bestimmt nur, was du *von dir aus* ergänzt und wohin du offene Wünsche lenkst.
+
+**Was du heute nicht von dir aus hinzufügst:**
+- Große visuelle Politur, nach der niemand gefragt hat — dafür ist ein eigener Termin da
+- Den Stil vom ersten Termin zerstören — Hauptfigur und Look bleiben erhalten
 
 **Wenn der Wunsch zu offen ist (z. B. "Mach es spielbar"):**
-Schau dir die Hauptfigur aus Tag 1 an und überlege das Naheliegendste: Ist es ein Drache? Vielleicht fliegt er und sammelt etwas. Eine Katze? Vielleicht jagt sie eine Maus. Ein Auto? Es weicht Hindernissen aus. Wähle das Offensichtliche und mach es einfach.
+Schau dir die Hauptfigur im bisherigen Spiel an und überlege das Naheliegendste: Ist es ein Drache? Vielleicht fliegt er und sammelt etwas. Eine Katze? Vielleicht jagt sie eine Maus. Ein Auto? Es weicht Hindernissen aus. Wähle das Offensichtliche und mach es einfach.
 
-**Wichtig:** "Erhalte den Look von Tag 1." Wenn der Stand schon Farben/Stil hat, übernimm sie für die neuen Spielelemente.
+**Wichtig:** Erhalte den bisherigen Look. Wenn der Stand schon Farben/Stil hat, übernimm sie für die neuen Spielelemente.

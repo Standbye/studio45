@@ -112,54 +112,32 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Ereignis vollständig aus der Ergebnisliste aufgebaut (`src/lib/diktat.ts`); kumulative
       Endergebnisse (Chrome/Android) und eine neu beginnende Liste nach Sprechpause (Safari) sind
       abgefangen. Geprüft per Nachspielen von Ereignisfolgen — nicht mit echtem Mikrofon am iPad.
-- [ ] **Motto und Fokus der Stunde im Kinder-Studio zeigen; Vorschläge passend dazu** (Peter,
-      2026-10-11). Stand heute: Im Studio steht nur „Tag 2/5 · Spielregel" klein im Kopf; den
-      Merksatz sehen die Gruppen nur im Plenum-/Pause-Bildschirm. Worauf es heute ankommt, steht
-      nirgends. Vorschlag:
-      1. **Fokus-Karte** oben in der Bedienspalte (im Hochformat über der Eingabe): Titel des
-         Tages, ein Satz „Heute geht es um …" in Kindersprache je Altersstufe, darunter der
-         Merksatz. Dieselbe Quelle für Kinder-App, Beamer und Plenum-Bildschirm.
-      2. **Vorschläge an den Fokus binden:** Die Satzanfänge (Chips) hängen heute an der
-         Tagesnummer 1–5. Im 3-Tage-Format zeigt Tag 3 („Feinschliff & Release") deshalb die
-         Chips von „Hübsch & Hörbar" — das passt nicht. Chips künftig über den Fokus des Tages
-         wählen (wie der KI-Tagesfokus es schon tut), nicht über die Nummer.
-      3. **Formulierungshilfe kennt den Fokus:** Die genauere Fassung des Wunsches soll in
-         Richtung des Tagesfokus präzisieren (Tag „Spielregel": nach Gewinnen/Verlieren fragen,
-         nicht nach Farben). Heute bekommt sie den Tag nicht mit.
-      4. Team-Check: dritte Frage aus dem Fokus des Tages (optional, klein).
-      Zu klären mit Peter: Soll die Karte dauerhaft sichtbar sein oder einklappbar? Titel/Mottos
-      liegen bei Codex (`workshop-days.ts` in dessen Baum) — Quelle vor dem Bau abstimmen.
-- [ ] **Spiele dürfen aufwändiger werden — lieber gute Ergebnisse als sparsame** (Peter,
-      2026-10-11). Befund: Tokens begrenzen nichts (Obergrenze 32.000 Ausgabe-Tokens, echte Bauten
-      liegen bei 7.000–13.500; Wunsch bis 4.000 Zeichen). Klein gehalten werden die Spiele durch
-      die Anweisungen: (a) Tagesfokus-Texte mit Verboten („sehr einfacher Aufbau", „keine Levels",
-      „keine Punkte — das ist Tag 4", obwohl Tag 4 inzwischen Test-Tag ist; Tag 2 verbietet
-      Tastatur), (b) Grundschul-Block „eine Regel, keine Kombinationen", (c) Kern „lieber kleiner
-      und rund", (d) enger Spielraum (Stufe 4–5) baut bewusst schlicht. Vorschlag:
-      1. Tagesfokus von Verbot auf Vorrang umstellen: Was die Gruppe ausdrücklich verlangt, wird
-         gebaut; der Fokus bestimmt nur, was die KI von sich aus ergänzt. Veraltete Verweise
-         (Tag 4 = Punkte/Levels) bereinigen.
-      2. Grundschul-Block: „eine Regel" als Startpunkt, nicht als Deckel — ausdrücklich
-         gewünschte Erweiterungen (Leben, Gegner, Stufen) sind erlaubt.
-      3. Einstellung „Gründlichkeit" an der KI-Verbindung (Admin): normal / hoch — gibt dem
-         Modell mehr Denkaufwand mit. Kostet Tokens und Wartezeit, deshalb abschaltbar.
-      4. Token-Budget prüfen: Standard 2 Mio. je Workshop reicht bei wachsenden Spielen nur für
-         rund 100 Bauten (5 Gruppen × 5 Termine × 4 Versuche liegen genau dort).
-      Größerer Hebel, schon unter „Harness" notiert: Selbstprüfung gegen den Wunsch nach dem Bau.
-- [ ] **Mehr Unterstützung für die Kleinen** (Peter, 2026-10-11; Ideen, Auswahl offen):
-      1. **Vorlesen:** Lautsprecher-Knopf an Fokus, Vorschlägen, Rückmeldung und „Das hat die KI
-         ergänzt" (Sprachausgabe des Geräts, kostet nichts). Erst- und Zweitklässler lesen noch
-         nicht sicher.
-      2. **Antippen statt Tippen:** Bei kargem Wunsch stellt die Formulierungshilfe eine Rückfrage
-         mit zwei bis drei antippbaren Antworten („Was passiert, wenn man verliert?") statt einen
-         fertigen Satz vorzuschlagen — die Entscheidung bleibt beim Kind.
-      3. **„Das ist neu — probiert das aus":** Nach jedem Bau zwei, drei Sätze, was sich geändert
-         hat und was die Gruppe jetzt testen soll (aus dem Steckbrief).
-      4. **„Etwas geht nicht":** geführte Fehlermeldung mit Auswahl (Knopf reagiert nicht / Figur
-         hängt / zu schwer …) statt „es passiert nichts".
-      5. **Einen Schritt zurück** für die Gruppe selbst (Snapshots gibt es, bisher nur für die
-         Lehrkraft).
-      Nicht bauen: fertige Spielvorlagen zum Anklicken (nimmt die eigene Idee), Avatare/Belohnungen.
+- [x] **Fokus der Stunde, aufwändigere Spiele, mehr Hilfe für die Kleinen** (Peter, 2026-10-11;
+      gebaut, noch nicht deployt). Drei Themen in einem Bau:
+      **Fokus:** Karte „🎯 Heute: … / Heute geht es um … / Merksatz" dauerhaft in der Bedienspalte,
+      derselbe Satz am Beamer und im Plenum-Bildschirm (`src/lib/tagesfokus.ts`). Satzanfänge,
+      Formulierungshilfe und die dritte Team-Check-Frage hängen jetzt am Schwerpunkt des Termins
+      statt an der Tagesnummer (behebt die falschen Chips an Termin 3 im 3-Termine-Format).
+      **Aufwand:** Tagesfokus-Anweisungen von Verbot auf Vorrang umgestellt („was die Gruppe
+      ausdrücklich verlangt, baust du"), veraltete Tag-Verweise raus; Grundschul-Block: eine Regel
+      ist Startpunkt, kein Deckel; neue Einstellung „Gründlichkeit beim Bauen" je KI-Verbindung
+      (Admin; `ApiKey.gruendlich`, Migration `20261011180000_gruendlichkeit`) — gibt dem Modell
+      mehr Denkaufwand und 48.000 statt 32.000 Tokens Luft, fällt bei Ablehnung auf normal
+      zurück; Standard-Budget neuer Workshops 5 Mio. (bestehende bleiben, im Admin änderbar).
+      **Für die Kleinen:** Vorlesen-Knöpfe (Grundschule; Fokus, Satzanfänge, Rückmeldung, „Das ist
+      neu", KI-Ergänzungen, Rückfrage, Team-Check, Fehlermeldung); Rückfrage mit Antworten zum
+      Antippen statt Textvorschlag (Grundschule, ältere Stufen behalten den Textvorschlag);
+      „✨ Das ist neu / 🕹️ Probiert das aus" nach jedem Bau (neue Steckbrief-Felder `neu` und
+      `ausprobieren`, erst bei neu gebauten Spielen vorhanden); „🐞 Etwas geht nicht" als geführte
+      Fehlermeldung (ab Hilfe-Stufe 1); „↩︎ Einen Schritt zurück" für die Gruppe selbst (kostet
+      keinen Versuch, wird als eigene Fassung festgehalten). Die Eingabe bleibt in der
+      Bedienspalte immer sichtbar, Hinweise darüber scrollen für sich.
+      Geprüft lokal mit dem Mock-Anbieter im Browser (alle Abläufe, Quer- und Hochformat, Admin-
+      Formular) und per API (ältere Stufen, 3-Termine-Format, Container-Migration). Nicht geprüft:
+      Sprachausgabe auf einem echten iPad, Rückfragen und „Das ist neu" mit dem echten Modell,
+      „Gründlichkeit hoch" beim echten Anbieter.
+      **Nicht gebaut (bewusst):** fertige Spielvorlagen zum Anklicken, Avatare/Belohnungen,
+      „wieder vor" nach einem Schritt zurück.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.

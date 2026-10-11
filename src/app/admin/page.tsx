@@ -186,6 +186,7 @@ export default async function AdminPage() {
                         eurPerMTokensIn: k.eurPerMTokensIn,
                         eurPerMTokensOut: k.eurPerMTokensOut,
                         whPerMTokens: k.whPerMTokens,
+                        gruendlich: k.gruendlich,
                       }}
                     />
                     <form action={deleteApiKeyAction} className="inline">

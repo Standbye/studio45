@@ -79,6 +79,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/lehrer/[gid]/di
       protocol: w.apiKey.protocol,
       secret: w.apiKey.secret,
       baseUrl: w.apiKey.baseUrl,
+      gruendlich: w.apiKey.gruendlich === "hoch",
     },
     learningGoal: w.learningGoal,
     studioName,

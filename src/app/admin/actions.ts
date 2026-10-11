@@ -28,6 +28,7 @@ const verbindungSchema = z.object({
   eurPerMTokensIn: z.coerce.number().min(0).max(10_000),
   eurPerMTokensOut: z.coerce.number().min(0).max(10_000),
   whPerMTokens: z.coerce.number().min(0).max(100_000),
+  gruendlich: z.enum(["", "hoch"]),
 });
 
 function verbindungAusForm(formData: FormData) {
@@ -41,6 +42,7 @@ function verbindungAusForm(formData: FormData) {
     eurPerMTokensIn: formData.get("eurPerMTokensIn") || 0,
     eurPerMTokensOut: formData.get("eurPerMTokensOut") || 0,
     whPerMTokens: formData.get("whPerMTokens") || 0,
+    gruendlich: formData.get("gruendlich") === "hoch" ? "hoch" : "",
   });
 }
 

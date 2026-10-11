@@ -9,12 +9,17 @@ import type { AgeGroup } from "@/generated/prisma/enums";
 import type { Protokoll } from "@/lib/providers";
 
 const MAX_TOKENS = 32000; // Lehre aus dem Piloten: 8k schneidet Spiele mitten im Script ab
+// Mit „Gründlichkeit hoch" zählt das Nachdenken des Modells mit — mehr Luft, damit das Spiel
+// danach nicht abgeschnitten wird.
+const MAX_TOKENS_GRUENDLICH = 48000;
 
 /** Zugangsdaten einer vom Admin gepflegten Verbindung. */
 export type Verbindung = {
   protocol: string;
   secret: string;
   baseUrl: string;
+  /** Beim Bauen länger nachdenken lassen (Einstellung der Verbindung) */
+  gruendlich?: boolean;
 };
 
 export type LlmAntwort = {
@@ -41,7 +46,25 @@ async function rufeModell(
   model: string,
   anweisungen: string[],
   userMsg: string,
-  maxTokens: number
+  maxTokens: number,
+  gruendlich = false
+): Promise<LlmAntwort> {
+  const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich);
+  // Nicht jedes Modell und jedes Gateway kennt die Gründlichkeits-Angabe. Lehnt der Dienst
+  // den Aufruf deshalb ab, bauen wir ohne sie — ein Spiel ist besser als eine Fehlermeldung.
+  if (gruendlich && antwort.error && !antwort.text) {
+    return rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, false);
+  }
+  return antwort;
+}
+
+async function rufeModellEinmal(
+  v: Verbindung,
+  model: string,
+  anweisungen: string[],
+  userMsg: string,
+  maxTokens: number,
+  gruendlich: boolean
 ): Promise<LlmAntwort> {
   const protokoll: Protokoll = v.protocol === "openai" ? "openai" : "anthropic";
   try {
@@ -62,6 +85,7 @@ async function rufeModell(
         max_tokens: maxTokens,
         system,
         messages: [{ role: "user", content: userMsg }],
+        ...(gruendlich ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } } : {}),
       });
       const msg = await stream.finalMessage();
       return {
@@ -85,6 +109,7 @@ async function rufeModell(
       max_completion_tokens: maxTokens,
       stream: true,
       stream_options: { include_usage: true },
+      ...(gruendlich ? { reasoning_effort: "high" as const } : {}),
       messages: [
         { role: "system", content: anweisungen.join("\n\n") },
         { role: "user", content: userMsg },
@@ -152,7 +177,8 @@ export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
     : `## Aktueller Stand des Spiels\n\nEs gibt noch KEIN Spiel — das ist der allererste Wunsch. Baue eine erste, vollständig spielbare Version und lege den STUDIO45-Steckbrief an.`;
   const userMsg = `${stand}\n\n## Wunsch des Studios „${p.studioName || "?"}"\n\n${p.userPrompt.trim()}`;
 
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS);
+  const gruendlich = Boolean(p.verbindung.gruendlich);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   const html = extractHtml(antwort.text);
   return {
@@ -175,7 +201,66 @@ export type CoachParams = {
   studioName: string;
   ageGroup: AgeGroup;
   learningGoal: string;
+  /** Schwerpunkt des Termins in Worten (siehe lib/tagesfokus) — lenkt, wonach präzisiert wird */
+  fokus: string;
 };
+
+/** Genug Luft, auch wenn ein Modell vor der kurzen Antwort erst nachdenkt */
+const COACH_TOKENS = 1500;
+
+function coachKontext(p: CoachParams): string {
+  const steckbrief = p.currentHtml?.match(/<!--\s*STUDIO45([\s\S]{0,1200}?)-->/)?.[1]?.trim();
+  return [
+    steckbrief ? `So sieht das bisherige Spiel aus:\n${steckbrief}` : "Es gibt noch kein Spiel.",
+    `\n\nDas hat das Studio „${p.studioName}" gesagt:\n${p.wunsch.trim()}`,
+  ].join("");
+}
+
+export type Rueckfrage = { frage: string; antworten: string[] };
+
+/**
+ * Für die Kleinen: statt eines fertigen Satzes EINE Rückfrage mit zwei bis drei Antworten
+ * zum Antippen. Die Gruppe entscheidet — sie muss dafür aber nichts tippen.
+ */
+export async function coachRueckfrage(
+  p: CoachParams
+): Promise<{ rueckfrage: Rueckfrage | null; tokensIn: number; tokensOut: number; error?: string }> {
+  const alter = alterProfil(p.ageGroup);
+  const system = `Du hilfst einer Schulklasse (${alter.name}, ${alter.klassen}), ihren Wunsch an eine spielebauende KI genauer zu machen.
+
+Du baust NICHTS und du entscheidest nichts. Du stellst genau EINE Rückfrage zu dem, was im Wunsch am wichtigsten fehlt, und bietest drei mögliche Antworten zum Antippen an.
+
+Regeln:
+- Bleibe strikt bei der Idee der Klasse. Die Antworten sind Möglichkeiten, die zu dieser Idee passen — kein anderes Spiel, kein anderes Thema.
+- Heute liegt der Schwerpunkt auf: ${p.fokus}. Fehlt dazu etwas, frage danach. Sonst frage nach dem, was die KI am ehesten raten müsste.
+- Die Frage ist kurz (höchstens zwölf Wörter), in einfachen Wörtern, Anrede „ihr".
+- Jede Antwort ist EIN kurzer, ganzer Satz aus Sicht der Klasse, den man an den Wunsch anhängen kann („Wer dreimal getroffen wird, hat verloren.").
+- Die drei Antworten unterscheiden sich deutlich voneinander.
+- Keine Fachbegriffe, keine Einleitung, keine Erklärung.${
+    p.learningGoal.trim() ? `\n- Das Spiel soll außerdem zu diesem Lernziel passen: ${p.learningGoal.trim()}` : ""
+  }
+
+Antworte exakt in diesem Format, sonst nichts:
+FRAGE: <die Frage>
+A: <erste Antwort>
+B: <zweite Antwort>
+C: <dritte Antwort>`;
+
+  const antwort = await rufeModell(p.verbindung, p.model, [system], coachKontext(p), COACH_TOKENS);
+  if (antwort.error) return { rueckfrage: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
+
+  const sauber = (s: string) => s.replace(/[<>]/g, "").replace(/^["„]|["“]$/g, "").replace(/\s+/g, " ").trim();
+  const frage = sauber(antwort.text.match(/^\s*FRAGE:\s*(.+)$/im)?.[1] ?? "").slice(0, 160);
+  const antworten = [...antwort.text.matchAll(/^\s*[ABC]:\s*(.+)$/gim)]
+    .map((m) => sauber(m[1]).slice(0, 200))
+    .filter(Boolean)
+    .slice(0, 3);
+  return {
+    rueckfrage: frage && antworten.length >= 2 ? { frage, antworten } : null,
+    tokensIn: antwort.tokensIn,
+    tokensOut: antwort.tokensOut,
+  };
+}
 
 /**
  * Schlägt eine ausformulierte Fassung des Wunsches vor.
@@ -185,7 +270,6 @@ export type CoachParams = {
  */
 export async function coachWunsch(p: CoachParams): Promise<{ vorschlag: string; tokensIn: number; tokensOut: number; error?: string }> {
   const alter = alterProfil(p.ageGroup);
-  const steckbrief = p.currentHtml?.match(/<!--\s*STUDIO45([\s\S]{0,1200}?)-->/)?.[1]?.trim();
 
   const system = `Du hilfst einer Schulklasse (${alter.name}, ${alter.klassen}), ihren Wunsch an eine spielebauende KI genauer zu formulieren.
 
@@ -195,18 +279,15 @@ Regeln:
 - Bleibe strikt bei der Idee der Klasse. Erfinde kein anderes Spiel und kein anderes Thema.
 - Ergänze das, was offensichtlich fehlt, damit die KI nicht raten muss: WAS passiert, WIE es
   aussieht, WANN man gewinnt oder verliert.
+- Heute liegt der Schwerpunkt auf: ${p.fokus}. Präzisiere zuerst in diese Richtung, wenn dort
+  etwas offen ist.
 - Höchstens drei kurze Sätze, Sprache der Zielgruppe, keine Fachbegriffe.
 - Schreibe aus Sicht der Klasse („Wir wollen …").
 - Keine Einleitung, keine Erklärung, keine Anführungszeichen — nur der verbesserte Wunsch.${
     p.learningGoal.trim() ? `\n- Das Spiel soll außerdem zu diesem Lernziel passen: ${p.learningGoal.trim()}` : ""
   }`;
 
-  const userMsg = [
-    steckbrief ? `So sieht das bisherige Spiel aus:\n${steckbrief}` : "Es gibt noch kein Spiel.",
-    `\n\nDas hat das Studio „${p.studioName}" gesagt:\n${p.wunsch.trim()}`,
-  ].join("");
-
-  const antwort = await rufeModell(p.verbindung, p.model, [system], userMsg, 500);
+  const antwort = await rufeModell(p.verbindung, p.model, [system], coachKontext(p), COACH_TOKENS);
   if (antwort.error) return { vorschlag: "", tokensIn: 0, tokensOut: 0, error: antwort.error };
   return {
     vorschlag: antwort.text.trim().replace(/^["„]|["“]$/g, ""),
@@ -314,7 +395,8 @@ Die Bibliothek **Three.js (r128)** ist bereits geladen und global als \`THREE\` 
       : `\n\nBaue daraus die KOMPLETTE HTML-Datei (eine Datei, HTML+CSS+JS inline), in genau einem \`\`\`html ... \`\`\`-Block. Keine Erklärungen.`,
   ].join("");
 
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, MAX_TOKENS);
+  const gruendlich = Boolean(p.verbindung.gruendlich);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   let html = extractHtml(antwort.text);
   if (html && p.engine3d) html = injectThreeJs(html);

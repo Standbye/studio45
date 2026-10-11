@@ -5,6 +5,7 @@ import { BASE_URL } from "@/lib/env";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { farbschema } from "@/lib/kontrast";
+import { fokusProfil } from "@/lib/tagesfokus";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,8 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
             <p className="mt-1 text-lg opacity-90">
               Tag {w.currentDay}/{w.totalDays}: {dayTitle(w.currentDay, w.totalDays)}
             </p>
+            {/* Worauf es heute ankommt — derselbe Satz wie auf den Geräten der Gruppen */}
+            <p className="mt-1 max-w-3xl text-base opacity-90">🎯 {fokusProfil(w.currentDay, w.totalDays).heute[w.ageGroup]}</p>
           </div>
           <div className="ml-auto shrink-0 rounded-2xl px-5 py-3 text-right" style={{ background: "rgba(255,255,255,.12)" }}>
             <span className="block text-xs uppercase tracking-widest opacity-75">Merksatz des Tages</span>

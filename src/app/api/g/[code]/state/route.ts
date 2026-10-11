@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
-import { playVersion, readPlayHtml } from "@/lib/games";
-import { leseHerkunft } from "@/lib/steckbrief";
+import { playVersion, readPlayHtml, vorherigeFassung } from "@/lib/games";
+import { leseHerkunft, leseLetztenBau } from "@/lib/steckbrief";
+import { fokusProfil } from "@/lib/tagesfokus";
 import { LERNFALL, fassungZurStufe, leseBefunde, loesung } from "@/lib/lernfall";
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { alterProfil, hilfeProfil, wirksameStufen } from "@/lib/audience";
@@ -23,6 +24,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
   const w = group.workshop;
   const dauerSchaetzung = await schaetzeDauerSekunden(w.id);
   const hilfe = hilfeProfil(wirksameStufen(group, w).helpLevel);
+  const fokus = fokusProfil(w.currentDay, w.totalDays);
+  const spielHtml = readPlayHtml(group.id);
 
   // Token-Transparenz: Summe der Gruppe + letzter Bau; Euro nur, wenn der
   // Admin Preise hinterlegt hat. Energiewerte sind bewusst grobe Schätzungen.
@@ -83,7 +86,11 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     ageGroup: w.ageGroup,
     optik: alterProfil(w.ageGroup).optik,
     texte: alterProfil(w.ageGroup).texte,
-    chips: alterProfil(w.ageGroup).chips[Math.min(w.currentDay, 5)] ?? alterProfil(w.ageGroup).chips[1],
+    // Satzanfänge hängen am Schwerpunkt des Termins, nicht an seiner Nummer — im 3-Termine-Format
+    // ist der dritte Termin „Fertigmachen", nicht „Hübsch & Hörbar".
+    chips: alterProfil(w.ageGroup).chips[fokus.chipsNummer] ?? alterProfil(w.ageGroup).chips[1],
+    // Worauf es heute ankommt — dieselbe Quelle wie Rückfragen und Team-Check
+    fokus: { heute: fokus.heute[w.ageGroup], teamFrage: fokus.teamFrage },
     // Hilfe beim Formulieren — unabhängig davon, wie viel die KI selbst entscheiden darf
     // Bewusst nur die Schalter, keine Stufe: Auf dem Gerät soll keine Gruppe ablesen können,
     // wie sie eingestuft ist (die Regler lassen sich pro Gruppe einstellen).
@@ -91,9 +98,17 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
       chips: hilfe.chips,
       teamCheck: hilfe.teamCheck,
       coachAbZeichen: hilfe.coachAbZeichen,
+      // Vorlesen ist keine Formulierungshilfe, sondern Lesehilfe: in der Grundschule immer da
+      vorlesen: w.ageGroup === "GRUNDSCHULE",
+      // Geführte Fehlermeldung („Etwas geht nicht") — sobald es Impulse gibt
+      fehlerMelden: hilfe.chips,
     },
     // Was kam von der Gruppe, was hat die KI ergänzt? (aus dem Steckbrief des Spiels)
-    herkunft: leseHerkunft(readPlayHtml(group.id)),
+    herkunft: leseHerkunft(spielHtml),
+    // Was ist seit dem letzten Bau neu, und was soll die Gruppe jetzt ausprobieren?
+    letzterBau: leseLetztenBau(spielHtml),
+    // Gibt es eine frühere Fassung, zu der die Gruppe selbst zurückgehen kann?
+    kannZurueck: (await vorherigeFassung(group.id)) !== null,
     // Director's Cut: Die Lehrkraft legt der Gruppe die Spielbeschreibung zur Abstimmung vor
     directorCut: group.dcStatus === "offen" ? { spec: group.dcSpec.slice(0, 6000) } : null,
     lernfall,

@@ -77,8 +77,10 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
 
 - Sprache: kurze Hauptsätze, vertraute Wörter, kein Fachjargon. Anrede „du"/„ihr".
 - Lesemenge: so wenig wie möglich. Symbole und Farben statt Text, wo es geht.
-- Mechanik: **eine** Regel, sofort begreifbar. Sammeln, ausweichen, treffen, sortieren.
-  Keine Kombinationen aus mehreren Systemen, keine Menüs, keine Inventare.
+- Mechanik: Starte mit **einer** Regel, die sofort begreifbar ist (sammeln, ausweichen,
+  treffen, sortieren). Das ist der Ausgangspunkt, kein Deckel: Verlangt die Gruppe mehr —
+  Leben, Gegner, Stufen, Aufgaben, die schwerer werden —, baust du es und hältst es
+  übersichtlich. Von dir aus fügst du keine weiteren Systeme, Menüs oder Inventare hinzu.
 - Steuerung: Antippen oder Ziehen. Nichts, was Timing im Zehntelsekundenbereich verlangt.
 - Schwierigkeit: sehr freundlich. Fehler kosten nie mehr als einen kleinen Rückschritt.
 - Optik: kräftige, fröhliche Farben, große runde Formen, Figuren mit Gesicht und Augen.
@@ -281,11 +283,11 @@ export type HilfeProfil = {
 
 export const HILFE_STUFEN: HilfeProfil[] = [
   { stufe: 0, name: "Keine", kurz: "Nur das Eingabefeld — die Gruppe formuliert ganz allein.", chips: false, teamCheck: false, coachAbZeichen: 0 },
-  { stufe: 1, name: "Impulse", kurz: "Satzanfänge passend zum Tag und ein Tipp unter dem Eingabefeld.", chips: true, teamCheck: false, coachAbZeichen: 0 },
+  { stufe: 1, name: "Impulse", kurz: "Satzanfänge passend zum Thema des Termins, ein Tipp unter dem Eingabefeld und die geführte Fehlermeldung „Etwas geht nicht“.", chips: true, teamCheck: false, coachAbZeichen: 0 },
   {
     stufe: 2,
     name: "Impulse + Formulierungshilfe",
-    kurz: "Zusätzlich schlägt Studio45 bei kurzen Wünschen eine genauere Fassung vor — die Gruppe entscheidet, ob sie sie nimmt.",
+    kurz: "Zusätzlich hilft Studio45 bei kurzen Wünschen nach: in der Grundschule mit einer Rückfrage zum Antippen, sonst mit einer genaueren Fassung — die Gruppe entscheidet.",
     chips: true,
     teamCheck: false,
     coachAbZeichen: 80,
@@ -293,7 +295,7 @@ export const HILFE_STUFEN: HilfeProfil[] = [
   {
     stufe: 3,
     name: "Volle Begleitung",
-    kurz: "Dazu ein Team-Check mit drei Fragen vor jedem Bauen; die Formulierungshilfe greift schon bei längeren Wünschen.",
+    kurz: "Dazu ein Team-Check mit drei Fragen vor jedem Bauen (eine davon zum Thema des Termins); die Formulierungshilfe greift schon bei längeren Wünschen.",
     chips: true,
     teamCheck: true,
     coachAbZeichen: 120,

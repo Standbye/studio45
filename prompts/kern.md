@@ -106,6 +106,10 @@ von_der_gruppe:
 - <was die Gruppe ausdrücklich verlangt hat, in ihren Worten, kurz>
 von_der_ki:
 - <was DU ohne Auftrag ergänzt oder entschieden hast, kurz und konkret>
+neu:
+- <was sich mit DIESEM Bau geändert hat — ein bis drei Einträge>
+ausprobieren:
+- <was die Gruppe jetzt im Spiel testen soll — ein bis zwei Einträge>
 -->
 ```
 
@@ -129,6 +133,17 @@ gewissenhaft — sie werden der Gruppe nach jedem Bau angezeigt.
   der Liste.
 - Hast du nichts ergänzt, steht unter `von_der_ki` genau ein Eintrag: `- nichts`.
 - Höchstens zwölf Einträge je Liste — ältere, unwichtige zusammenfassen.
+
+### Was ist neu — und was soll die Gruppe ausprobieren?
+
+Die Listen `neu` und `ausprobieren` schreibst du **bei jedem Bau komplett neu** (nicht
+fortschreiben). Sie werden der Gruppe direkt nach dem Bau angezeigt und vorgelesen.
+
+- `neu`: ein bis drei Einträge, was sich mit diesem Bau im Spiel geändert hat — so, dass
+  ein Kind es wiederfindet („Der Fuchs kann jetzt springen").
+- `ausprobieren`: ein bis zwei Aufträge zum Testen, die genau das Neue prüfen („Springt
+  über einen Stein — klappt das?"). Formuliere sie als Aufforderung, höchstens 80 Zeichen.
+- Kurze, einfache Sätze. Keine Technik-Wörter.
 
 ## Verboten, weil es Kinder ausbremst
 

@@ -46,6 +46,49 @@ export async function restoreSnapshot(snapshotId: string, groupId: string): Prom
   return true;
 }
 
+/**
+ * Die Fassung vor dem aktuellen Spiel — für „Einen Schritt zurück" in der Kinder-App.
+ *
+ * Der aktuelle Stand wird über den Dateiinhalt wiedergefunden (früheste gleiche Fassung);
+ * davor liegt die nächste Fassung mit anderem Inhalt. Weil jedes Zurückgehen selbst als
+ * Fassung festgehalten wird, bleibt der Verlauf gerade: Wer zurückgeht, weiterbaut und
+ * wieder zurückgeht, landet nicht in der verworfenen Fassung.
+ */
+export async function vorherigeFassung(groupId: string): Promise<{ fileName: string } | null> {
+  const dir = gameDir(groupId);
+  const playFile = path.join(dir, "play.html");
+  if (!fs.existsSync(playFile)) return null;
+  const snaps = await db.snapshot.findMany({
+    where: { groupId },
+    orderBy: { createdAt: "asc" },
+    select: { fileName: true },
+  });
+  if (snaps.length < 2) return null;
+
+  const play = fs.readFileSync(playFile);
+  const gleich = (fileName: string): boolean | null => {
+    const f = path.join(dir, fileName);
+    if (!fs.existsSync(f)) return null; // Datei fehlt — überspringen
+    return fs.statSync(f).size === play.length && fs.readFileSync(f).equals(play);
+  };
+
+  let pos = snaps.findIndex((s) => gleich(s.fileName) === true);
+  if (pos < 0) pos = snaps.length; // unbekannter Stand: zurück zur letzten gespeicherten Fassung
+  for (let i = pos - 1; i >= 0; i--) {
+    if (gleich(snaps[i].fileName) === false) return snaps[i];
+  }
+  return null;
+}
+
+/** Stellt die vorherige Fassung wieder her und hält das als eigene Fassung fest. */
+export async function schrittZurueck(groupId: string, day: number): Promise<boolean> {
+  const ziel = await vorherigeFassung(groupId);
+  if (!ziel) return false;
+  const html = fs.readFileSync(path.join(gameDir(groupId), ziel.fileName), "utf8");
+  await publishGame(groupId, html, day, "↩︎ Einen Schritt zurück");
+  return true;
+}
+
 export function wipeGroupGame(groupId: string): void {
   const dir = gameDir(groupId);
   if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });

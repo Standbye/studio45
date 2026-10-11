@@ -24,10 +24,28 @@ function liste(block: string, feld: string): string[] {
   return eintraege;
 }
 
+function steckbriefBlock(html: string | null): string | null {
+  if (!html) return null;
+  return html.match(/<!--\s*STUDIO45\s*\n([\s\S]{0,6000}?)-->/)?.[1] ?? null;
+}
+
+export type LetzterBau = { neu: string[]; ausprobieren: string[] };
+
+/**
+ * Was hat sich mit dem letzten Bau geändert, und was soll die Gruppe jetzt testen?
+ * null, wenn der Steckbrief dazu nichts sagt (ältere Spiele).
+ */
+export function leseLetztenBau(html: string | null): LetzterBau | null {
+  const block = steckbriefBlock(html);
+  if (!block) return null;
+  const neu = liste(block, "neu").slice(0, 4);
+  const ausprobieren = liste(block, "ausprobieren").slice(0, 3);
+  return neu.length + ausprobieren.length > 0 ? { neu, ausprobieren } : null;
+}
+
 /** null, wenn das Spiel (noch) keinen Steckbrief mit Herkunftsangaben hat. */
 export function leseHerkunft(html: string | null): Herkunft | null {
-  if (!html) return null;
-  const block = html.match(/<!--\s*STUDIO45\s*\n([\s\S]{0,6000}?)-->/)?.[1];
+  const block = steckbriefBlock(html);
   if (!block || !/von_der_ki\s*:/i.test(block)) return null;
   return { gruppe: liste(block, "von_der_gruppe"), ki: liste(block, "von_der_ki") };
 }
