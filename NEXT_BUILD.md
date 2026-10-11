@@ -67,6 +67,10 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
         Option; abweichende Gruppen bekommen eine dezente Markierung im Dashboard.
       - Wirkung: Schüler-Seite (Impulse, Formulierungshilfe, Team-Check), Coach-Route und die
         Generierung lesen den Wert der Gruppe, sonst den des Workshops.
+      - **Alle Gruppen auf Workshop-Einstellung** (Peter): ein Knopf bei den Workshop-Einstellungen,
+        der die Abweichungen aller Gruppen auf einmal löscht — mit Rückfrage und nur sichtbar,
+        wenn mindestens eine Gruppe abweicht („3 Gruppen weichen ab"). Zusätzlich lässt sich
+        jede einzelne Gruppe über „wie Workshop" zurückstellen.
       - Stolperstein: Hat die Lehrkraft die didaktische Zone der KI-Anweisung selbst
         überschrieben, steckt der Spielraum-Block nicht mehr darin. Dann den Block der Gruppe
         an die eigene Fassung anhängen — sonst bliebe der Gruppen-Regler dort wirkungslos.
