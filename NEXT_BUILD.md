@@ -100,6 +100,12 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       Migration (`20261011150000_lernfall_steuerung`, nur ADD COLUMN) mit dem Container-Migrator.
       **Nicht gebaut (bewusst):** echter KI-Lauf als Lernfall, Katalog mehrerer Lernfälle,
       Punkte/Rangliste, automatische KI-Bewertung der Freitexte.
+- [x] **Kinder-Studio: Spiel links im Rahmen, Bedienung rechts** (Peter, 2026-10-11; gebaut, noch
+      nicht deployt). Ab 1024 px Breite (Tablet quer, Laptop) steht das Spiel links über die volle
+      Höhe, rechts Bausteine, Eingabe, Mikrofon und Bau-Knopf; die Seite scrollt nicht mehr und
+      die Eingabe verdeckt nichts (bei 1180 × 820: Spiel 784 × 738). Hochformat bleibt
+      untereinander. Dazu im Kern-Prompt verschärft: alles Spielbare passt ohne Scrollen in den
+      Rahmen, keine festen Pixelhöhen — wirkt nur auf neu gebaute Spiele.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.

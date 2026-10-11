@@ -438,7 +438,7 @@ export function KidStudio({ code }: { code: string }) {
   }
 
   return (
-    <main style={vars} className="flex min-h-svh flex-col bg-slate-100">
+    <main style={vars} className="flex min-h-svh flex-col bg-slate-100 lg:h-svh lg:overflow-hidden">
       {/* Kopfzeile */}
       <header className="flex items-center gap-3 px-4 py-2" style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)" }}>
         {state.branding.hasLogo && (
@@ -465,8 +465,12 @@ export function KidStudio({ code }: { code: string }) {
         </div>
       </header>
 
+      {/* Breite Geräte (Tablet quer, Laptop): Spiel links im Rahmen über die volle Höhe, Bedienung
+          rechts daneben — so verdeckt die Eingabe nichts und im Spiel muss niemand scrollen.
+          Schmale Geräte: wie bisher untereinander. */}
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       {/* Spiel */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 lg:m-3 lg:overflow-hidden lg:rounded-2xl lg:border-2 lg:border-slate-300 lg:bg-white lg:shadow-md">
         <iframe
           key={iframeKey}
           ref={frameRef}
@@ -520,7 +524,7 @@ export function KidStudio({ code }: { code: string }) {
       </div>
 
       {/* Eingabe */}
-      <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <footer className="space-y-2 border-t bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:w-[23rem] lg:shrink-0 lg:space-y-3 lg:overflow-y-auto lg:border-l lg:border-t-0 lg:p-4 xl:w-[26rem]">
         {feedback && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">{feedback}</p>}
         {geradeGebaut && state.herkunft && state.herkunft.ki.length > 0 && (
           <div className="rounded-lg border-2 border-slate-200 px-3 py-2 text-sm">
@@ -538,13 +542,13 @@ export function KidStudio({ code }: { code: string }) {
           </p>
         )}
         {state.hilfen.chips && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-visible">
             {state.chips.map((chip) => (
               <button
                 key={chip}
                 onClick={() => setText((t) => (t ? t.replace(/⏳.*$/, "").trim() + " — " + chip : chip))}
                 disabled={baut}
-                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
+                className="whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-semibold disabled:opacity-40 lg:whitespace-normal lg:text-left"
                 style={{ borderColor: "var(--s45-primary-text)", color: "var(--s45-primary-text)" }}
               >
                 {chip}
@@ -552,7 +556,7 @@ export function KidStudio({ code }: { code: string }) {
             ))}
           </div>
         )}
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2 lg:flex-wrap">
           <button
             onClick={toggleMic}
             disabled={baut}
@@ -579,18 +583,17 @@ export function KidStudio({ code }: { code: string }) {
                   ? "Sprecht jetzt …"
                   : state.texte.eingabeHinweis
             }
-            className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+            className="flex-1 resize-none border-2 border-slate-200 p-3 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400 min-h-[var(--s45-knopf)] lg:order-first lg:min-h-40 lg:basis-full"
             style={{
               borderColor: !baut && promptText ? "var(--s45-primary-text)" : undefined,
               borderRadius: "var(--s45-radius)",
               fontSize: "var(--s45-schrift)",
-              minHeight: "var(--s45-knopf)",
             }}
           />
           <button
             onClick={submit}
             disabled={!canSend}
-            className="shrink-0 px-5 text-lg font-black shadow disabled:opacity-40"
+            className="shrink-0 px-5 text-lg font-black shadow disabled:opacity-40 lg:flex-1"
             style={{ background: "var(--s45-accent)", color: "var(--s45-auf-accent)", height: "var(--s45-knopf)", borderRadius: "var(--s45-radius)" }}
           >
             {baut || coachLaeuft ? "…" : state.texte.bauKnopf}
@@ -621,6 +624,7 @@ export function KidStudio({ code }: { code: string }) {
           </button>
         )}
       </footer>
+      </div>
 
       {/* Formulierungshilfe: der eigene Wunsch und eine genauere Fassung im Vergleich */}
       {coachVorschlag && (

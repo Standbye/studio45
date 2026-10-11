@@ -26,6 +26,9 @@ Prompt oder im Wunsch der Klasse steht.
 - Kein `alert()`, `confirm()`, `prompt()`.
 - Grafik selbst erzeugen: Canvas, CSS, inline-SVG oder data-URL. Töne mit der Web Audio API.
 - Das Spiel muss sich an die Fenstergröße anpassen und auf ein `resize` reagieren.
+  Alles Spielbare und alle Knöpfe passen **ohne Scrollen** in den Rahmen — auch wenn er
+  niedrig ist (z. B. 700 × 500). Keine festen Pixelhöhen, die über den Rahmen hinausragen;
+  `html, body { margin: 0; height: 100%; overflow: hidden; }`.
 - Touch **und** Maus bedienen: `pointerdown`/`pointerup` oder `touchstart` parallel zu
   `mousedown`. Tastatur höchstens als Zugabe, nie als einziger Weg.
 - Robust bleiben: kein `throw` ohne Auffangnetz. Ein Fehler in einem Detail darf nie den
