@@ -129,6 +129,37 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
       4. Team-Check: dritte Frage aus dem Fokus des Tages (optional, klein).
       Zu klären mit Peter: Soll die Karte dauerhaft sichtbar sein oder einklappbar? Titel/Mottos
       liegen bei Codex (`workshop-days.ts` in dessen Baum) — Quelle vor dem Bau abstimmen.
+- [ ] **Spiele dürfen aufwändiger werden — lieber gute Ergebnisse als sparsame** (Peter,
+      2026-10-11). Befund: Tokens begrenzen nichts (Obergrenze 32.000 Ausgabe-Tokens, echte Bauten
+      liegen bei 7.000–13.500; Wunsch bis 4.000 Zeichen). Klein gehalten werden die Spiele durch
+      die Anweisungen: (a) Tagesfokus-Texte mit Verboten („sehr einfacher Aufbau", „keine Levels",
+      „keine Punkte — das ist Tag 4", obwohl Tag 4 inzwischen Test-Tag ist; Tag 2 verbietet
+      Tastatur), (b) Grundschul-Block „eine Regel, keine Kombinationen", (c) Kern „lieber kleiner
+      und rund", (d) enger Spielraum (Stufe 4–5) baut bewusst schlicht. Vorschlag:
+      1. Tagesfokus von Verbot auf Vorrang umstellen: Was die Gruppe ausdrücklich verlangt, wird
+         gebaut; der Fokus bestimmt nur, was die KI von sich aus ergänzt. Veraltete Verweise
+         (Tag 4 = Punkte/Levels) bereinigen.
+      2. Grundschul-Block: „eine Regel" als Startpunkt, nicht als Deckel — ausdrücklich
+         gewünschte Erweiterungen (Leben, Gegner, Stufen) sind erlaubt.
+      3. Einstellung „Gründlichkeit" an der KI-Verbindung (Admin): normal / hoch — gibt dem
+         Modell mehr Denkaufwand mit. Kostet Tokens und Wartezeit, deshalb abschaltbar.
+      4. Token-Budget prüfen: Standard 2 Mio. je Workshop reicht bei wachsenden Spielen nur für
+         rund 100 Bauten (5 Gruppen × 5 Termine × 4 Versuche liegen genau dort).
+      Größerer Hebel, schon unter „Harness" notiert: Selbstprüfung gegen den Wunsch nach dem Bau.
+- [ ] **Mehr Unterstützung für die Kleinen** (Peter, 2026-10-11; Ideen, Auswahl offen):
+      1. **Vorlesen:** Lautsprecher-Knopf an Fokus, Vorschlägen, Rückmeldung und „Das hat die KI
+         ergänzt" (Sprachausgabe des Geräts, kostet nichts). Erst- und Zweitklässler lesen noch
+         nicht sicher.
+      2. **Antippen statt Tippen:** Bei kargem Wunsch stellt die Formulierungshilfe eine Rückfrage
+         mit zwei bis drei antippbaren Antworten („Was passiert, wenn man verliert?") statt einen
+         fertigen Satz vorzuschlagen — die Entscheidung bleibt beim Kind.
+      3. **„Das ist neu — probiert das aus":** Nach jedem Bau zwei, drei Sätze, was sich geändert
+         hat und was die Gruppe jetzt testen soll (aus dem Steckbrief).
+      4. **„Etwas geht nicht":** geführte Fehlermeldung mit Auswahl (Knopf reagiert nicht / Figur
+         hängt / zu schwer …) statt „es passiert nichts".
+      5. **Einen Schritt zurück** für die Gruppe selbst (Snapshots gibt es, bisher nur für die
+         Lehrkraft).
+      Nicht bauen: fertige Spielvorlagen zum Anklicken (nimmt die eigene Idee), Avatare/Belohnungen.
 - [ ] **Für Codex (Material), Lernfall:** Der Auftrag hat jetzt fünf Regeln (faule Äpfel), der
       Ablauf läuft über die Geräte der Gruppen und die Stufen der Lehrkraft, nicht mehr über
       einen QR-Code — falls das Material den Lernfall erwähnt, bitte daran ausrichten.
