@@ -235,6 +235,20 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
+- [ ] **Konzept liegt im Repo** (2026-10-19): Peters Rebuild-Spezifikation vom 9.10. steht in
+      `docs/konzept.md`, vorneweg ein Abgleich mit dem gebauten Stand. Daraus offen:
+      - Spracheingabe: kein Hinweis im Kinder-Studio, dass das Audio in Chrome an Google und
+        in Safari an Apple geht; der Elternbrief verspricht „keine persönlichen Daten“.
+        Hinweis einbauen oder lokale Spracherkennung — Entscheidung Peter.
+      - Streaming der Generierung (Abschnitt 9, Punkt 2) ist nicht gebaut; das Studio fragt
+        alle 4 s nach und zeigt erst das geprüfte Spiel. Bewusst so lassen?
+      - Thementafel 1 heißt im Produkt „Die KI ist ein Werkzeug — kein Mensch“, im Konzept
+        „Die KI klingt immer sicher, auch wenn sie falsch liegt“. Welcher Titel soll gelten?
+      - Codex als MCP-Server und `reviews/`-Verzeichnis (Abschnitt 10) sind nicht
+        eingerichtet; Codex arbeitet heute im eigenen Worktree am Material.
+      - Pressetermin: Konzept sagt 04.08.2026, Pilot-Chat 10.07.2026.
+      Der Folienplan für das Symposium am 14.11.2026 liegt außerhalb des Repos in
+      `~/coding/studio45-vortrag/folienplan.md` (enthält Namen).
 - [ ] **Echte Spiel-Generierung testen** — Verbindung mit gültigem Schlüssel im Admin anlegen,
       `Testen` drücken, dann in einer Gruppe wirklich bauen lassen. Bisher ist der Weg nur
       bis zum Anbieter verifiziert (korrekter 401 mit Dummy-Schlüssel), nie mit echtem Ergebnis.
