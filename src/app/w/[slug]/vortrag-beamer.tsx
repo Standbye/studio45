@@ -1,5 +1,6 @@
 import "@fontsource-variable/montserrat";
 import { supportProfil, wirksameStufen } from "@/lib/audience";
+import { VORTRAG } from "@/lib/vortrag";
 
 /**
  * Beamer-Seite im Vortrags-Design (Workshop-Einstellung „Vortrag“): weißer Grund, rote
@@ -8,9 +9,7 @@ import { supportProfil, wirksameStufen } from "@/lib/audience";
  * gestellt, die Stufe kommt aus dem tatsächlich eingestellten Spielraum der Gruppe.
  */
 
-const ROT = "#B30000";
-const LINIE = "#F2D9D9";
-const GRAU = "#8F6F6F";
+const { rot: ROT, linie: LINIE, grau: GRAU } = VORTRAG;
 
 type Gruppe = { id: string; index: number; code: string; studioName: string; supportLevel: number | null; helpLevel: number | null };
 type Props = {

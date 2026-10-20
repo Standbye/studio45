@@ -241,7 +241,10 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       die Spielraum-Angabe kommt aus dem eingestellten Regler der Gruppe. Merksatz geteilt in
       leisen und kräftigen Teil. Standard bleibt das bisherige Design. Migration
       `20261020200000_beamer_stil` (ADD COLUMN), Schrift selbst gehostet
-      (`@fontsource-variable/montserrat`). Noch nicht deployt.
+      (`@fontsource-variable/montserrat`). Deployt 2026-10-20, `v1.1.0-42-g8bbf7ea`.
+- [x] **Design „Vortrag“ auch im Gruppen-Studio** — dieselbe Einstellung (Reiter Branding,
+      jetzt „Design“) färbt die Studios Rot-Weiß mit Montserrat und kantigeren Ecken; Größen
+      bleiben die der Altersstufe. Gemeinsame Werte in `src/lib/vortrag.ts`. Noch nicht deployt.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 

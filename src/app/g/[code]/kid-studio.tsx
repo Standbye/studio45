@@ -1,5 +1,6 @@
 "use client";
 
+import "@fontsource-variable/montserrat";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
 import { diktatSitzung } from "@/lib/diktat";
@@ -74,6 +75,8 @@ type KidState = {
     accentText: string;
     primaryDunkel: string;
     hasLogo: boolean;
+    /** Eigene Schrift des Workshop-Designs (z. B. „Vortrag“), sonst die Kinderschrift */
+    schrift: string | null;
   };
 };
 
@@ -347,7 +350,7 @@ export function KidStudio({ code }: { code: string }) {
   }
 
   const vars = {
-    fontFamily: "var(--font-kind)",
+    fontFamily: state.branding.schrift ?? "var(--font-kind)",
     "--s45-primary": state.branding.primary,
     "--s45-accent": state.branding.accent,
     "--s45-auf-primary": state.branding.aufPrimary,

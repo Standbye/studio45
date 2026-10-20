@@ -8,6 +8,7 @@ import { LERNFALL, fassungZurStufe, leseBefunde, loesung } from "@/lib/lernfall"
 import { dayMotto, dayTitle } from "@/lib/prompts";
 import { alterProfil, hilfeProfil, wirksameStufen } from "@/lib/audience";
 import { farbschema } from "@/lib/kontrast";
+import { VORTRAG, istVortrag } from "@/lib/vortrag";
 import { energieVergleich, euroKosten, euroText, wattstunden } from "@/lib/verbrauch";
 
 export const dynamic = "force-dynamic";
@@ -84,7 +85,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     phase: w.phase,
     locked: group.locked,
     ageGroup: w.ageGroup,
-    optik: alterProfil(w.ageGroup).optik,
+    // Design „Vortrag“: kantiger und in Montserrat, Größen bleiben die der Altersstufe
+    optik: istVortrag(w.beamerStil) ? { ...alterProfil(w.ageGroup).optik, radius: VORTRAG.radius } : alterProfil(w.ageGroup).optik,
     texte: alterProfil(w.ageGroup).texte,
     // Satzanfänge hängen am Schwerpunkt des Termins, nicht an seiner Nummer — im 3-Termine-Format
     // ist der dritte Termin „Fertigmachen", nicht „Hübsch & Hörbar".
@@ -133,8 +135,10 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     branding: {
       // Textfarben werden aus den Marken-Farben berechnet — sonst wird bei
       // hellen Tönen (z. B. Weiß) weiße Schrift unsichtbar.
-      ...farbschema(w.colorPrimary, w.colorAccent),
+      // Design „Vortrag“ ersetzt die Markenfarben durch Rot-Weiß wie auf den Folien.
+      ...(istVortrag(w.beamerStil) ? farbschema(VORTRAG.rot, VORTRAG.rot) : farbschema(w.colorPrimary, w.colorAccent)),
       hasLogo: Boolean(w.logoPath),
+      schrift: istVortrag(w.beamerStil) ? VORTRAG.schrift : null,
     },
   });
 }

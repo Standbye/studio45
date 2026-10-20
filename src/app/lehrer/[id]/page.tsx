@@ -460,13 +460,13 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                 <input type="hidden" name="workshopId" value={w.id} />
                 <FarbVorschau primary={w.colorPrimary} accent={w.colorAccent} />
                 <div className="space-y-2">
-                  <Label htmlFor="beamerStil">Beamer-Seite</Label>
+                  <Label htmlFor="beamerStil">Design</Label>
                   <Auswahl id="beamerStil" name="beamerStil" wert={w.beamerStil} className="h-9 w-full max-w-sm rounded-md border bg-transparent px-3 text-sm">
                     <option value="">Markenfarben (Standard)</option>
-                    <option value="vortrag">Vortrag: Rot-Weiß, für Erwachsene</option>
+                    <option value="vortrag">Vortrag: Rot-Weiß für Veranstaltungen</option>
                   </Auswahl>
                   <p className="text-xs text-muted-foreground">
-                    „Vortrag“ passt zu den Folien für Veranstaltungen: weißer Grund, rote Schrift, Gruppen nach Spielraum sortiert.
+                    „Vortrag“ passt zu den Folien für Veranstaltungen und ersetzt die Markenfarben: Beamer-Seite und Gruppen-Studios in Rot-Weiß mit Montserrat, auf dem Beamer die Gruppen nach Spielraum sortiert.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-end gap-6">
