@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SpeichernKnopf } from "@/components/speichern-knopf";
 import { Auswahl } from "@/components/auswahl";
+import { WorkshopZuruecksetzen } from "./workshop-zuruecksetzen";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -419,6 +420,19 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                 </div>
                 <SpeichernKnopf>Speichern</SpeichernKnopf>
               </form>
+            </CardContent>
+          </Card>
+          <Card className="mt-4 border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base">Workshop zurücksetzen</CardTitle>
+              <CardDescription>
+                Für einen frischen Start, etwa nach dem Ausprobieren: Spiele, Verläufe und Versuche aller Gruppen werden
+                gelöscht, der Workshop steht wieder auf Tag 1 im Plenum. Gruppen, QR-Codes, Regler und Einstellungen bleiben.
+                Der bisherige Token-Verbrauch bleibt im Budget stehen.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WorkshopZuruecksetzen workshopId={w.id} name={w.name} />
             </CardContent>
           </Card>
         </TabsContent>

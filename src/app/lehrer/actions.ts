@@ -9,7 +9,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { dataPath } from "@/lib/env";
-import { restoreSnapshot } from "@/lib/games";
+import { restoreSnapshot, wipeGroupGame } from "@/lib/games";
 import { leereBefunde, stufenName } from "@/lib/lernfall";
 
 /** Mandanten-Isolation: Workshop nur, wenn er der angemeldeten Lehrkraft gehört. */
@@ -67,6 +67,37 @@ export async function resetLernfallBefundeAction(formData: FormData): Promise<vo
   await db.group.updateMany({ where: { workshopId: workshop.id }, data: { lernfallBefunde: leereBefunde() } });
   await audit(user.id, "workshop.lernfall-reset", workshop.name);
   revalidatePath(`/lehrer/${workshop.id}/lernfall`);
+}
+
+/**
+ * Workshop zurücksetzen, z. B. nach dem Ausprobieren: Spiele, Verläufe, Versuche,
+ * Director's Cut und Lernfall-Prüflisten aller Gruppen weg, zurück auf Tag 1 im Plenum.
+ * Gruppen mit Namen, Codes (QR-Blätter bleiben gültig) und Reglern bleiben, ebenso alle
+ * Einstellungen. Der Token-Verbrauch bleibt stehen: Er ist echt angefallen und gehört
+ * zum Budget, das der Admin vorgibt.
+ */
+export async function resetWorkshopAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  const groups = await db.group.findMany({ where: { workshopId: workshop.id }, select: { id: true, generating: true } });
+  if (groups.some((g) => g.generating)) throw new Error("Gerade baut eine Gruppe — bitte warten, bis der Bau fertig ist.");
+
+  const ids = groups.map((g) => g.id);
+  await db.$transaction([
+    db.promptLog.deleteMany({ where: { groupId: { in: ids } } }),
+    db.snapshot.deleteMany({ where: { groupId: { in: ids } } }),
+    db.group.updateMany({
+      where: { workshopId: workshop.id },
+      data: {
+        genUsed: 0, genBonus: 0, lastGenAt: null, generating: false, generatingSince: null, locked: false,
+        dcSpec: "", dcStatus: "", dcHinweis: "", lernfallBefunde: "",
+      },
+    }),
+    db.workshop.update({ where: { id: workshop.id }, data: { currentDay: 1, phase: "PLENUM", lernfallStufe: 0 } }),
+  ]);
+  for (const id of ids) wipeGroupGame(id);
+
+  await audit(user.id, "workshop.reset", workshop.name);
+  revalidatePath(`/lehrer/${workshop.id}`);
 }
 
 /** Neue Schulstunde: setzt die Generierungs-Kontingente aller Gruppen zurück. */
