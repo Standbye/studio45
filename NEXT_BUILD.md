@@ -244,12 +244,12 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       (`@fontsource-variable/montserrat`). Deployt 2026-10-20, `v1.1.0-42-g8bbf7ea`.
 - [x] **Design „Vortrag“ auch im Gruppen-Studio** — dieselbe Einstellung (Reiter Branding,
       jetzt „Design“) färbt die Studios Rot-Weiß mit Montserrat und kantigeren Ecken; Größen
-      bleiben die der Altersstufe. Gemeinsame Werte in `src/lib/vortrag.ts`. Noch nicht deployt.
+      bleiben die der Altersstufe. Gemeinsame Werte in `src/lib/vortrag.ts`. Deployt 2026-10-20, `v1.1.0-44-g40b122b`.
 - [x] **Workshop zurücksetzen** (Reiter Einstellungen, mit Rückfrage) — löscht Spiele,
       Verläufe, Versionen, Versuche, offene Director's Cuts und Lernfall-Prüflisten aller
       Gruppen, setzt auf Tag 1 / Plenum / Lernfall aus. Gruppen, Codes, Regler, Einstellungen
       bleiben; Token-Verbrauch bleibt im Budget (Admin-Grenze). Abgewiesen, solange eine
-      Gruppe baut. Noch nicht deployt.
+      Gruppe baut. Deployt 2026-10-20, `v1.1.0-44-g40b122b`.
 
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
