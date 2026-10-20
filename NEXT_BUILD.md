@@ -61,7 +61,7 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Zeit und Versuche. Aber auch nicht alles auf einmal durchplanen. Zusammengehöriges darf in
   einen Wunsch; testen und wiederholen ist ausdrücklich erlaubt, ein misslungener Bau kostet
   eine Minute. Im Symposium-Deck sind die Regeln deshalb jetzt „Sagen Sie, was Sie wollen /
-  Genug planen, aber nicht zu viel / Testen und wiederholen“.
+  Bündeln, was zusammengehört (nicht jede Kleinigkeit einzeln) / Testen und wiederholen“.
   Widerspricht heute noch dem Produkt:
   - Druckbogen „KI-Tipps“ (`src/lib/materials.tsx`, Codex-Bereich): Regel „Ein Wunsch nach
     dem anderen. Fünf Sachen auf einmal gehen schief. Baut Schritt für Schritt“.
@@ -70,6 +70,22 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Anknüpfungspunkte: Formulierungshilfe/Coach (bündeln statt zerlegen), Tagesfokus-Texte,
   Versuchskontingent als Grund fürs Bündeln erklären. Umsetzung nur auf Ansage; Material über
   Codex.
+
+## Messung 2026-10-20: Bauzeit unter Symposium-Bedingungen
+
+Workshop KÖB (Oberstufe, Spielraum 1–5 je Paar, Gründlichkeit hoch, `openai/gpt-6-luna`
+über OpenRouter), 10 Gruppen gleichzeitig, gestaffelt 0–8 s, Treiber `scripts/lasttest.ts`:
+- **Erstbau:** 10/10 ok, 82–155 s, Median 115 s. Je weiter der Spielraum, desto länger
+  (Stufe 1: 106 und 155 s, Stufe 5: 82 und 99 s).
+- **Änderungswunsch:** 10/10 ok, 61–105 s, Median rund 76 s.
+- Server: CPU-Spitze 28 %, 217 MiB, Kinder-App p95 174 ms, 0 Fehler.
+- Verbrauch 20 Bauten: 121.120 Tokens rein, 241.311 raus (laut hinterlegten Preisen ≈ 0,13 €).
+- Folge: „Die KI baut in einer Minute“ stimmt nicht mehr; Deck sagt jetzt „rund zwei
+  Minuten“. In 10-Minuten-Runden sind 2–3 Bauten pro Gruppe realistisch. Bei der
+  Denkpause von 60 s wurden in Runde 2 fünf Gruppen korrekt abgewiesen (Pause zählt ab
+  Bauende).
+- KÖB danach zurückgesetzt (wie der Reset-Knopf). Gruppen 1A/1B auf Spielraum 1 und 4A/4B
+  auf 4 gesetzt — sie hatten keinen eigenen Wert und liefen mit dem Standard 2.
 
 ## Offen nach dem Bau vom 2026-10-10
 
