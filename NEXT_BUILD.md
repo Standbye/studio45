@@ -56,6 +56,21 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Migrationspfad. Offener Punkt: Die ursprüngliche Ideensammlung, aus der Studio45 gebaut
   wurde, liegt bisher nicht im Repo.
 
+- **Ausgleich zwischen zu viel und zu wenig Planung** (Peter, 2026-10-20, „WICHTIG für das
+  ganze Projekt und für die Kinder“) — Nicht jede Kleinigkeit einzeln losschicken: Das kostet
+  Zeit und Versuche. Aber auch nicht alles auf einmal durchplanen. Zusammengehöriges darf in
+  einen Wunsch; testen und wiederholen ist ausdrücklich erlaubt, ein misslungener Bau kostet
+  eine Minute. Im Symposium-Deck sind die Regeln deshalb jetzt „Sagen Sie, was Sie wollen /
+  Genug planen, aber nicht zu viel / Testen und wiederholen“.
+  Widerspricht heute noch dem Produkt:
+  - Druckbogen „KI-Tipps“ (`src/lib/materials.tsx`, Codex-Bereich): Regel „Ein Wunsch nach
+    dem anderen. Fünf Sachen auf einmal gehen schief. Baut Schritt für Schritt“.
+  - Bugreport-Karte: Ursache „Der Wunsch war zu groß — mehrere Dinge auf einmal.“
+  - Konzept Abschnitt 6 nennt „eine Änderung pro Wunsch“ als Handout-Regel.
+  Anknüpfungspunkte: Formulierungshilfe/Coach (bündeln statt zerlegen), Tagesfokus-Texte,
+  Versuchskontingent als Grund fürs Bündeln erklären. Umsetzung nur auf Ansage; Material über
+  Codex.
+
 ## Offen nach dem Bau vom 2026-10-10
 
 - [x] **Deploy der Isolation** (2026-10-11, Stand `v1.1.0-15-g91c4a7a`): Server-Override um
