@@ -459,6 +459,16 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
               <form action={updateBrandingAction} className="space-y-4">
                 <input type="hidden" name="workshopId" value={w.id} />
                 <FarbVorschau primary={w.colorPrimary} accent={w.colorAccent} />
+                <div className="space-y-2">
+                  <Label htmlFor="beamerStil">Beamer-Seite</Label>
+                  <Auswahl id="beamerStil" name="beamerStil" wert={w.beamerStil} className="h-9 w-full max-w-sm rounded-md border bg-transparent px-3 text-sm">
+                    <option value="">Markenfarben (Standard)</option>
+                    <option value="vortrag">Vortrag: Rot-Weiß, für Erwachsene</option>
+                  </Auswahl>
+                  <p className="text-xs text-muted-foreground">
+                    „Vortrag“ passt zu den Folien für Veranstaltungen: weißer Grund, rote Schrift, Gruppen nach Spielraum sortiert.
+                  </p>
+                </div>
                 <div className="flex flex-wrap items-end gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="logo">Logo (max. 4 MB)</Label>

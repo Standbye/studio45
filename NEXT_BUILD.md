@@ -233,6 +233,16 @@ Director's Cut), kein RAG. Der Harness bleibt ein handgeschriebener Loop.
       (2026-08-05); das `latest`-GHCR-Image stammt aber noch von v1.0.1. Ein neues
       Release (Tag + Changelog) erst auf Peters Ansage.
 
+## Erledigt (gebaut am 2026-10-20)
+
+- [x] **Beamer-Seite im Vortrags-Design** — Workshop-Einstellung im Reiter Branding
+      („Beamer-Seite: Vortrag“): weißer Grund, Rot, Montserrat Ultra-Thin/Fett wie die
+      Symposium-Folien. Heißen die Gruppen „1A …“, „1B …“, stehen sie nach Stufe in Spalten,
+      die Spielraum-Angabe kommt aus dem eingestellten Regler der Gruppe. Merksatz geteilt in
+      leisen und kräftigen Teil. Standard bleibt das bisherige Design. Migration
+      `20261020200000_beamer_stil` (ADD COLUMN), Schrift selbst gehostet
+      (`@fontsource-variable/montserrat`). Noch nicht deployt.
+
 ## Offen bei Peter (Entscheidung oder Zugang nötig)
 
 - [ ] **Konzept liegt im Repo** (2026-10-19): Peters Rebuild-Spezifikation vom 9.10. steht in

@@ -181,10 +181,12 @@ export async function updateBrandingAction(formData: FormData): Promise<void> {
   const schema = z.object({
     colorPrimary: z.string().regex(/^#[0-9a-fA-F]{6}$/),
     colorAccent: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    beamerStil: z.enum(["", "vortrag"]).catch(""),
   });
   const colors = schema.parse({
     colorPrimary: formData.get("colorPrimary"),
     colorAccent: formData.get("colorAccent"),
+    beamerStil: formData.get("beamerStil") ?? "",
   });
   const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
 

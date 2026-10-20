@@ -115,6 +115,8 @@ model Workshop {
   colorPrimary String @default("#1d4e89")
   colorAccent  String @default("#c9a24b")
   logoPath     String @default("")
+  /// Gestaltung der Beamer-Seite: "" = Markenfarben, "vortrag" = Rot-Weiß für Vorträge vor Erwachsenen
+  beamerStil   String @default("")
 
   archived  Boolean  @default(false)
   createdAt DateTime @default(now())

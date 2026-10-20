@@ -6,6 +6,7 @@ import { dayMotto, dayTitle } from "@/lib/prompts";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { farbschema } from "@/lib/kontrast";
 import { fokusProfil } from "@/lib/tagesfokus";
+import { VortragBeamer } from "./vortrag-beamer";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,15 @@ export default async function WorkshopStartPage({ params }: PageProps<"/w/[slug]
       QRCode.toDataURL(`${BASE_URL}/g/${g.code}`, { errorCorrectionLevel: "H", margin: 1, width: 400 })
     )
   );
+
+  if (w.beamerStil === "vortrag") {
+    return (
+      <>
+        <AutoRefresh seconds={30} />
+        <VortragBeamer workshop={w} gruppen={w.groups} qr={qr} merksatz={dayMotto(w.currentDay, w.totalDays)} />
+      </>
+    );
+  }
 
   // Schrift- und Verlaufsfarben aus der Markenfarbe ableiten — bei hellen
   // Tönen wäre weiße Schrift auf hellem Grund unlesbar.
