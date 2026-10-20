@@ -61,7 +61,7 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Zeit und Versuche. Aber auch nicht alles auf einmal durchplanen. Zusammengehöriges darf in
   einen Wunsch; testen und wiederholen ist ausdrücklich erlaubt, ein misslungener Bau kostet
   eine Minute. Im Symposium-Deck sind die Regeln deshalb jetzt „Sagen Sie, was Sie wollen /
-  Bündeln statt kleckern (was zusammengehört, in einen Wunsch) / Testen und wiederholen“.
+  Kein Marathon, nur eine Etappe – aber auch kein Stop & Go / Testen und wiederholen“.
   Widerspricht heute noch dem Produkt:
   - Druckbogen „KI-Tipps“ (`src/lib/materials.tsx`, Codex-Bereich): Regel „Ein Wunsch nach
     dem anderen. Fünf Sachen auf einmal gehen schief. Baut Schritt für Schritt“.
