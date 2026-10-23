@@ -6,7 +6,9 @@ import crypto from "node:crypto";
 export const BASE_URL = (process.env.BASE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 /** Datenverzeichnis (Volume im Container): SQLite, Spiele, Snapshots, Logos. */
-export const DATA_DIR = path.resolve(process.env.DATA_DIR ?? "./data");
+// turbopackIgnore: Das Datenverzeichnis liegt erst zur Laufzeit fest; sonst würde der Build
+// das ganze Projekt als Server-Abhängigkeit einpacken (Warnung seit Next 16.4).
+export const DATA_DIR = path.resolve(/*turbopackIgnore: true*/ process.env.DATA_DIR ?? "./data");
 
 export function dataPath(...segments: string[]): string {
   const p = path.join(/*turbopackIgnore: true*/ DATA_DIR, ...segments);

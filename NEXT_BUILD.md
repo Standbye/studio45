@@ -71,6 +71,21 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Versuchskontingent als Grund fürs Bündeln erklären. Umsetzung nur auf Ansage; Material über
   Codex.
 
+## Erledigt (2026-10-23): Sicherheitsupdate der Abhängigkeiten
+
+- [x] `npm audit fix` vom täglichen Sicherheitscheck (Branch `claude/security-2026-10-21`)
+      übernommen, **`next` 16.3.0 → 16.4.2** (kritische RCE-Lücken im Bild-Optimierer, in
+      `use cache` und `next/og`; Next stand fest auf 16.3.0, daher half audit fix nicht),
+      `eslint-config-next` mit, `shadcn` (nur CLI) zu den devDependencies. `npm audit --omit=dev`:
+      24 → 0. Next 16.4 warnt bei dynamischem Dateizugriff → `turbopackIgnore` an `DATA_DIR`
+      in `src/lib/env.ts` (sonst landet das ganze Projekt im Standalone-Server).
+      Lokal geprüft: tsc, Build, Beamer, Lehrerbereich, Material, Kinder-Studio, Bau mit Mock,
+      Produktions-Build ohne Konsolenfehler im Studio. Noch nicht deployt.
+- [ ] **Für Codex (Druck):** Die Druckseiten (`/druck/[id]/[blatt]`) werfen im Browser einen
+      Hydration-Fehler (React #418): `MaterialBlatt` rendert ein eigenes `<html>`/`<head>`
+      innerhalb des Root-Layouts. Besteht schon mit Next 16.3 (verglichen), kein Folgefehler
+      des Updates; die Seiten werden trotzdem angezeigt.
+
 ## Messung 2026-10-20: Bauzeit unter Symposium-Bedingungen
 
 Workshop KÖB (Oberstufe, Spielraum 1–5 je Paar, Gründlichkeit hoch, `openai/gpt-6-luna`
