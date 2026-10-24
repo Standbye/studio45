@@ -41,6 +41,13 @@
 - **6, Materialien:** Gebaut sind 12 Druckbögen: Rollenkarten, Laufplan, KI-Tipps, Thementafeln, QR-Blätter, Lehrer-Laufzettel, Stundenverlauf, Testbogen, Bugreport-Karten, Ich-kann-Bogen, Elternbrief, Urkunden. Die „Checkliste vor der Stunde“ aus Abschnitt 6 ist der Laufzettel.
 - **2, Pressetermin:** Der Text nennt den 04.08.2026 (das ist das Datum von v1.0.0). Nach dem Pilot-Chat war der letzte Termin mit Presse, Urkunden und begehbarer Lindenschule am 10.07.2026. Welches Datum stimmt, muss Peter sagen.
 
+### Korrektur am Text (Peter, 2026-10-24)
+
+- **11, „ein Gegenüber, das exakt das macht, was man sagt“:** stimmt so nicht. Die KI deutet,
+  füllt Lücken (wie stark, stellt der Regler „Spielraum der KI“ ein) und übergeht manchmal etwas,
+  während sie sicher klingt. Gültige Fassung: **„Was Sie nicht sagen, entscheidet die KI.“** Der
+  Kern bleibt: Ungenauigkeit wird am Ergebnis sichtbar, ohne dass eine Lehrkraft sie erklären muss.
+
 ### Noch offen, wie im Text beschrieben
 
 - **7, Spracheingabe:** Das Kinder-Studio zeigt keinen Hinweis darauf, dass das Audio in Chrome an Google und in Safari an Apple geht. Der Elternbrief verspricht „keine Namen, Fotos oder persönlichen Daten“. Der Widerspruch besteht also weiter (gesammelt in `NEXT_BUILD.md`).
