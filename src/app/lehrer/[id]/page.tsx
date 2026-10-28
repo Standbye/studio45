@@ -15,6 +15,8 @@ import {
   setLernfallStufeAction,
   toggleLockAction,
   updateBrandingAction,
+  vertretungAnAction,
+  vertretungAusAction,
   updateSettingsAction,
 } from "../actions";
 import { Badge } from "@/components/ui/badge";
@@ -433,6 +435,38 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                 </div>
                 <SpeichernKnopf>Speichern</SpeichernKnopf>
               </form>
+            </CardContent>
+          </Card>
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="text-base">Zugang für eine Vertretung</CardTitle>
+              <CardDescription>
+                Ein Link, mit dem eine Kollegin oder ein Kollege ohne eigenes Konto die Stunde steuert: Phase und Tag
+                schalten, Geräte sperren, Versuche nachlegen. Einstellungen, KI-Anweisung, Branding und das
+                Zurücksetzen bleiben bei Ihnen. Ein neuer Link macht den alten sofort ungültig.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {w.vertretungsCode ? (
+                <>
+                  <Input readOnly value={`${BASE_URL}/v/${w.vertretungsCode}`} aria-label="Vertretungs-Link" className="font-mono text-xs" />
+                  <div className="flex flex-wrap gap-2">
+                    <form action={vertretungAnAction}>
+                      <input type="hidden" name="workshopId" value={w.id} />
+                      <Button type="submit" size="sm" variant="outline">Neuen Link erzeugen</Button>
+                    </form>
+                    <form action={vertretungAusAction}>
+                      <input type="hidden" name="workshopId" value={w.id} />
+                      <Button type="submit" size="sm" variant="outline">Link abschalten</Button>
+                    </form>
+                  </div>
+                </>
+              ) : (
+                <form action={vertretungAnAction}>
+                  <input type="hidden" name="workshopId" value={w.id} />
+                  <Button type="submit" size="sm">Vertretungs-Link erzeugen</Button>
+                </form>
+              )}
             </CardContent>
           </Card>
           <Card className="mt-4 border-destructive/40">

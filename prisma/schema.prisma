@@ -107,6 +107,9 @@ model Workshop {
   /// Spracheingabe: "" = an (auf dem Gerät, wenn der Browser es kann, sonst über den Sprachdienst
   /// des Browsers mit Hinweis), "lokal" = nur auf dem Gerät, "aus" = nur tippen
   spracheingabe     String  @default("")
+  /// Zugang für eine Vertretung ohne Konto: Link /v/<code> steuert nur die Stunde
+  /// (Tag, Phase, Versuche, Sperren) — keine Einstellungen, kein KI-Zugang. "" = aus.
+  vertretungsCode   String  @default("")
   tokenBudget       Int @default(2000000) // harte Obergrenze (Input+Output-Tokens)
   tokensUsed        Int @default(0)
 
@@ -124,6 +127,8 @@ model Workshop {
   archived  Boolean  @default(false)
   createdAt DateTime @default(now())
   groups    Group[]
+
+  @@index([vertretungsCode])
 }
 
 model Group {

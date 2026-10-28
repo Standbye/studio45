@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
+import { generateGroupCode } from "@/lib/codes";
 import { dataPath } from "@/lib/env";
 import { restoreSnapshot, wipeGroupGame } from "@/lib/games";
 import { leereBefunde, stufenName } from "@/lib/lernfall";
@@ -97,6 +98,24 @@ export async function resetWorkshopAction(formData: FormData): Promise<void> {
   for (const id of ids) wipeGroupGame(id);
 
   await audit(user.id, "workshop.reset", workshop.name);
+  revalidatePath(`/lehrer/${workshop.id}`);
+}
+
+/**
+ * Vertretungs-Link erzeugen (oder ersetzen): Der alte Link wird damit sofort ungültig.
+ * Wer den Link hat, steuert nur die Stunde — siehe lib/vertretung.
+ */
+export async function vertretungAnAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  await db.workshop.update({ where: { id: workshop.id }, data: { vertretungsCode: generateGroupCode() } });
+  await audit(user.id, "workshop.vertretung-an", workshop.name);
+  revalidatePath(`/lehrer/${workshop.id}`);
+}
+
+export async function vertretungAusAction(formData: FormData): Promise<void> {
+  const { user, workshop } = await ownWorkshop(String(formData.get("workshopId")));
+  await db.workshop.update({ where: { id: workshop.id }, data: { vertretungsCode: "" } });
+  await audit(user.id, "workshop.vertretung-aus", workshop.name);
   revalidatePath(`/lehrer/${workshop.id}`);
 }
 
