@@ -96,6 +96,12 @@ DB-Sicherung `/data/studio45.db.vor-deploy-2026-10-28a`.
       Hub, Lernfall, Studio, Spiel, Vertretung) ohne Fehlerseite, geschützte Bereiche leiten ohne
       Anmeldung auf den Login; Schritt zurück, Director's Cut (destillieren, bauen), Abbrechen ok.
       Nicht möglich: Spracheingabe mit echter Aufnahme (kein Mikrofon in der Testumgebung).
+- [x] **Spracheingabe: Fehler verständlich melden** — Live-Test 2026-10-28 im eingebauten Browser
+      (Mikrofon dort gesperrt) zeigte: Bei fehlender Mikrofon-Freigabe brach die Aufnahme bisher
+      kommentarlos ab. Jetzt erklärt das Studio, was los ist (nicht freigegeben, Dienst nicht
+      erreichbar, Deutsch auf dem Gerät nicht verfügbar, nichts gehört). Noch nicht deployt.
+- [ ] **Peter:** Spracheingabe einmal mit echter Aufnahme testen (iPad/Safari mit Hinweis,
+      aktuelles Chrome evtl. auf dem Gerät) — geht nur mit echtem Mikrofon.
 - Beobachtung: Der Vorschau-Server im Desktop-Werkzeug bleibt auf „startet“, weil `/` mit 307
       antwortet, und lädt die Seiten dabei immer wieder neu. Kein Studio45-Fehler; zum Testen den
       Produktions-Build nehmen.

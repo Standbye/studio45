@@ -102,6 +102,24 @@ const WARTE_SPRUECHE = [
   "Gleich könnt ihr testen!",
 ];
 
+/** Warum die Spracheingabe nicht klappt — in Worten, die eine Gruppe versteht. */
+function sprachFehlerText(fehler: string | undefined): string | null {
+  switch (fehler) {
+    case "not-allowed":
+    case "service-not-allowed":
+    case "audio-capture":
+      return "🎤 Das Mikrofon ist auf diesem Gerät nicht freigegeben. Erlaubt es in den Einstellungen des Browsers — oder tippt euren Wunsch einfach.";
+    case "network":
+      return "🎤 Die Spracherkennung ist gerade nicht erreichbar. Tippt euren Wunsch bitte, oder versucht es gleich noch einmal.";
+    case "language-not-supported":
+      return "🎤 Dieses Gerät kann Deutsch gerade nicht erkennen. Tippt euren Wunsch bitte.";
+    case "no-speech":
+      return "🎤 Wir haben nichts gehört. Tippt noch einmal aufs Mikrofon und sprecht etwas lauter.";
+    default:
+      return null; // „aborted“ u. a.: von uns selbst beendet, kein Hinweis nötig
+  }
+}
+
 /** Tokens getrennt nach Lesen (Eingabe) und Schreiben (Ausgabe) — wie die Spezifikation es verlangt */
 function TokenTeile({ gelesen, geschrieben }: { gelesen: number; geschrieben: number }) {
   if (gelesen + geschrieben <= 0) return null;
@@ -261,7 +279,11 @@ export function KidStudio({ code }: { code: string }) {
       // Was beim Stopp noch vorläufig war, bleibt stehen — die Gruppe hat es gesehen
       setText((prev) => prev.replace(/\s*⏳/, " ").trim() + " ");
     };
-    rec.onerror = () => setListening(false);
+    rec.onerror = (e: { error?: string }) => {
+      setListening(false);
+      const meldung = sprachFehlerText(e.error);
+      if (meldung) setFeedback(meldung);
+    };
     recRef.current = rec;
     setListening(true);
     rec.start();
