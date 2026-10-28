@@ -74,7 +74,8 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
 ## Erledigt (2026-10-28): Abgleich mit der Spezifikation (Peters Auftrag „optimiere nach den ursprünglichen Parametern“)
 
 Alle Abschnitte von `docs/konzept.md` gegen den Code geprüft; was fehlte oder abwich, ist gebaut
-und lokal (Produktions-Build) geprüft. Noch nicht deployt.
+und lokal (Produktions-Build) geprüft. **Deployt 2026-10-28, `v1.1.0-58-gf3000e8`** (Peters Freigabe),
+DB-Sicherung `/data/studio45.db.vor-deploy-2026-10-28a`.
 - [x] **Live-Baufortschritt** (Abschnitt 9.2 Streaming): plant / schreibt N Zeilen / prüft /
       repariert. `src/lib/baufortschritt.ts`, Stream-Rückruf in `rufeModell`.
 - [x] **Tokens getrennt** gelesen/geschrieben im Studio und im Gruppenverlauf, **Treppensteigen**
@@ -99,7 +100,8 @@ und lokal (Produktions-Build) geprüft. Noch nicht deployt.
       antwortet, und lädt die Seiten dabei immer wieder neu. Kein Studio45-Fehler; zum Testen den
       Produktions-Build nehmen.
 
-- [ ] **Für Codex (Material), aus dem Abgleich:**
+- [ ] **Für Codex (Material), aus dem Abgleich** — Peter 2026-10-28: Codex übernimmt das mit seiner
+      laufenden Material-Arbeit:
       - Elternbrief: Spracheingabe erwähnen (geht ohne Gerät-Erkennung an Google/Apple; Lehrkraft
         kann sie auf „nur auf dem Gerät“ oder „aus“ stellen).
       - KI-Tipps: Regel „Ein Wunsch nach dem anderen …“ widerspricht dem Leitgedanken „Kein
