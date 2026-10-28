@@ -88,6 +88,8 @@ und lokal (Produktions-Build) geprüft. Noch nicht deployt.
       (Abschnitt 5, Kernbotschaft). `src/lib/unklar.ts`.
 - [x] README (Vertretung, Live-Fortschritt, Spracheingabe, Zurücksetzen) und CHANGELOG
       „Unveröffentlicht“ (Abschnitt 9.10).
+- [x] `zod` 4.4.3 → 4.6.7 (neue Lücke: Speicher-Erschöpfung bei übergroßen Eingaben);
+      `npm audit --omit=dev` wieder 0.
 - Beobachtung: Der Vorschau-Server im Desktop-Werkzeug bleibt auf „startet“, weil `/` mit 307
       antwortet, und lädt die Seiten dabei immer wieder neu. Kein Studio45-Fehler; zum Testen den
       Produktions-Build nehmen.
