@@ -4,6 +4,7 @@ import "@fontsource-variable/montserrat";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
 import { diktatSitzung } from "@/lib/diktat";
+import { hinweisGesehen, lokalMoeglich, merkeHinweis, type SprachModus } from "@/lib/sprache";
 import { Vorlesen } from "./vorlesen";
 import { FehlerMelden } from "./fehler-melden";
 import { RueckfrageDialog } from "./rueckfrage";
@@ -36,7 +37,7 @@ type KidState = {
     tipp: string;
   };
   chips: string[];
-  hilfen: { chips: boolean; teamCheck: boolean; coachAbZeichen: number; vorlesen: boolean; fehlerMelden: boolean };
+  hilfen: { chips: boolean; teamCheck: boolean; coachAbZeichen: number; vorlesen: boolean; fehlerMelden: boolean; sprache: SprachModus };
   /** Worauf es heute ankommt — in der Sprache der Altersstufe */
   fokus: { heute: string; teamFrage: string };
   /** Aus dem Steckbrief: was der letzte Bau geändert hat und was die Gruppe testen soll */
@@ -49,10 +50,16 @@ type KidState = {
   generating: boolean;
   laufSekunden: number;
   dauerSchaetzung: number;
+  /** Live-Fortschritt des laufenden Baus (vom Server gestreamt) */
+  fortschritt: { phase: "plant" | "schreibt" | "prueft" | "repariert"; zeilen: number } | null;
   gameVersion: number;
   verbrauch: {
     gesamtTokens: number;
     letzterTokens: number;
+    gesamtIn: number;
+    gesamtOut: number;
+    letzterIn: number;
+    letzterOut: number;
     gesamtEuro: string | null;
     letzterEuro: string | null;
     energie: string[];
@@ -94,6 +101,33 @@ const WARTE_SPRUECHE = [
   "Gleich könnt ihr testen!",
 ];
 
+/** Tokens getrennt nach Lesen (Eingabe) und Schreiben (Ausgabe) — wie die Spezifikation es verlangt */
+function TokenTeile({ gelesen, geschrieben }: { gelesen: number; geschrieben: number }) {
+  if (gelesen + geschrieben <= 0) return null;
+  return (
+    <p className="mt-1 flex justify-between gap-4 text-sm text-slate-500">
+      <span>📖 gelesen {gelesen.toLocaleString("de-DE")}</span>
+      <span>✍️ geschrieben {geschrieben.toLocaleString("de-DE")}</span>
+    </p>
+  );
+}
+
+/** Fortschritt in Worten: Die Kinder sehen, dass die KI arbeitet — und was gerade passiert. */
+function fortschrittText(f: { phase: "plant" | "schreibt" | "prueft" | "repariert"; zeilen: number }): string {
+  switch (f.phase) {
+    case "plant":
+      return "🧠 Die KI plant euer Spiel …";
+    case "schreibt":
+      return f.zeilen > 0 ? `✍️ Die KI schreibt: ${f.zeilen.toLocaleString("de-DE")} Zeilen` : "✍️ Die KI fängt an zu schreiben …";
+    case "prueft":
+      return "🔍 Studio45 prüft, ob das Spiel startet …";
+    case "repariert":
+      return f.zeilen > 0
+        ? `🔧 Ein Fehler wird repariert: ${f.zeilen.toLocaleString("de-DE")} Zeilen`
+        : "🔧 Das Spiel startete nicht — die KI repariert den Fehler …";
+  }
+}
+
 export function KidStudio({ code }: { code: string }) {
   const [state, setState] = useState<KidState | null>(null);
   const [text, setText] = useState("");
@@ -108,6 +142,8 @@ export function KidStudio({ code }: { code: string }) {
   const [checks, setChecks] = useState<boolean[]>([false, false, false]);
   const [coachVorschlag, setCoachVorschlag] = useState<string | null>(null);
   const [showVerbrauch, setShowVerbrauch] = useState(false);
+  // Hinweis vor der ersten Aufnahme über den Sprachdienst des Browsers (einmal pro Gerät)
+  const [showSprachHinweis, setShowSprachHinweis] = useState(false);
   const [showHerkunft, setShowHerkunft] = useState(false);
   const [geradeGebaut, setGeradeGebaut] = useState(false);
   const [dcNein, setDcNein] = useState(false);
@@ -175,9 +211,14 @@ export function KidStudio({ code }: { code: string }) {
     return () => clearInterval(t);
   }, [baut]);
 
-  function toggleMic() {
+  /** Spracherkennung des Browsers, falls vorhanden */
+  function spracherkennung() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  }
+
+  async function toggleMic() {
+    const SR = spracherkennung();
     if (!SR) {
       setFeedback("Auf diesem Gerät gibt es keine Spracheingabe — tippt euren Wunsch einfach.");
       return;
@@ -186,7 +227,24 @@ export function KidStudio({ code }: { code: string }) {
       recRef.current?.stop();
       return;
     }
+    const modus = state?.hilfen.sprache ?? "";
+    // Erst versuchen, auf dem Gerät zu erkennen — dann verlässt keine Aufnahme das Tablet.
+    const lokal = await lokalMoeglich(SR, modus === "lokal");
+    if (!lokal && modus === "lokal") {
+      setFeedback("Eure Lehrkraft erlaubt die Spracheingabe nur direkt auf dem Gerät. Dieses Gerät kann das gerade nicht — tippt euren Wunsch bitte.");
+      return;
+    }
+    if (!lokal && !hinweisGesehen()) {
+      setShowSprachHinweis(true);
+      return;
+    }
+    starteAufnahme(SR, lokal);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function starteAufnahme(SR: any, lokal: boolean) {
     const rec = new SR();
+    if (lokal) rec.processLocally = true;
     rec.lang = "de-DE";
     rec.interimResults = true;
     rec.continuous = true;
@@ -565,6 +623,12 @@ export function KidStudio({ code }: { code: string }) {
                   : "gleich fertig …"}
               </p>
             </div>
+            {/* Was die KI gerade tut — live vom Server, nicht geschätzt */}
+            {state.fortschritt && (
+              <p className="text-center text-base font-semibold" aria-live="polite">
+                {fortschrittText(state.fortschritt)}
+              </p>
+            )}
             <p className="text-center text-sm opacity-80">
               Besprecht in der Zwischenzeit, was ihr als Nächstes ändern wollt!
             </p>
@@ -650,8 +714,9 @@ export function KidStudio({ code }: { code: string }) {
         )}
 
         <div className="flex items-end gap-2 lg:flex-wrap">
+          {state.hilfen.sprache !== "aus" && (
           <button
-            onClick={toggleMic}
+            onClick={() => void toggleMic()}
             disabled={baut}
             className={`flex w-14 shrink-0 items-center justify-center rounded-full text-2xl shadow disabled:opacity-40 ${listening ? "animate-pulse" : ""}`}
             style={{
@@ -663,6 +728,7 @@ export function KidStudio({ code }: { code: string }) {
           >
             {listening ? "⏹" : "🎤"}
           </button>
+          )}
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -976,6 +1042,43 @@ export function KidStudio({ code }: { code: string }) {
         </div>
       )}
 
+      {/* Hinweis vor der ersten Aufnahme, wenn die Erkennung nicht auf dem Gerät läuft */}
+      {showSprachHinweis && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md space-y-4 bg-white p-6" style={{ borderRadius: "var(--s45-radius)" }}>
+            <h2 className="text-xl font-black" style={{ color: "var(--s45-primary-text)" }}>
+              🎤 Kurz zur Spracheingabe
+            </h2>
+            <p className="text-base">
+              Damit aus eurer Stimme Text wird, schickt dieser Browser das Gesprochene an Google oder Apple.
+              Sagt deshalb <b>keine Namen und nichts Privates</b> — nur euren Wunsch für das Spiel.
+            </p>
+            <p className="text-sm text-slate-500">Wer das nicht möchte, tippt einfach. Studio45 speichert keine Aufnahmen.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowSprachHinweis(false)}
+                className="flex-1 border-2 border-slate-300 py-3 font-bold text-slate-600"
+                style={{ borderRadius: "var(--s45-radius)" }}
+              >
+                Lieber tippen
+              </button>
+              <button
+                onClick={() => {
+                  merkeHinweis();
+                  setShowSprachHinweis(false);
+                  const SR = spracherkennung();
+                  if (SR) starteAufnahme(SR, false);
+                }}
+                className="flex-1 py-3 font-bold"
+                style={{ background: "var(--s45-primary)", color: "var(--s45-auf-primary)", borderRadius: "var(--s45-radius)" }}
+              >
+                Verstanden, sprechen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Token-Transparenz: was das Bauen verbraucht — mit Alltagsvergleich */}
       {showVerbrauch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -985,21 +1088,27 @@ export function KidStudio({ code }: { code: string }) {
             </h2>
             <div className="space-y-2 text-base">
               {state.verbrauch.letzterTokens > 0 && (
-                <p className="flex justify-between gap-4 rounded-lg bg-slate-100 p-3">
-                  <span>Letzter Bau</span>
+                <div className="rounded-lg bg-slate-100 p-3">
+                  <p className="flex justify-between gap-4">
+                    <span>Letzter Bau</span>
+                    <span className="font-bold">
+                      {state.verbrauch.letzterTokens.toLocaleString("de-DE")} Tokens
+                      {state.verbrauch.letzterEuro && <> · {state.verbrauch.letzterEuro}</>}
+                    </span>
+                  </p>
+                  <TokenTeile gelesen={state.verbrauch.letzterIn} geschrieben={state.verbrauch.letzterOut} />
+                </div>
+              )}
+              <div className="rounded-lg bg-slate-100 p-3">
+                <p className="flex justify-between gap-4">
+                  <span>Alle Bauten zusammen</span>
                   <span className="font-bold">
-                    {state.verbrauch.letzterTokens.toLocaleString("de-DE")} Tokens
-                    {state.verbrauch.letzterEuro && <> · {state.verbrauch.letzterEuro}</>}
+                    {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
+                    {state.verbrauch.gesamtEuro && <> · {state.verbrauch.gesamtEuro}</>}
                   </span>
                 </p>
-              )}
-              <p className="flex justify-between gap-4 rounded-lg bg-slate-100 p-3">
-                <span>Alle Bauten zusammen</span>
-                <span className="font-bold">
-                  {state.verbrauch.gesamtTokens.toLocaleString("de-DE")} Tokens
-                  {state.verbrauch.gesamtEuro && <> · {state.verbrauch.gesamtEuro}</>}
-                </span>
-              </p>
+                <TokenTeile gelesen={state.verbrauch.gesamtIn} geschrieben={state.verbrauch.gesamtOut} />
+              </div>
             </div>
             {state.verbrauch.energie.length > 0 && (
               <div className="space-y-1">
@@ -1008,7 +1117,7 @@ export function KidStudio({ code }: { code: string }) {
                 </p>
                 {state.verbrauch.energie.map((zeile, i) => (
                   <p key={zeile} className="text-base">
-                    {["🔋", "🚴", "💡"][i] ?? "⚡"} {zeile}
+                    {["🔋", "🚴", "🪜", "💡"][i] ?? "⚡"} {zeile}
                   </p>
                 ))}
               </div>
@@ -1026,6 +1135,7 @@ export function KidStudio({ code }: { code: string }) {
             )}
             <p className="text-xs text-slate-500">
               Tokens sind die „Denk-Häppchen" der KI — jedes Bauen kostet Rechenleistung und Strom.
+              Gelesen hat die KI euren Wunsch, ihre Anweisungen und das bisherige Spiel; geschrieben hat sie das neue Spiel.
               Der Vergleich ist eine grobe Schätzung. Genaue, gut überlegte Wünsche sparen Tokens:
               erst denken, dann tippen!
             </p>

@@ -15,6 +15,9 @@ export const STANDARD_WH_PRO_M = 100;
 const HANDY_AKKU_WH = 12; // typischer Smartphone-Akku
 const RAD_WATT = 100; //     Dauerleistung beim zügigen Radfahren
 const LED_WATT = 8; //       eine helle LED-Lampe
+// Hubarbeit für ein Stockwerk (60 kg, 3 m): 60 · 9,81 · 3 J ≈ 0,49 Wh — wie beim Rad die
+// Arbeit, die die Muskeln nach außen leisten, nicht der ganze Kalorienverbrauch.
+const STOCKWERK_WH = (60 * 9.81 * 3) / 3600;
 
 export type VerbindungsTarife = {
   eurPerMTokensIn: number;
@@ -57,9 +60,11 @@ export function energieVergleich(wh: number): string[] {
   const handy = wh / HANDY_AKKU_WH;
   const radMinuten = (wh / RAD_WATT) * 60;
   const ledStunden = wh / LED_WATT;
+  const stockwerke = wh / STOCKWERK_WH;
   return [
     handy >= 0.1 ? `≈ ${rund(handy)}× Handy laden` : "weniger als ein Zehntel Handy-Akku",
     radMinuten >= 1 ? `≈ ${rund(radMinuten)} Minuten Radfahren` : "weniger als 1 Minute Radfahren",
+    stockwerke >= 1 ? `≈ ${rund(stockwerke)} Stockwerke Treppensteigen` : "weniger als ein Stockwerk Treppensteigen",
     ledStunden >= 0.1 ? `≈ ${rund(ledStunden)} Stunden LED-Lampe` : "ein kurzes LED-Blinken",
   ];
 }

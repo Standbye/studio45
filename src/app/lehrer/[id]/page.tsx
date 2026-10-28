@@ -383,6 +383,19 @@ export default async function WorkshopDashboard({ params }: PageProps<"/lehrer/[
                     <Input id="cooldown" name="cooldownSeconds" type="number" min={0} max={1800} defaultValue={w.cooldownSeconds} />
                   </div>
                 </div>
+                <div className="space-y-2 rounded-lg border p-3">
+                  <Label htmlFor="spracheingabe">🎤 Spracheingabe</Label>
+                  <Auswahl id="spracheingabe" name="spracheingabe" wert={w.spracheingabe} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
+                    <option value="">An — auf dem Gerät, wenn möglich, sonst über den Sprachdienst des Browsers</option>
+                    <option value="lokal">Nur auf dem Gerät — sonst tippen</option>
+                    <option value="aus">Aus — die Gruppen tippen</option>
+                  </Auswahl>
+                  <p className="text-xs text-muted-foreground">
+                    Die Spracheingabe kommt vom Browser, nicht von Studio45. Neuere Chrome-Versionen erkennen Deutsch
+                    direkt auf dem Gerät; sonst schickt Chrome das Gesprochene an Google, Safari an Apple. Die Gruppen
+                    sehen dann einmal einen Hinweis. Studio45 speichert keine Aufnahmen, nur den fertigen Text.
+                  </p>
+                </div>
                 <div className="space-y-1 rounded-lg border p-3">
                   <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
                     <input type="checkbox" name="challenge" value="1" defaultChecked={w.challenge} className="h-4 w-4" />

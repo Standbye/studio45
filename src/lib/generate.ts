@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { buildOrEditGame } from "@/lib/llm";
 import { verifyGameHtml, type VerifyResult } from "@/lib/verify";
+import { beendeFortschritt, setzeFortschritt, zaehleZeilen } from "@/lib/baufortschritt";
 import { wirksameStufen } from "@/lib/audience";
 import { publishGame, readPlayHtml } from "@/lib/games";
 
@@ -132,7 +133,16 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
       },
     };
 
-    let result = await buildOrEditGame({ ...params, currentHtml, userPrompt: prompt });
+    // Live-Fortschritt für die Gruppe: erst plant die KI (bei Gründlichkeit sichtbar lange),
+    // sobald Text kommt, schreibt sie — mit Zeilenzahl.
+    setzeFortschritt(groupId, "plant");
+    let result = await buildOrEditGame({
+      ...params,
+      currentHtml,
+      userPrompt: prompt,
+      beimSchreiben: (bisher) => setzeFortschritt(groupId, "schreibt", zaehleZeilen(bisher)),
+    });
+    setzeFortschritt(groupId, "prueft");
     let tokensIn = result.tokensIn;
     let tokensOut = result.tokensOut;
     let verify: VerifyResult = result.html
@@ -143,14 +153,17 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
     // wenn die Prüfung selbst ausgefallen ist: Dann ist das Spiel nicht „kaputt", und eine
     // Reparaturrunde würde nur Tokens verbrennen.
     if (result.html && !verify.ok && !verify.technisch) {
+      setzeFortschritt(groupId, "repariert");
       const repair = await buildOrEditGame({
         ...params,
+        beimSchreiben: (bisher) => setzeFortschritt(groupId, "repariert", zaehleZeilen(bisher)),
         currentHtml: result.html,
         userPrompt: `Das Spiel hat einen technischen Fehler und startet nicht: "${verify.detail}". Repariere NUR diesen Fehler, ändere sonst nichts am Spiel.`,
       });
       tokensIn += repair.tokensIn;
       tokensOut += repair.tokensOut;
       if (repair.html) {
+        setzeFortschritt(groupId, "prueft");
         const v2 = await verifyGameHtml(repair.html);
         if (v2.ok) {
           result = repair;
@@ -194,6 +207,7 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
     });
     return { ok: true, attemptsLeft: left - 1 };
   } finally {
+    beendeFortschritt(groupId);
     await db.group.update({ where: { id: groupId }, data: { generating: false, generatingSince: null } });
   }
 }

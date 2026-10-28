@@ -102,7 +102,7 @@ export default async function GroupDetail({ params }: PageProps<"/lehrer/[id]/gr
                     <span>{p.createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span>
                     {p.source !== "child" && <Badge variant="secondary">{p.source}</Badge>}
                     {!p.ok && <Badge variant="destructive">fehlgeschlagen</Badge>}
-                    <span className="ml-auto">{p.tokensIn + p.tokensOut} Tokens</span>
+                    <span className="ml-auto" title="gelesen (Eingabe) · geschrieben (Ausgabe)">{(p.tokensIn + p.tokensOut).toLocaleString("de-DE")} Tokens ({p.tokensIn.toLocaleString("de-DE")} gelesen · {p.tokensOut.toLocaleString("de-DE")} geschrieben)</span>
                   </div>
                   <p className="whitespace-pre-wrap">{p.prompt}</p>
                   {p.error && <p className="mt-1 text-xs text-destructive">{p.error}</p>}

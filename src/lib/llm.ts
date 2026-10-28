@@ -55,21 +55,23 @@ async function rufeModell(
   anweisungen: string[],
   userMsg: string,
   maxTokens: number,
-  gruendlich = false
+  gruendlich = false,
+  /** Wird mit dem bisher empfangenen Text aufgerufen, während die Antwort hereinströmt */
+  beimSchreiben?: (bisher: string) => void
 ): Promise<LlmAntwort> {
-  const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich);
+  const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich, beimSchreiben);
   if (!gruendlich) return antwort;
 
   // Nicht jedes Modell und jedes Gateway kennt die Gründlichkeits-Angabe. Lehnt der Dienst
   // den Aufruf deshalb ab, bauen wir ohne sie — ein Spiel ist besser als eine Fehlermeldung.
   if (antwort.error && !antwort.text) {
-    return rufeModellEinmal(v, model, anweisungen, userMsg, Math.min(maxTokens, MAX_TOKENS), false);
+    return rufeModellEinmal(v, model, anweisungen, userMsg, Math.min(maxTokens, MAX_TOKENS), false, beimSchreiben);
   }
   // Das Nachdenken zählt zur Ausgabe. Hat es so viel verbraucht, dass das Spiel abgeschnitten
   // wurde, bauen wir noch einmal ohne — dann steht die ganze Ausgabe für das Spiel bereit.
   // Die Tokens des ersten Anlaufs sind verbraucht und werden mitgezählt.
   if (antwort.abgeschnitten) {
-    const zweite = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, false);
+    const zweite = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, false, beimSchreiben);
     return { ...zweite, tokensIn: zweite.tokensIn + antwort.tokensIn, tokensOut: zweite.tokensOut + antwort.tokensOut };
   }
   return antwort;
@@ -81,7 +83,8 @@ async function rufeModellEinmal(
   anweisungen: string[],
   userMsg: string,
   maxTokens: number,
-  gruendlich: boolean
+  gruendlich: boolean,
+  beimSchreiben?: (bisher: string) => void
 ): Promise<LlmAntwort> {
   const protokoll: Protokoll = v.protocol === "openai" ? "openai" : "anthropic";
   try {
@@ -104,6 +107,7 @@ async function rufeModellEinmal(
         messages: [{ role: "user", content: userMsg }],
         ...(gruendlich ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } } : {}),
       });
+      if (beimSchreiben) stream.on("text", (_delta, bisher) => beimSchreiben(bisher));
       const msg = await stream.finalMessage();
       return {
         text: msg.content
@@ -138,7 +142,11 @@ async function rufeModellEinmal(
     let tokensOut = 0;
     let abgeschnitten = false;
     for await (const teil of stream) {
-      text += teil.choices?.[0]?.delta?.content ?? "";
+      const neu = teil.choices?.[0]?.delta?.content ?? "";
+      if (neu) {
+        text += neu;
+        beimSchreiben?.(text);
+      }
       if (teil.choices?.[0]?.finish_reason === "length") abgeschnitten = true;
       if (teil.usage) {
         tokensIn = teil.usage.prompt_tokens ?? 0;
@@ -194,6 +202,8 @@ export type BuildParams = {
   studioName: string;
   /** Altersstufe, Unterstützungslevel, Lernziel, eigene Fassung, Tag */
   kontext: PromptKontext;
+  /** Live-Fortschritt, solange die Antwort hereinströmt */
+  beimSchreiben?: (bisher: string) => void;
 };
 
 export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
@@ -205,7 +215,7 @@ export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
   const userMsg = `${stand}\n\n## Wunsch des Studios „${p.studioName || "?"}"\n\n${p.userPrompt.trim()}`;
 
   const gruendlich = Boolean(p.verbindung.gruendlich);
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich, p.beimSchreiben);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   const html = extractHtml(antwort.text);
   return {

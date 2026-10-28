@@ -193,6 +193,7 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
     genLimitPerLesson: z.coerce.number().int().min(1).max(20),
     cooldownSeconds: z.coerce.number().int().min(0).max(1800),
     challenge: z.boolean(),
+    spracheingabe: z.enum(["", "lokal", "aus"]).catch(""),
   });
   const parsed = schema.parse({
     learningGoal: formData.get("learningGoal") ?? "",
@@ -202,6 +203,7 @@ export async function updateSettingsAction(formData: FormData): Promise<void> {
     genLimitPerLesson: formData.get("genLimitPerLesson"),
     cooldownSeconds: formData.get("cooldownSeconds"),
     challenge: formData.get("challenge") === "1",
+    spracheingabe: formData.get("spracheingabe") ?? "",
   });
   await db.workshop.update({ where: { id: workshop.id }, data: parsed });
   await audit(user.id, "workshop.settings", `${workshop.name} · ${parsed.ageGroup} · Spielraum ${parsed.supportLevel} · Hilfe ${parsed.helpLevel}`);

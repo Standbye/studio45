@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { attemptsLeft, cooldownRemaining, laeuftGerade, schaetzeDauerSekunden } from "@/lib/generate";
+import { leseFortschritt } from "@/lib/baufortschritt";
 import { playVersion, readPlayHtml, vorherigeFassung } from "@/lib/games";
 import { leseHerkunft, leseLetztenBau } from "@/lib/steckbrief";
 import { fokusProfil } from "@/lib/tagesfokus";
@@ -102,6 +103,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
       coachAbZeichen: hilfe.coachAbZeichen,
       // Vorlesen ist keine Formulierungshilfe, sondern Lesehilfe: in der Grundschule immer da
       vorlesen: w.ageGroup === "GRUNDSCHULE",
+      // Spracheingabe nach Workshop-Einstellung ("" an, "lokal" nur auf dem Gerät, "aus")
+      sprache: w.spracheingabe,
       // Geführte Fehlermeldung („Etwas geht nicht") — sobald es Impulse gibt
       fehlerMelden: hilfe.chips,
     },
@@ -119,6 +122,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     cooldownSeconds: w.cooldownSeconds,
     // Hängengebliebene Läufe gelten als beendet, sonst wartet die Gruppe ewig
     generating: laeuftGerade(group),
+    /** Was der laufende Bau gerade tut (plant/schreibt/prüft/repariert) */
+    fortschritt: laeuftGerade(group) ? leseFortschritt(group.id) : null,
     laufSekunden: group.generatingSince
       ? Math.floor((Date.now() - group.generatingSince.getTime()) / 1000)
       : 0,
@@ -127,6 +132,11 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     verbrauch: {
       gesamtTokens: gesamt,
       letzterTokens: letzter ? letzter.tokensIn + letzter.tokensOut : 0,
+      // Getrennt: was die KI gelesen hat (Wunsch, Anweisungen, bisheriges Spiel) und was sie geschrieben hat
+      gesamtIn,
+      gesamtOut,
+      letzterIn: letzter?.tokensIn ?? 0,
+      letzterOut: letzter?.tokensOut ?? 0,
       gesamtEuro: gesamtEuro !== null ? euroText(gesamtEuro) : null,
       letzterEuro: letzterEuro !== null ? euroText(letzterEuro) : null,
       energie: energieVergleich(wattstunden(gesamt, w.apiKey)),
