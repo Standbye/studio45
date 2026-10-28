@@ -240,7 +240,18 @@ export type CoachParams = {
   learningGoal: string;
   /** Schwerpunkt des Termins in Worten (siehe lib/tagesfokus) — lenkt, wonach präzisiert wird */
   fokus: string;
+  /** Unklare Wörter im Wunsch („schöner“, „cooler“ …) — siehe lib/unklar */
+  unklar?: string[];
 };
+
+/** Zusatzregel, wenn der Wunsch Wertungen ohne Inhalt enthält */
+function unklarRegel(unklar: string[] | undefined, art: "frage" | "fassung"): string {
+  if (!unklar?.length) return "";
+  const woerter = unklar.map((w) => `„${w}“`).join(", ");
+  return art === "frage"
+    ? `\n- Im Wunsch steht ${woerter}. Damit kann die KI nichts anfangen. Frage, was genau damit gemeint ist (zum Beispiel „Was genau soll ${unklar[0]} werden?“), und biete drei konkrete Antworten an.`
+    : `\n- Im Wunsch steht ${woerter}. Damit kann die KI nichts anfangen. Ersetze es durch das, was genau anders sein soll — passend zum Spiel und zur Idee der Klasse.`;
+}
 
 /** Genug Luft, auch wenn ein Modell vor der kurzen Antwort erst nachdenkt */
 const COACH_TOKENS = 1500;
@@ -273,7 +284,7 @@ Regeln:
 - Die Frage ist kurz (höchstens zwölf Wörter), in einfachen Wörtern, Anrede „ihr".
 - Jede Antwort ist EIN kurzer, ganzer Satz aus Sicht der Klasse, den man an den Wunsch anhängen kann („Wer dreimal getroffen wird, hat verloren.").
 - Die drei Antworten unterscheiden sich deutlich voneinander.
-- Keine Fachbegriffe, keine Einleitung, keine Erklärung.${
+- Keine Fachbegriffe, keine Einleitung, keine Erklärung.${unklarRegel(p.unklar, "frage")}${
     p.learningGoal.trim() ? `\n- Das Spiel soll außerdem zu diesem Lernziel passen: ${p.learningGoal.trim()}` : ""
   }
 
@@ -320,7 +331,7 @@ Regeln:
   etwas offen ist.
 - Höchstens drei kurze Sätze, Sprache der Zielgruppe, keine Fachbegriffe.
 - Schreibe aus Sicht der Klasse („Wir wollen …").
-- Keine Einleitung, keine Erklärung, keine Anführungszeichen — nur der verbesserte Wunsch.${
+- Keine Einleitung, keine Erklärung, keine Anführungszeichen — nur der verbesserte Wunsch.${unklarRegel(p.unklar, "fassung")}${
     p.learningGoal.trim() ? `\n- Das Spiel soll außerdem zu diesem Lernziel passen: ${p.learningGoal.trim()}` : ""
   }`;
 

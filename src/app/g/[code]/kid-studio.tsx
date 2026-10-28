@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LernfallAnsicht, type LernfallState } from "./lernfall-ansicht";
 import { diktatSitzung } from "@/lib/diktat";
 import { hinweisGesehen, lokalMoeglich, merkeHinweis, type SprachModus } from "@/lib/sprache";
+import { unklareWoerter } from "@/lib/unklar";
 import { Vorlesen } from "./vorlesen";
 import { FehlerMelden } from "./fehler-melden";
 import { RueckfrageDialog } from "./rueckfrage";
@@ -270,7 +271,8 @@ export function KidStudio({ code }: { code: string }) {
   async function holeCoachVorschlag(): Promise<boolean> {
     if (!state || state.hilfen.coachAbZeichen === 0) return false;
     const roh = text.replace(/⏳.*$/, "").trim();
-    if (roh.length === 0 || roh.length > state.hilfen.coachAbZeichen) return false;
+    // Kurze Wünsche — oder lange mit Wertungen ohne Inhalt („schöner“, „cooler“ …)
+    if (roh.length === 0 || (roh.length > state.hilfen.coachAbZeichen && unklareWoerter(roh).length === 0)) return false;
     setCoachLaeuft(true);
     try {
       const res = await fetch(`/api/g/${code}/coach`, {

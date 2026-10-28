@@ -1,3 +1,4 @@
+import { unklareWoerter } from "@/lib/unklar";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
@@ -54,6 +55,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/g/[code]/coach"
     ageGroup: w.ageGroup,
     learningGoal: w.learningGoal,
     fokus: fokusProfil(w.currentDay, w.totalDays).coach,
+    unklar: unklareWoerter(parsed.data.prompt),
   };
   const verbucht = (tokens: number) =>
     db.workshop.update({ where: { id: w.id }, data: { tokensUsed: { increment: tokens } } });
