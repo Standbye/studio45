@@ -90,6 +90,11 @@ und lokal (Produktions-Build) geprüft. Noch nicht deployt.
       „Unveröffentlicht“ (Abschnitt 9.10).
 - [x] `zod` 4.4.3 → 4.6.7 (neue Lücke: Speicher-Erschöpfung bei übergroßen Eingaben);
       `npm audit --omit=dev` wieder 0.
+- [x] **Durchprüfung im Produktions-Build** (lokal, Test-Anbieter): Lasttest 10 Gruppen × 2 Runden
+      20/20 ok, 0 Fehler, Studio p95 38 ms; alle Seiten (Lehrkraft, 12 Druckbögen, Admin, Beamer,
+      Hub, Lernfall, Studio, Spiel, Vertretung) ohne Fehlerseite, geschützte Bereiche leiten ohne
+      Anmeldung auf den Login; Schritt zurück, Director's Cut (destillieren, bauen), Abbrechen ok.
+      Nicht möglich: Spracheingabe mit echter Aufnahme (kein Mikrofon in der Testumgebung).
 - Beobachtung: Der Vorschau-Server im Desktop-Werkzeug bleibt auf „startet“, weil `/` mit 307
       antwortet, und lädt die Seiten dabei immer wieder neu. Kein Studio45-Fehler; zum Testen den
       Produktions-Build nehmen.
