@@ -149,6 +149,7 @@ zeigen, sonst führen die QR-Codes der Gruppen ins Leere.
 |---|---|---|
 | **Admin** (einer pro Instanz) | `/admin` | Workshops anlegen, Lehrkräfte anlegen (mit Startpasswort zur Übergabe), KI-Verbindungen pflegen, Budgets vorgeben, Protokoll einsehen |
 | **Lehrkraft** | `/lehrer` | Tag & Phase steuern, Zielgruppe und Unterstützungslevel wählen, Lernziel und KI-Anweisung anpassen, Limits, Branding (Farben + Logo), Gruppen verwalten, Prompt-Verlauf, Zeitreise |
+| **Vertretung** (ohne Konto) | `/v/<code>` — Link, den die Lehrkraft in den Einstellungen erzeugt | Nur die Stunde steuern: Phase, Tag, neue Stunde, Gruppen sperren, Versuche nachlegen. Keine Einstellungen, kein KI-Zugang; die Lehrkraft kann den Link jederzeit ersetzen oder abschalten |
 | **Gruppe (Kinder)** | `/g/<code>` per QR | Sprechen, bauen, testen — **kein Login, keine Namen, keine personenbezogenen Daten** |
 
 ## KI-Anbieter
@@ -183,7 +184,12 @@ den Tagesfokus und den Merksatz des Tages.
 2. **Studio**: Gruppen bauen. Pro Gruppe gibt es ein **Kontingent an Generierungen pro Stunde**
    plus eine **Denkpause** zwischen den Versuchen — das ist Absicht: erst besprechen, dann bauen.
    Fehlgeschlagene Generierungen zählen nicht. Die Lehrkraft kann live nachladen.
+   Während des Bauens sieht die Gruppe live, was passiert: Die KI plant, schreibt (mit
+   Zeilenzahl), Studio45 prüft das Spiel und repariert es bei Bedarf. Ein Bau dauert mit
+   aktuellen Modellen rund ein bis zwei Minuten.
 3. **Neue Stunde**: Ein Klick setzt die Kontingente aller Gruppen zurück.
+4. **Workshop zurücksetzen** (Einstellungen): verwirft nach dem Ausprobieren alle Spiele und
+   Verläufe; Gruppen, QR-Codes und Einstellungen bleiben.
 
 ## Sicherheit in Kürze
 
@@ -201,6 +207,11 @@ den Tagesfokus und den Merksatz des Tages.
 - Alle Limits und Budgets werden **serverseitig** durchgesetzt; die Pause im Frontend ist nur UX.
 - Ratenbegrenzung **pro Gerät statt pro IP** — im Schul-WLAN teilen sich alle iPads eine IP.
 - Logo-Uploads werden serverseitig neu kodiert; **SVG ist nicht erlaubt**.
+- **Spracheingabe:** Sie kommt vom Browser, nicht von Studio45. Neuere Chrome-Versionen erkennen
+  Deutsch direkt auf dem Gerät — dann nutzt Studio45 das, und keine Aufnahme verlässt das Tablet.
+  Sonst schickt Chrome das Gesprochene an Google, Safari an Apple; die Gruppe sieht vorher einmal
+  einen Hinweis („keine Namen, nichts Privates“). Pro Workshop lässt sich die Spracheingabe auf
+  „nur auf dem Gerät“ oder „aus“ stellen. Studio45 speichert keine Aufnahmen, nur den Text.
 
 Details und Meldewege: [SECURITY.md](SECURITY.md).
 

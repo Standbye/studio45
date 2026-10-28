@@ -4,6 +4,39 @@ Alle nennenswerten Änderungen an Studio45. Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), die Versionierung an
 [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unveröffentlicht]
+
+Seit 1.1.0 auf der Live-Instanz, noch ohne Release-Tag.
+
+### Neu — für die Gruppen
+- **Live-Fortschritt beim Bauen:** Die KI plant, schreibt (mit Zeilenzahl), Studio45 prüft und
+  repariert — statt nur einer geschätzten Wartezeit.
+- **Tagesfokus** im Studio und am Beamer, Satzanfänge passend zum Schwerpunkt des Termins.
+- **Hilfen für die Kleinen:** Vorlesen, Rückfrage zum Antippen statt Umformulierung, geführte
+  Fehlermeldung „Etwas geht nicht“, „Das ist neu“ nach jedem Bau, „Einen Schritt zurück“.
+- **Formulierungshilfe auch bei unklaren Wünschen** („schöner“, „cooler“ …), nicht nur bei kurzen.
+- **Token-Anzeige getrennt** nach gelesen (Eingabe) und geschrieben (Ausgabe); Energievergleich
+  um Treppensteigen ergänzt.
+- **Spracheingabe datensparsam:** auf dem Gerät, wenn der Browser es kann, sonst mit einmaligem
+  Hinweis; pro Workshop „an / nur auf dem Gerät / aus“.
+- Spiel links im Rahmen, Bedienung rechts; hörbarer, abschaltbarer Ton in den Spielen.
+
+### Neu — für Lehrkräfte
+- **Lernfall** in Stufen freischalten: ein KI-gebautes Spiel mit eingebauten Fehlern prüfen.
+- **Regler pro Gruppe:** „Spielraum der KI“ (1–5) und „Hilfe beim Formulieren“ (0–3) getrennt.
+- **Vertretungs-Link:** Stunde ohne Konto steuern lassen, jederzeit ersetz- oder abschaltbar.
+- **Workshop zurücksetzen** nach dem Ausprobieren (Gruppen und QR-Codes bleiben).
+- **Design „Vortrag“:** Beamer-Seite und Studios in Rot-Weiß für Veranstaltungen, Gruppen
+  „1A …/1B …“ nach Stufe sortiert.
+- Director's Cut bis 150.000 Token Ausgabe; Speichern-Rückmeldung in allen Formularen.
+
+### Für Selbst-Hoster
+- **Gründlichkeit** pro KI-Verbindung (mehr Nachdenken vor dem Bauen).
+- Prüf-Container ohne Internet, ohne Datenbank, ohne Zugangsdaten; Gruppen voneinander isoliert.
+- Next.js 16.4.2 und aktualisierte Abhängigkeiten (`npm audit` für die Produktion: 0).
+- Lasttest-Treiber (`scripts/lasttest.ts`) und Mock-Anbieter (`runtime/mock-ki.mjs`).
+- Neue Migrationen fügen nur Spalten und einen Index hinzu.
+
 ## [1.1.0] — 2026-08-06
 
 ### Neu — Druckmaterialien, komplett neu gesetzt

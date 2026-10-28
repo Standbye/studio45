@@ -13,16 +13,21 @@
 
 ---
 
-## Abgleich mit dem gebauten Stand (2026-10-19, live `v1.1.0-39-gf6627d7`)
+## Abgleich mit dem gebauten Stand (2026-10-28, zuletzt geprüft gegen alle Abschnitte)
 
 ### Überholt: im Produkt schon weiter als im Text
 
 | Stelle | Text sagt | Stand heute |
 |---|---|---|
 | 8, Lasttest | steht aus | Am 2026-10-11 mit echtem Anbieter gelaufen: 10 Gruppen parallel, 2 Runden, 20/20 Bauten ok. |
-| 8, Bauzeit | nicht gemessen | Im Lasttest 36–55 s pro Bau. Das Ziel von 4–5 Bauten pro Stunde ist damit zeitlich erreichbar; begrenzt wird es durch Versuchskontingent und Denkpause. |
+| 8, Bauzeit | nicht gemessen | Gemessen am 2026-10-20 unter Workshop-Bedingungen (10 Gruppen gleichzeitig, Gründlichkeit hoch): Erstbau 82–155 s, Median 115 s; Änderung 61–105 s. Das Ziel von 4–5 Bauten pro Stunde ist zeitlich erreichbar; begrenzt wird es durch Versuchskontingent und Denkpause. |
 | 5, Unterstützungslevel | ein Regler 1–5 | Heute **zwei getrennte Regler**: „Spielraum der KI“ 1–5 (Weit … Eng, das ist die Leitplanken-Idee) und „Hilfe beim Formulieren“ 0–3 (Keine, Impulse, Impulse + Formulierungshilfe, Volle Begleitung). Ein Kind kann Sprachhilfe brauchen und trotzdem selbst entscheiden wollen. |
-| 8, Release-Tag | fehlt | Fehlt weiterhin. Live läuft der ungetaggte Stand 39 Commits nach v1.1.0. |
+| 8, Release-Tag | fehlt | Fehlt weiterhin (nur auf Peters Ansage). Die Änderungen seit 1.1.0 stehen im CHANGELOG unter „Unveröffentlicht“. |
+| 3/9, Streaming | an den Client streamen | **Seit 2026-10-28 umgesetzt:** Die Antwort der KI kommt gestreamt herein, die Gruppe sieht live „plant / schreibt: N Zeilen / prüft / repariert“. Das halbfertige Spiel bleibt bewusst verborgen. |
+| 4, Lehrkraft-Zugang | Login oder Workshop-Code | **Seit 2026-10-28 umgesetzt:** neben dem Login ein Vertretungs-Link `/v/<code>`, der nur die Stunde steuert (Phase, Tag, neue Stunde, Sperren, Versuche). |
+| 5, Token-Transparenz | Input und Output getrennt; Handy, Rad, Treppe, LED | **Seit 2026-10-28 vollständig:** Studio und Verlauf zeigen „gelesen“ und „geschrieben“ getrennt, Treppensteigen ist als Vergleich dazugekommen. |
+| 5, Formulierungshilfe | bei zu kurzen **oder unklaren** Wünschen | **Seit 2026-10-28 vollständig:** Auch lange Wünsche mit Wertungen ohne Inhalt („schöner“, „cooler“ …) lösen die Hilfe aus; sie fragt nach, was genau gemeint ist. |
+| 7/9, Spracheingabe | klarer Hinweis oder lokale Alternative | **Seit 2026-10-28 umgesetzt:** Erkennung auf dem Gerät, wo der Browser es kann; sonst einmaliger Hinweis an die Gruppe. Pro Workshop „an / nur auf dem Gerät / aus“. |
 
 ### Gebaut, aber nicht im Text
 
@@ -33,10 +38,10 @@
 - **Reiter „KI-Anweisung“:** Hier setzt die Lehrkraft die Grenzen für die KI.
 - **Ton:** Hörbar nach dem Start-Knopf, mit Schalter zum Abschalten.
 - **Isolation der Gruppen** wurde geprüft: Es gibt keine gegenseitige Beeinflussung.
+- **Design „Vortrag“** für Veranstaltungen (Beamer und Studios in Rot-Weiß) und **Workshop zurücksetzen** nach dem Ausprobieren.
 
 ### Abweichung, Entscheidung offen
 
-- **3, Streaming:** Abschnitt 9 verlangt das Streaming der Generierung an den Client. Gebaut ist es nicht: Das Kinder-Studio fragt den Stand alle 4 s ab und zeigt das Spiel erst, wenn es fertig geprüft ist. Für Kinder ist das eher richtig, denn ein halbfertiges Spiel wäre verwirrend.
 - **6, Thementafel 1:** Der Text nennt „Die KI klingt immer sicher …“, im Produkt heißt die Tafel „Die KI ist ein Werkzeug — kein Mensch“. Tafel 2 heißt „Sicher unterwegs mit KI“.
 - **6, Materialien:** Gebaut sind 12 Druckbögen: Rollenkarten, Laufplan, KI-Tipps, Thementafeln, QR-Blätter, Lehrer-Laufzettel, Stundenverlauf, Testbogen, Bugreport-Karten, Ich-kann-Bogen, Elternbrief, Urkunden. Die „Checkliste vor der Stunde“ aus Abschnitt 6 ist der Laufzettel.
 - **2, Pressetermin:** Der Text nennt den 04.08.2026 (das ist das Datum von v1.0.0). Nach dem Pilot-Chat war der letzte Termin mit Presse, Urkunden und begehbarer Lindenschule am 10.07.2026. Welches Datum stimmt, muss Peter sagen.
@@ -50,7 +55,7 @@
 
 ### Noch offen, wie im Text beschrieben
 
-- **7, Spracheingabe:** Das Kinder-Studio zeigt keinen Hinweis darauf, dass das Audio in Chrome an Google und in Safari an Apple geht. Der Elternbrief verspricht „keine Namen, Fotos oder persönlichen Daten“. Der Widerspruch besteht also weiter (gesammelt in `NEXT_BUILD.md`).
+- **7, Elternbrief:** Er verspricht „keine Namen, Fotos oder persönlichen Daten“, erwähnt die Spracheingabe aber nicht. Im Produkt ist sie jetzt geregelt (siehe oben); der Druckbogen gehört Codex (gesammelt in `NEXT_BUILD.md`).
 - **7, DSGVO und Auftragsverarbeitungsvertrag** für den Fremdeinsatz: ungeklärt.
 - **8, Einsatz im Klassenzimmer:** Der nächste Einsatz ist das Führungskräfte-Symposium am 14.11.2026.
 - **10, Codex als MCP-Server:** nicht eingerichtet, und es gibt kein `reviews/`-Verzeichnis. Codex arbeitet heute in einem eigenen Worktree (`~/coding/studio45`) am Material, siehe `AGENTS.md`.

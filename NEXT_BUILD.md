@@ -71,6 +71,36 @@ Stand: 2026-08-04 · Live: https://studio45.littleproject.de · Repo: `Standbye/
   Versuchskontingent als Grund fürs Bündeln erklären. Umsetzung nur auf Ansage; Material über
   Codex.
 
+## Erledigt (2026-10-28): Abgleich mit der Spezifikation (Peters Auftrag „optimiere nach den ursprünglichen Parametern“)
+
+Alle Abschnitte von `docs/konzept.md` gegen den Code geprüft; was fehlte oder abwich, ist gebaut
+und lokal (Produktions-Build) geprüft. Noch nicht deployt.
+- [x] **Live-Baufortschritt** (Abschnitt 9.2 Streaming): plant / schreibt N Zeilen / prüft /
+      repariert. `src/lib/baufortschritt.ts`, Stream-Rückruf in `rufeModell`.
+- [x] **Tokens getrennt** gelesen/geschrieben im Studio und im Gruppenverlauf, **Treppensteigen**
+      als vierter Energievergleich (Abschnitt 5).
+- [x] **Spracheingabe** an / nur auf dem Gerät / aus (Einstellungen); Erkennung auf dem Gerät, wo
+      Chrome es kann, sonst einmaliger Hinweis an die Gruppe (Abschnitt 7, 9.9). Migration
+      `20261028100000_spracheingabe`.
+- [x] **Vertretungs-Link** `/v/<code>` (Abschnitt 4 „Login oder Workshop-Code“): nur Stunde steuern,
+      ersetz- und abschaltbar, Audit, Fehlversuche begrenzt. Migration `20261028110000_vertretung`.
+- [x] **Formulierungshilfe bei unklaren Wünschen** („schöner“, „cooler“ …), nicht nur bei kurzen
+      (Abschnitt 5, Kernbotschaft). `src/lib/unklar.ts`.
+- [x] README (Vertretung, Live-Fortschritt, Spracheingabe, Zurücksetzen) und CHANGELOG
+      „Unveröffentlicht“ (Abschnitt 9.10).
+- Beobachtung: Der Vorschau-Server im Desktop-Werkzeug bleibt auf „startet“, weil `/` mit 307
+      antwortet, und lädt die Seiten dabei immer wieder neu. Kein Studio45-Fehler; zum Testen den
+      Produktions-Build nehmen.
+
+- [ ] **Für Codex (Material), aus dem Abgleich:**
+      - Elternbrief: Spracheingabe erwähnen (geht ohne Gerät-Erkennung an Google/Apple; Lehrkraft
+        kann sie auf „nur auf dem Gerät“ oder „aus“ stellen).
+      - KI-Tipps: Regel „Ein Wunsch nach dem anderen …“ widerspricht dem Leitgedanken „Kein
+        Marathon, nur eine Etappe — aber auch kein Stop & Go“.
+      - Thementafel 1: Titel laut Konzept „Die KI klingt immer sicher, auch wenn sie falsch liegt“.
+      - Laufzettel/Checkliste: Vertretungs-Link und „Workshop zurücksetzen“ erwähnen.
+      - Druckseiten: Hydration-Fehler (eigenes `<html>` im Root-Layout), siehe 2026-10-23.
+
 ## Erledigt (2026-10-23): Sicherheitsupdate der Abhängigkeiten
 
 - [x] `npm audit fix` vom täglichen Sicherheitscheck (Branch `claude/security-2026-10-21`)
