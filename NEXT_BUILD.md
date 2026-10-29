@@ -99,7 +99,8 @@ DB-Sicherung `/data/studio45.db.vor-deploy-2026-10-28a`.
 - [x] **Spracheingabe: Fehler verständlich melden** — Live-Test 2026-10-28 im eingebauten Browser
       (Mikrofon dort gesperrt) zeigte: Bei fehlender Mikrofon-Freigabe brach die Aufnahme bisher
       kommentarlos ab. Jetzt erklärt das Studio, was los ist (nicht freigegeben, Dienst nicht
-      erreichbar, Deutsch auf dem Gerät nicht verfügbar, nichts gehört). Noch nicht deployt.
+      erreichbar, Deutsch auf dem Gerät nicht verfügbar, nichts gehört). Deployt 2026-10-29,
+      `v1.1.0-60-g345abd8`, auf dem Server nachgeprüft.
 - [ ] **Peter:** Spracheingabe einmal mit echter Aufnahme testen (iPad/Safari mit Hinweis,
       aktuelles Chrome evtl. auf dem Gerät) — geht nur mit echtem Mikrofon.
 - Beobachtung: Der Vorschau-Server im Desktop-Werkzeug bleibt auf „startet“, weil `/` mit 307
