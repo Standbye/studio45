@@ -61,6 +61,10 @@ model ApiKey {
   /// Gründlichkeit beim Bauen: "" = normal, "hoch" = das Modell denkt länger nach
   /// (mehr Tokens, längere Wartezeit, dafür stimmigere Spiele)
   gruendlich       String @default("")
+  /// Tempo beim Bauen: "" = normal, "schnell" = Fast Mode (gleiches Modell, schnellere Ausgabe,
+  /// höherer Preis). Nur im Anthropic-Protokoll und nur bei Modellen, die ihn anbieten;
+  /// sonst baut Studio45 automatisch im normalen Tempo.
+  tempo            String @default("")
 
   createdAt DateTime   @default(now())
   workshops Workshop[]

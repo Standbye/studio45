@@ -29,6 +29,7 @@ const verbindungSchema = z.object({
   eurPerMTokensOut: z.coerce.number().min(0).max(10_000),
   whPerMTokens: z.coerce.number().min(0).max(100_000),
   gruendlich: z.enum(["", "hoch"]),
+  tempo: z.enum(["", "schnell"]),
 });
 
 function verbindungAusForm(formData: FormData) {
@@ -43,6 +44,7 @@ function verbindungAusForm(formData: FormData) {
     eurPerMTokensOut: formData.get("eurPerMTokensOut") || 0,
     whPerMTokens: formData.get("whPerMTokens") || 0,
     gruendlich: formData.get("gruendlich") === "hoch" ? "hoch" : "",
+    tempo: formData.get("tempo") === "schnell" ? "schnell" : "",
   });
 }
 
@@ -88,7 +90,7 @@ export async function testApiKeyAction(_prev: ActionState, formData: FormData): 
   if (!v) return { ok: false, error: "Verbindung nicht gefunden." };
 
   const ergebnis = await testeVerbindung(
-    { protocol: v.protocol, secret: v.secret, baseUrl: v.baseUrl },
+    { protocol: v.protocol, secret: v.secret, baseUrl: v.baseUrl, schnell: v.tempo === "schnell" },
     v.modelKid
   );
   await audit(admin.id, "verbindung.tested", `${v.label}: ${ergebnis.ok ? "ok" : "Fehler"}`);

@@ -133,6 +133,7 @@ function VerbindungsFelder({
     eurPerMTokensOut: number;
     whPerMTokens: number;
     gruendlich: string;
+    tempo: string;
   };
 }) {
   const start =
@@ -257,6 +258,26 @@ function VerbindungsFelder({
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="k-tempo">Tempo beim Bauen</Label>
+        <Auswahl
+          id="k-tempo"
+          name="tempo"
+          wert={vorhanden?.tempo === "schnell" ? "schnell" : ""}
+          className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+        >
+          <option value="">Normal</option>
+          <option value="schnell">Fast Mode — schnellere Ausgabe, höherer Preis</option>
+        </Auswahl>
+        <p className="text-xs text-muted-foreground">
+          Der Fast Mode lässt dasselbe Modell deutlich schneller schreiben und kostet dafür mehr
+          (bei Claude Opus 5.5 das Doppelte) — die Preise unten bitte entsprechend eintragen. Es gibt
+          ihn nur direkt bei Anthropic und nur für einzelne Modelle, etwa <code>claude-opus-5-5</code>.
+          Lehnt der Dienst ihn ab, wird automatisch im normalen Tempo gebaut; „Testen“ zeigt, ob er
+          greift. Gilt für das Bauen der Gruppen.
+        </p>
+      </div>
+
+      <div className="space-y-2">
         <Label>Kosten- & Energie-Transparenz (optional)</Label>
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
@@ -354,6 +375,7 @@ export function EditApiKeyDialog({
     eurPerMTokensOut: number;
     whPerMTokens: number;
     gruendlich: string;
+    tempo: string;
   };
 }) {
   const [offen, setOffen] = useState(false);

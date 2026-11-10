@@ -11,7 +11,7 @@
     "build:next": "next build"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.115.0",
+    "@anthropic-ai/sdk": "^0.137.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/montserrat": "^5.3.0",
     "@fontsource-variable/nunito": "^5.3.0",

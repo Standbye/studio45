@@ -171,6 +171,7 @@ export default async function AdminPage() {
                   <TableCell className="text-xs">
                     <div>👧 {k.modelKid}</div>
                     {k.gruendlich === "hoch" && <div className="text-xs text-muted-foreground">🧠 Gründlichkeit hoch</div>}
+                    {k.tempo === "schnell" && <div className="text-xs text-muted-foreground">⚡ Fast Mode</div>}
                     <div className="text-muted-foreground">🎬 {k.modelDirector}</div>
                   </TableCell>
                   <TableCell className="font-mono text-sm">••••{k.secret.slice(-4)}</TableCell>
@@ -189,6 +190,7 @@ export default async function AdminPage() {
                         eurPerMTokensOut: k.eurPerMTokensOut,
                         whPerMTokens: k.whPerMTokens,
                         gruendlich: k.gruendlich,
+                        tempo: k.tempo,
                       }}
                     />
                     <form action={deleteApiKeyAction} className="inline">

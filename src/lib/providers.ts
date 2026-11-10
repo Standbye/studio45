@@ -29,8 +29,8 @@ export const ANBIETER: AnbieterVorlage[] = [
     baseUrl: "",
     hinweis: "Direkt bei Anthropic. Nutzt Prompt-Caching — günstigste Variante für lange Systemprompts.",
     modelle: {
-      kinder: ["claude-sonnet-5", "claude-haiku-4-5-20251001"],
-      director: ["claude-opus-5", "claude-sonnet-5"],
+      kinder: ["claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5"],
+      director: ["claude-opus-5-5", "claude-sonnet-5-5"],
     },
   },
   {

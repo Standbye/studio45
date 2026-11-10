@@ -35,6 +35,8 @@ Seit 1.1.0 auf der Live-Instanz, noch ohne Release-Tag.
 
 ### Für Selbst-Hoster
 - **Gründlichkeit** pro KI-Verbindung (mehr Nachdenken vor dem Bauen).
+- **Fast Mode** pro KI-Verbindung (Anthropic-Protokoll): gleiches Modell, schnellere Ausgabe,
+  höherer Preis. Lehnt der Dienst ihn ab, baut Studio45 im normalen Tempo; „Testen“ zeigt es an.
 - Prüf-Container ohne Internet, ohne Datenbank, ohne Zugangsdaten; Gruppen voneinander isoliert.
 - Next.js 16.4.2 und aktualisierte Abhängigkeiten (`npm audit` für die Produktion: 0).
 - Lasttest-Treiber (`scripts/lasttest.ts`) und Mock-Anbieter (`runtime/mock-ki.mjs`).

@@ -119,6 +119,7 @@ export async function runGeneration(groupId: string, prompt: string): Promise<Ge
         secret: w.apiKey.secret,
         baseUrl: w.apiKey.baseUrl,
         gruendlich: w.apiKey.gruendlich === "hoch",
+        schnell: w.apiKey.tempo === "schnell",
       },
       model: w.apiKey.modelKid,
       studioName: group.studioName || `Gruppe ${group.index}`,

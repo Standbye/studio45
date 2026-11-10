@@ -26,6 +26,8 @@ export type Verbindung = {
   baseUrl: string;
   /** Beim Bauen länger nachdenken lassen (Einstellung der Verbindung) */
   gruendlich?: boolean;
+  /** Fast Mode: schnellere Ausgabe zum höheren Preis (nur Anthropic-Protokoll) */
+  schnell?: boolean;
 };
 
 export type LlmAntwort = {
@@ -34,6 +36,10 @@ export type LlmAntwort = {
   tokensOut: number;
   /** Die Ausgabegrenze war erreicht — die Antwort bricht mittendrin ab */
   abgeschnitten?: boolean;
+  /** Fast Mode war verlangt: lief die Antwort damit ("fast") oder im normalen Tempo ("standard")? */
+  tempo?: "fast" | "standard";
+  /** Warum der Fast Mode nicht griff (Meldung des Dienstes) */
+  tempoHinweis?: string;
   error?: string;
 };
 
@@ -99,16 +105,34 @@ async function rufeModellEinmal(
         // Nur der erste (lange, immer gleiche) Block profitiert vom Caching
         ...(i === 0 ? { cache_control: { type: "ephemeral" as const } } : {}),
       }));
-      // Streaming ist bei großen max_tokens Pflicht (sonst lehnt die API ab)
-      const stream = client.messages.stream({
-        model,
-        max_tokens: maxTokens,
-        system,
-        messages: [{ role: "user", content: userMsg }],
-        ...(gruendlich ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } } : {}),
-      });
-      if (beimSchreiben) stream.on("text", (_delta, bisher) => beimSchreiben(bisher));
-      const msg = await stream.finalMessage();
+      const anfrage = async (schnell: boolean) => {
+        // Streaming ist bei großen max_tokens Pflicht (sonst lehnt die API ab)
+        const stream = client.messages.stream({
+          model,
+          max_tokens: maxTokens,
+          system,
+          messages: [{ role: "user", content: userMsg }],
+          ...(gruendlich ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } } : {}),
+          ...(schnell ? { speed: "fast" as const } : {}),
+        });
+        if (beimSchreiben) stream.on("text", (_delta, bisher) => beimSchreiben(bisher));
+        return stream.finalMessage();
+      };
+      // Fast Mode gibt es nicht bei jedem Modell, und er hat ein eigenes Anfrage-Limit. Lehnt
+      // der Dienst ihn ab, bauen wir im normalen Tempo — langsamer ist besser als gar nicht.
+      let tempoHinweis: string | undefined;
+      let msg: Anthropic.Message;
+      if (v.schnell) {
+        try {
+          msg = await anfrage(true);
+        } catch (err) {
+          if (!(err instanceof Anthropic.APIError)) throw err;
+          tempoHinweis = err.message.slice(0, 200);
+          msg = await anfrage(false);
+        }
+      } else {
+        msg = await anfrage(false);
+      }
       return {
         text: msg.content
           .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -117,6 +141,7 @@ async function rufeModellEinmal(
         tokensIn: msg.usage.input_tokens,
         tokensOut: msg.usage.output_tokens,
         abgeschnitten: msg.stop_reason === "max_tokens",
+        ...(v.schnell ? { tempo: msg.usage.speed === "fast" ? ("fast" as const) : ("standard" as const), tempoHinweis } : {}),
       };
     }
 
@@ -187,7 +212,14 @@ export async function testeVerbindung(v: Verbindung, model: string): Promise<{ o
   if (antwort.error) return { ok: false, detail: antwort.error.slice(0, 300) };
   const text = antwort.text.trim().slice(0, 80);
   if (!text) return { ok: false, detail: "Leere Antwort vom Dienst." };
-  return { ok: true, detail: `Antwort: „${text}" (${antwort.tokensIn + antwort.tokensOut} Tokens)` };
+  const tempo = !v.schnell
+    ? ""
+    : (v.protocol === "openai" ? "openai" : "anthropic") !== "anthropic"
+      ? " · Fast Mode gibt es nur im Anthropic-Protokoll, hier wird im normalen Tempo gebaut."
+      : antwort.tempo === "fast"
+        ? " · Fast Mode aktiv."
+        : ` · Fast Mode nicht verfügbar, es wird im normalen Tempo gebaut${antwort.tempoHinweis ? ` (${antwort.tempoHinweis})` : ""}.`;
+  return { ok: true, detail: `Antwort: „${text}" (${antwort.tokensIn + antwort.tokensOut} Tokens)${tempo}` };
 }
 
 // ---------------------------------------------------------------------------

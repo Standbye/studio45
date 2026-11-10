@@ -171,6 +171,13 @@ Für die bekannten Anbieter gibt es Vorlagen, die Endpunkt und übliche Modellna
 ohne Code-Änderung nutzbar sind. Bei **Azure** wird der Deployment-Name als Modell eingetragen,
 bei **Ollama** zeigt der Endpunkt auf die lokale Instanz.
 
+Zwei Regler pro Verbindung bestimmen die Wartezeit der Gruppen: **Gründlichkeit** (das Modell
+denkt vor dem Bauen länger nach) und **Tempo**. „Fast Mode“ lässt dasselbe Modell schneller
+schreiben und kostet mehr; es gibt ihn nur im Anthropic-Protokoll und nur für einzelne Modelle
+(etwa `claude-opus-5-5`). Lehnt der Dienst ihn ab — Modell ohne Fast Mode, eigenes
+Anfrage-Limit erreicht —, baut Studio45 automatisch im normalen Tempo. Der Knopf „Testen“
+zeigt, ob der Fast Mode greift.
+
 > Hinweis zur Modellwahl: Ein komplettes Spiel ist eine große, zusammenhängende Datei. Kleine
 > oder stark quantisierte Modelle brechen dabei oft mittendrin ab — die eingebaute Verifikation
 > erkennt das zwar und der Versuch wird den Kindern nicht angerechnet, aber der Spaß leidet.
