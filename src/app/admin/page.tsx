@@ -6,6 +6,7 @@ import {
   CreateApiKeyDialog,
   CreateTeacherDialog,
   CreateWorkshopDialog,
+  EditWorkshopDialog,
   EditApiKeyDialog,
   ResetTeacherPasswordDialog,
   TestApiKeyButton,
@@ -64,6 +65,19 @@ export default async function AdminPage() {
                 <Link href={`/w/${w.slug}`} className="text-sm text-primary underline-offset-2 hover:underline" target="_blank">
                   Beamer-Seite ↗
                 </Link>
+                <EditWorkshopDialog
+                  workshop={{
+                    id: w.id,
+                    name: w.name,
+                    className: w.className,
+                    teacherId: w.teacherId,
+                    apiKeyId: w.apiKeyId,
+                    totalDays: w.totalDays,
+                    groupCount: w.groups.length,
+                  }}
+                  teachers={teachers.map((t) => ({ id: t.id, displayName: t.displayName }))}
+                  apiKeys={apiKeys.map((k) => ({ id: k.id, label: k.label, modelKid: k.modelKid }))}
+                />
                 <form action={archiveWorkshopAction}>
                   <input type="hidden" name="id" value={w.id} />
                   <Button variant="outline" size="sm" type="submit">{w.archived ? "Reaktivieren" : "Archivieren"}</Button>
@@ -72,7 +86,10 @@ export default async function AdminPage() {
             </CardHeader>
             <CardContent className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <div><span className="text-muted-foreground">Lehrkraft:</span> {w.teacher?.displayName ?? "—"}</div>
-              <div><span className="text-muted-foreground">Verbindung:</span> {w.apiKey?.label ?? "—"}</div>
+              <div>
+                <span className="text-muted-foreground">Verbindung:</span> {w.apiKey?.label ?? "—"}
+                {w.apiKey && <span className="text-muted-foreground"> ({w.apiKey.modelKid}{w.apiKey.tempo === "schnell" ? " · ⚡" : ""})</span>}
+              </div>
               <div><span className="text-muted-foreground">Gruppen:</span> {w.groups.length} · Tag {w.currentDay}/{w.totalDays} · {w.phase}</div>
               <form action={updateBudgetAction} className="flex items-center gap-2">
                 <input type="hidden" name="id" value={w.id} />

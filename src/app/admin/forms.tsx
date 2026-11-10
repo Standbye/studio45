@@ -7,6 +7,7 @@ import {
   createWorkshopAction,
   resetTeacherPasswordAction,
   testApiKeyAction,
+  updateWorkshopAction,
   updateApiKeyAction,
   type ActionState,
 } from "./actions";
@@ -426,6 +427,101 @@ export function TestApiKeyButton({ id }: { id: string }) {
       {state.hinweis && <span className="text-xs text-emerald-600">✓ {state.hinweis}</span>}
       {state.error && <span className="text-xs text-destructive" title={state.error}>✗ {state.error.slice(0, 60)}</span>}
     </form>
+  );
+}
+
+/** Bestehenden Workshop ändern — vor allem: eine andere KI-Verbindung zuweisen. */
+export function EditWorkshopDialog({
+  workshop,
+  teachers,
+  apiKeys,
+}: {
+  workshop: { id: string; name: string; className: string; teacherId: string | null; apiKeyId: string | null; totalDays: number; groupCount: number };
+  teachers: { id: string; displayName: string }[];
+  apiKeys: { id: string; label: string; modelKid: string }[];
+}) {
+  const [offen, setOffen] = useState(false);
+  const [state, action, pending] = useActionState(async (prev: ActionState, formData: FormData) => {
+    const ergebnis = await updateWorkshopAction(prev, formData);
+    if (ergebnis.ok) setOffen(false);
+    return ergebnis;
+  }, IDLE);
+  const termine = [...new Set([3, 5, workshop.totalDays])].sort((a, b) => a - b);
+  const feld = "h-9 w-full rounded-md border bg-transparent px-3 text-sm";
+  return (
+    <Dialog open={offen} onOpenChange={setOffen}>
+      {state.ok && !offen && <span role="status" className="mr-2 text-xs font-medium text-emerald-700">✓ gespeichert</span>}
+      <DialogTrigger className={buttonVariants({ variant: "outline", size: "sm" })}>Bearbeiten</DialogTrigger>
+      <DialogContent className="max-h-[90svh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Workshop bearbeiten</DialogTitle>
+          <DialogDescription>
+            Gilt ab dem nächsten Bau. Spiele, Verlauf und QR-Codes der Gruppen bleiben erhalten.
+          </DialogDescription>
+        </DialogHeader>
+        <form action={action} className="space-y-4">
+          <input type="hidden" name="id" value={workshop.id} />
+          {state.error && (
+            <Alert variant="destructive"><AlertDescription>{state.error}</AlertDescription></Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor={`we-name-${workshop.id}`}>Name (Schule/Projekt)</Label>
+            <Input id={`we-name-${workshop.id}`} name="name" defaultValue={workshop.name} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`we-key-${workshop.id}`}>KI-Verbindung</Label>
+            <select id={`we-key-${workshop.id}`} name="apiKeyId" required defaultValue={workshop.apiKeyId ?? ""} className={feld}>
+              {!workshop.apiKeyId && <option value="">— bitte wählen —</option>}
+              {apiKeys.map((k) => (
+                <option key={k.id} value={k.id}>{k.label} ({k.modelKid})</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`we-teacher-${workshop.id}`}>Lehrkraft</Label>
+            <select id={`we-teacher-${workshop.id}`} name="teacherId" required defaultValue={workshop.teacherId ?? ""} className={feld}>
+              {!workshop.teacherId && <option value="">— bitte wählen —</option>}
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>{t.displayName}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor={`we-class-${workshop.id}`}>Klasse</Label>
+              <Input id={`we-class-${workshop.id}`} name="className" defaultValue={workshop.className} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`we-days-${workshop.id}`}>Termine</Label>
+              <select id={`we-days-${workshop.id}`} name="totalDays" defaultValue={String(workshop.totalDays)} className={feld}>
+                {termine.map((t) => (
+                  <option key={t} value={t}>{t} Termine</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`we-groups-${workshop.id}`}>Gruppen</Label>
+              <Input
+                id={`we-groups-${workshop.id}`}
+                name="groupCount"
+                type="number"
+                min={workshop.groupCount}
+                max={10}
+                defaultValue={workshop.groupCount}
+                required
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Gruppen lassen sich ergänzen, aber nicht entfernen. Das Token-Budget ändern Sie direkt in
+            der Übersicht, die Einstellungen einer Verbindung im Reiter „KI-Verbindungen“.
+          </p>
+          <Button type="submit" disabled={pending} className="w-full">
+            {pending ? "Wird gespeichert …" : "Speichern"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -209,6 +209,79 @@ export async function createWorkshopAction(_prev: ActionState, formData: FormDat
   return { ok: true };
 }
 
+/**
+ * Bestehenden Workshop ändern: Name, Klasse, Lehrkraft, KI-Verbindung, Zahl der Termine.
+ * Gruppen lassen sich ergänzen, aber nicht entfernen — an jeder Gruppe hängen Spiel,
+ * Verlauf und ein ausgedruckter QR-Code.
+ */
+export async function updateWorkshopAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const admin = await requireUser("ADMIN");
+  const schema = z.object({
+    id: z.string().min(1),
+    name: z.string().trim().min(2).max(80),
+    className: z.string().trim().max(40),
+    teacherId: z.string().min(1, "Lehrkraft wählen"),
+    apiKeyId: z.string().min(1, "KI-Verbindung wählen"),
+    groupCount: z.coerce.number().int().min(1).max(10),
+    totalDays: z.coerce.number().int().min(1).max(10),
+  });
+  const parsed = schema.safeParse({
+    id: formData.get("id"),
+    name: formData.get("name"),
+    className: formData.get("className") ?? "",
+    teacherId: formData.get("teacherId"),
+    apiKeyId: formData.get("apiKeyId"),
+    groupCount: formData.get("groupCount"),
+    totalDays: formData.get("totalDays"),
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Eingaben prüfen." };
+  }
+  const { id, groupCount, ...daten } = parsed.data;
+  const w = await db.workshop.findUnique({
+    where: { id },
+    include: { teacher: true, apiKey: true, groups: { select: { index: true } } },
+  });
+  if (!w) return { ok: false, error: "Workshop nicht gefunden." };
+  const [lehrkraft, verbindung] = await Promise.all([
+    db.user.findFirst({ where: { id: daten.teacherId, role: "TEACHER" } }),
+    db.apiKey.findUnique({ where: { id: daten.apiKeyId } }),
+  ]);
+  if (!lehrkraft) return { ok: false, error: "Lehrkraft nicht gefunden." };
+  if (!verbindung) return { ok: false, error: "KI-Verbindung nicht gefunden." };
+  if (groupCount < w.groups.length) {
+    return { ok: false, error: `Gruppen lassen sich nur ergänzen. Der Workshop hat schon ${w.groups.length}.` };
+  }
+
+  const hoechste = Math.max(0, ...w.groups.map((g) => g.index));
+  const neueGruppen = Array.from({ length: groupCount - w.groups.length }, (_, i) => ({
+    index: hoechste + i + 1,
+    code: generateGroupCode(),
+  }));
+  await db.workshop.update({
+    where: { id },
+    data: {
+      ...daten,
+      // Weniger Termine als der laufende Tag: auf den letzten Termin zurückstellen
+      currentDay: Math.min(w.currentDay, daten.totalDays),
+      ...(neueGruppen.length ? { groups: { create: neueGruppen } } : {}),
+    },
+  });
+
+  const geaendert = [
+    w.name !== daten.name && `Name „${w.name}“ → „${daten.name}“`,
+    w.className !== daten.className && `Klasse „${w.className}“ → „${daten.className}“`,
+    w.teacherId !== daten.teacherId && `Lehrkraft ${w.teacher?.displayName ?? "—"} → ${lehrkraft.displayName}`,
+    w.apiKeyId !== daten.apiKeyId && `Verbindung ${w.apiKey?.label ?? "—"} → ${verbindung.label}`,
+    w.totalDays !== daten.totalDays && `Termine ${w.totalDays} → ${daten.totalDays}`,
+    neueGruppen.length > 0 && `+${neueGruppen.length} Gruppen`,
+  ].filter(Boolean);
+  await audit(admin.id, "workshop.updated", `${daten.name}: ${geaendert.join(", ") || "ohne Änderung"}`);
+  revalidatePath("/admin");
+  revalidatePath(`/lehrer/${id}`);
+  return { ok: true };
+}
+
 /** Budget nachträglich anpassen — sonst steht ein Workshop still, wenn es aufgebraucht ist. */
 export async function updateBudgetAction(formData: FormData): Promise<void> {
   const admin = await requireUser("ADMIN");

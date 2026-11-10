@@ -32,6 +32,8 @@ Seit 1.1.0 auf der Live-Instanz, noch ohne Release-Tag.
 - **Design „Vortrag“:** Beamer-Seite und Studios in Rot-Weiß für Veranstaltungen, Gruppen
   „1A …/1B …“ nach Stufe sortiert.
 - Director's Cut bis 150.000 Token Ausgabe; Speichern-Rückmeldung in allen Formularen.
+- **Workshop bearbeiten** im Admin-Bereich: Name, Klasse, Lehrkraft, KI-Verbindung und Zahl der
+  Termine nachträglich ändern, Gruppen ergänzen.
 
 ### Für Selbst-Hoster
 - **Gründlichkeit** pro KI-Verbindung (mehr Nachdenken vor dem Bauen).
