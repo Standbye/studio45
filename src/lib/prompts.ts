@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AgeGroup } from "@/generated/prisma/enums";
 import { alterProfil, supportProfil } from "@/lib/audience";
+import { istKurzformat, kurzMerksatz, kurzPrompt, kurzTitel } from "@/lib/kurzformat";
 
 const PROMPTS_DIR = path.join(process.cwd(), "prompts");
 
@@ -20,6 +21,7 @@ export function kernPrompt(): string {
  * wird komprimiert (Idee → Mechanik → Politur inkl. Punkte).
  */
 export function dayFocusPrompt(day: number, totalDays: number): string {
+  if (istKurzformat(totalDays)) return kurzPrompt(day); // Kurzformat (zwei Runden)
   const five = ["day-1-idee", "day-2-mechanik", "day-3-visuals", "day-4-test", "day-5-polish"];
   const three = ["day-1-idee", "day-2-mechanik", "day-5-polish"];
   const list = totalDays <= 3 ? three : five;
@@ -37,12 +39,14 @@ export const DAY_TITLES_5 = [
 export const DAY_TITLES_3 = ["Idee & erstes Lebenszeichen", "Spielregel", "Feinschliff & Release"];
 
 export function dayTitle(day: number, totalDays: number): string {
+  if (istKurzformat(totalDays)) return kurzTitel(day); // Kurzformat (zwei Runden)
   const list = totalDays <= 3 ? DAY_TITLES_3 : DAY_TITLES_5;
   return list[Math.min(Math.max(day, 1), list.length) - 1];
 }
 
 /** Merksatz des Tages — didaktischer Kernsatz für Beamer/Plenum. */
 export function dayMotto(day: number, totalDays: number): string {
+  if (istKurzformat(totalDays)) return kurzMerksatz(day); // Kurzformat (zwei Runden)
   const five = [
     "Je genauer ich sage, was ich will, desto besser versteht mich die KI.",
     "Die KI macht Fehler — Testen gehört dazu.",

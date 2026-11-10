@@ -12,6 +12,7 @@ import {
   type ActionState,
 } from "./actions";
 import { ANBIETER, anbieterVorlage } from "@/lib/providers";
+import { terminAuswahlText } from "@/lib/kurzformat";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Auswahl } from "@/components/auswahl";
 import { Input } from "@/components/ui/input";
@@ -432,6 +433,9 @@ export function TestApiKeyButton({ id }: { id: string }) {
   );
 }
 
+/** Wählbare Formate: drei oder fünf Termine, dazu das Kurzformat mit zwei Runden. */
+const TERMIN_AUSWAHL = [2, 3, 5];
+
 /** Bestehenden Workshop ändern — vor allem: eine andere KI-Verbindung zuweisen. */
 export function EditWorkshopDialog({
   workshop,
@@ -448,7 +452,7 @@ export function EditWorkshopDialog({
     if (ergebnis.ok) setOffen(false);
     return ergebnis;
   }, IDLE);
-  const termine = [...new Set([3, 5, workshop.totalDays])].sort((a, b) => a - b);
+  const termine = [...new Set([...TERMIN_AUSWAHL, workshop.totalDays])].sort((a, b) => a - b);
   const feld = "h-9 w-full rounded-md border bg-transparent px-3 text-sm";
   return (
     <Dialog open={offen} onOpenChange={setOffen}>
@@ -497,7 +501,7 @@ export function EditWorkshopDialog({
               <Label htmlFor={`we-days-${workshop.id}`}>Termine</Label>
               <select id={`we-days-${workshop.id}`} name="totalDays" defaultValue={String(workshop.totalDays)} className={feld}>
                 {termine.map((t) => (
-                  <option key={t} value={t}>{t} Termine</option>
+                  <option key={t} value={t}>{terminAuswahlText(t)}</option>
                 ))}
               </select>
             </div>
@@ -576,8 +580,9 @@ export function CreateWorkshopDialog({
               <div className="space-y-2">
                 <Label htmlFor="w-days">Anzahl Termine</Label>
                 <select id="w-days" name="totalDays" defaultValue="3" className="h-9 w-full rounded-md border bg-transparent px-3 text-sm">
-                  <option value="3">3 Termine</option>
-                  <option value="5">5 Termine</option>
+                  {TERMIN_AUSWAHL.map((t) => (
+                    <option key={t} value={t}>{terminAuswahlText(t)}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">

@@ -32,6 +32,9 @@ Seit 1.1.0 auf der Live-Instanz, noch ohne Release-Tag.
 - **Design „Vortrag“:** Beamer-Seite und Studios in Rot-Weiß für Veranstaltungen, Gruppen
   „1A …/1B …“ nach Stufe sortiert.
 - Director's Cut bis 150.000 Token Ausgabe; Speichern-Rückmeldung in allen Formularen.
+- **Kurzformat mit zwei Runden** für Veranstaltungen (Admin → Workshop bearbeiten → „2 Runden“):
+  Runde 1 „Bauen“, Runde 2 „Grenze setzen“, umgeschaltet wie sonst die Termine. Steht gebündelt
+  in `src/lib/kurzformat.ts` und lässt sich dort beschrieben wieder entfernen.
 - **Workshop bearbeiten** im Admin-Bereich: Name, Klasse, Lehrkraft, KI-Verbindung und Zahl der
   Termine nachträglich ändern, Gruppen ergänzen.
 

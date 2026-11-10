@@ -91,7 +91,10 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/g/[code]/state"
     texte: alterProfil(w.ageGroup).texte,
     // Satzanfänge hängen am Schwerpunkt des Termins, nicht an seiner Nummer — im 3-Termine-Format
     // ist der dritte Termin „Fertigmachen", nicht „Hübsch & Hörbar".
-    chips: alterProfil(w.ageGroup).chips[fokus.chipsNummer] ?? alterProfil(w.ageGroup).chips[1],
+    chips:
+      fokus.chips ?? // Kurzformat (zwei Runden): eigene Satzanfänge für „Grenze setzen“
+      alterProfil(w.ageGroup).chips[fokus.chipsNummer] ??
+      alterProfil(w.ageGroup).chips[1],
     // Worauf es heute ankommt — dieselbe Quelle wie Rückfragen und Team-Check
     fokus: { heute: fokus.heute[w.ageGroup], teamFrage: fokus.teamFrage },
     // Hilfe beim Formulieren — unabhängig davon, wie viel die KI selbst entscheiden darf

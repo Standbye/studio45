@@ -1,4 +1,5 @@
 import type { AgeGroup } from "@/generated/prisma/enums";
+import { istKurzformat, kurzFokus } from "@/lib/kurzformat";
 
 /**
  * Worauf liegt heute der Schwerpunkt? Eine Quelle für alles, was der Gruppe dazu gezeigt
@@ -83,7 +84,8 @@ export const FOKUS: Record<FokusId, FokusProfil> = {
   },
 };
 
-export function fokusProfil(day: number, totalDays: number): FokusProfil & { id: FokusId } {
+export function fokusProfil(day: number, totalDays: number): FokusProfil & { id: FokusId; chips?: string[] } {
+  if (istKurzformat(totalDays)) return kurzFokus(day); // Kurzformat (zwei Runden)
   const id = fokusDesTages(day, totalDays);
   return { id, ...FOKUS[id] };
 }
