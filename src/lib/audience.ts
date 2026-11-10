@@ -38,7 +38,11 @@ export type AltersProfil = {
     plenum: string;
     tipp: string;
   };
-  /** Satzanfänge/Impulse je Tag */
+  /**
+   * Satzanfänge je Tag. Ein Tipp setzt den Text ins Eingabefeld, deshalb sind es echte
+   * Satzanfänge in Alltagssprache — keine Themen-Etiketten und keine Fachwörter
+   * („Kernschleife“, „Zustandsautomat“): Wer Hilfe braucht, kennt sie nicht.
+   */
   chips: Record<number, string[]>;
   /** Block für den Metaprompt */
   promptBlock: string;
@@ -111,11 +115,11 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
       tipp: "Je genauer die Beschreibung, desto näher am Ziel: WAS passiert, WIE sieht es aus, WANN gewinnt man?",
     },
     chips: {
-      1: ["Titel und Hauptfigur", "Setting/Umgebung", "Farbstimmung", "Erste Interaktion"],
-      2: ["Spielregel", "Gewinnbedingung", "Verlierbedingung", "Steuerung"],
-      3: ["Optik verbessern", "Sound-Effekte", "Animationen", "Feedback bei Treffern"],
-      4: ["Gemeldete Bugs beheben", "Schwierigkeit anpassen", "Test-Feedback umsetzen", "Steuerung verständlicher machen"],
-      5: ["Startbildschirm", "Anleitung für neue Spieler", "Abschluss-Bildschirm", "Letzter Feinschliff fürs Publikum"],
+      1: ["Das Spiel heißt …", "Die Hauptfigur ist …", "Es spielt in …", "Zuerst kann man …"],
+      2: ["Die Regel ist: …", "Man gewinnt, wenn …", "Man verliert, wenn …", "Gesteuert wird mit …"],
+      3: ["Es soll aussehen wie …", "Bei einem Treffer hört man …", "Die Figur bewegt sich …", "Wenn man trifft, sieht man …"],
+      4: ["Dieser Fehler muss weg: …", "Zu schwer war: …", "Beim Testen fiel auf: …", "Die Steuerung ist unklar bei …"],
+      5: ["Am Anfang sieht man …", "Die Anleitung erklärt …", "Am Ende erscheint …", "Zum Schluss fehlt noch …"],
     },
     promptBlock: `## Zielgruppe: Mittelstufe (Klasse 5–10, 10–16 Jahre)
 
@@ -148,14 +152,14 @@ export const ALTERSSTUFEN: Record<AgeGroup, AltersProfil> = {
       wartenTitel: "Generierung läuft",
       fertig: "Fertig. Testet das Ergebnis und prüft, ob es der Anforderung entspricht.",
       plenum: "Plenum — Eingabe ist gesperrt.",
-      tipp: "Präzise Anforderungen enthalten: Verhalten, Darstellung, Randfälle.",
+      tipp: "Eine klare Anforderung sagt: Was passiert? Wie sieht es aus? Was gilt im Sonderfall?",
     },
     chips: {
-      1: ["Konzept und Kernschleife", "Steuerungsmodell", "Visuelles Konzept", "Zielgruppe des Spiels"],
-      2: ["Spielmechanik im Detail", "Zustandsautomat", "Sieg-/Verlierbedingungen", "Balancing-Parameter"],
-      3: ["Visuelle Politur", "Audio-Design", "Animation und Übergänge", "Rückmeldung an die Spielenden"],
-      4: ["Bugfixes aus dem Peer-Test", "Balancing nach Testeindrücken", "Randfälle absichern", "Usability-Probleme beheben"],
-      5: ["Onboarding für fremde Spielende", "Abschluss und Auswertung", "Präsentierbarer Endzustand", "Letzte Politur"],
+      1: ["Das Spiel heißt … und es geht um …", "Gesteuert wird mit …", "Es soll aussehen wie …", "Gedacht ist es für …"],
+      2: ["Die Regel lautet: …", "Man gewinnt, wenn …", "Man verliert, wenn …", "Es wird schwerer, sobald …"],
+      3: ["Farben und Formen sollen …", "Bei einem Treffer hört man …", "Übergänge sollen … wirken", "Die Spielenden merken an …, dass …"],
+      4: ["Dieser Fehler ist aufgetreten: …", "Zu schwer oder zu leicht war: …", "Wenn man …, passiert …, richtig wäre …", "Unklar war beim Testen: …"],
+      5: ["Wer das Spiel nicht kennt, sieht zuerst …", "Am Ende wird angezeigt: …", "Vor dem Zeigen fehlt noch …", "Zum Schluss bitte noch …"],
     },
     promptBlock: `## Zielgruppe: Oberstufe (Klasse 10–13, ab 16 Jahren)
 

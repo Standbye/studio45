@@ -20,6 +20,9 @@ Seit 1.1.0 auf der Live-Instanz, noch ohne Release-Tag.
 - **Spracheingabe datensparsam:** auf dem Gerät, wenn der Browser es kann, sonst mit einmaligem
   Hinweis; pro Workshop „an / nur auf dem Gerät / aus“.
 - Spiel links im Rahmen, Bedienung rechts; hörbarer, abschaltbarer Ton in den Spielen.
+- **Satzanfänge in Alltagssprache** auch für Mittel- und Oberstufe: echte Satzanfänge („Man
+  gewinnt, wenn …“) statt Themen-Etiketten und Fachwörtern wie „Kernschleife“ oder
+  „Zustandsautomat“.
 
 ### Neu — für Lehrkräfte
 - **Lernfall** in Stufen freischalten: ein KI-gebautes Spiel mit eingebauten Fehlern prüfen.
