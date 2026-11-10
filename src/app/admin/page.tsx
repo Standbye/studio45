@@ -165,68 +165,56 @@ export default async function AdminPage() {
           </div>
           <CreateApiKeyDialog />
         </div>
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Bezeichnung</TableHead>
-                <TableHead>Protokoll / Endpunkt</TableHead>
-                <TableHead>Modelle</TableHead>
-                <TableHead>Schlüssel</TableHead>
-                <TableHead>Genutzt von</TableHead>
-                <TableHead className="text-right">Aktionen</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {apiKeys.map((k) => (
-                <TableRow key={k.id}>
-                  <TableCell className="font-medium">{k.label}</TableCell>
-                  <TableCell className="text-sm">
-                    <Badge variant="secondary">{k.protocol === "openai" ? "OpenAI" : "Anthropic"}</Badge>
-                    <span className="ml-2 text-xs text-muted-foreground">{k.baseUrl || "Standard-Endpunkt"}</span>
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    <div>👧 {k.modelKid}</div>
-                    {k.gruendlich === "hoch" && <div className="text-xs text-muted-foreground">🧠 Gründlichkeit hoch</div>}
-                    {k.tempo === "schnell" && <div className="text-xs text-muted-foreground">⚡ Fast Mode</div>}
-                    <div className="text-muted-foreground">🎬 {k.modelDirector}</div>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">••••{k.secret.slice(-4)}</TableCell>
-                  <TableCell className="text-sm">{k.workshops.map((w) => w.name).join(", ") || "—"}</TableCell>
-                  <TableCell className="space-x-1 text-right">
-                    <TestApiKeyButton id={k.id} />
-                    <EditApiKeyDialog
-                      verbindung={{
-                        id: k.id,
-                        label: k.label,
-                        protocol: k.protocol,
-                        baseUrl: k.baseUrl,
-                        modelKid: k.modelKid,
-                        modelDirector: k.modelDirector,
-                        eurPerMTokensIn: k.eurPerMTokensIn,
-                        eurPerMTokensOut: k.eurPerMTokensOut,
-                        whPerMTokens: k.whPerMTokens,
-                        gruendlich: k.gruendlich,
-                        tempo: k.tempo,
-                      }}
-                    />
-                    <form action={deleteApiKeyAction} className="inline">
-                      <input type="hidden" name="id" value={k.id} />
-                      <Button variant="ghost" size="sm" type="submit" disabled={k.workshops.length > 0}>
-                        Löschen
-                      </Button>
-                    </form>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {apiKeys.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  Noch keine Verbindung. Ohne Verbindung kann kein Workshop generieren.
-                </TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+        {apiKeys.length === 0 && (
+          <Card><CardContent className="py-8 text-center text-muted-foreground">
+            Noch keine Verbindung. Ohne Verbindung kann kein Workshop generieren.
+          </CardContent></Card>
+        )}
+        {/* Karten statt Tabelle: Die Knöpfe stehen oben in der Karte und sind auf jedem
+            Bildschirm sichtbar. In der breiten Tabelle lagen sie rechts außerhalb des Bilds. */}
+        {apiKeys.map((k) => (
+          <Card key={k.id}>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+              <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+                {k.label}
+                <Badge variant="secondary">{k.protocol === "openai" ? "OpenAI" : "Anthropic"}</Badge>
+                {k.tempo === "schnell" && <Badge variant="outline">⚡ Fast Mode</Badge>}
+                {k.gruendlich === "hoch" && <Badge variant="outline">🧠 Gründlichkeit hoch</Badge>}
+              </CardTitle>
+              <div className="flex flex-wrap items-center gap-1">
+                <TestApiKeyButton id={k.id} />
+                <EditApiKeyDialog
+                  verbindung={{
+                    id: k.id,
+                    label: k.label,
+                    protocol: k.protocol,
+                    baseUrl: k.baseUrl,
+                    modelKid: k.modelKid,
+                    modelDirector: k.modelDirector,
+                    eurPerMTokensIn: k.eurPerMTokensIn,
+                    eurPerMTokensOut: k.eurPerMTokensOut,
+                    whPerMTokens: k.whPerMTokens,
+                    gruendlich: k.gruendlich,
+                    tempo: k.tempo,
+                  }}
+                />
+                <form action={deleteApiKeyAction} className="inline">
+                  <input type="hidden" name="id" value={k.id} />
+                  <Button variant="ghost" size="sm" type="submit" disabled={k.workshops.length > 0}>
+                    Löschen
+                  </Button>
+                </form>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              <div><span className="text-muted-foreground">Modell Kinder:</span> {k.modelKid}</div>
+              <div><span className="text-muted-foreground">Modell Director&apos;s Cut:</span> {k.modelDirector}</div>
+              <div className="break-all"><span className="text-muted-foreground">Endpunkt:</span> {k.baseUrl || "Standard"}</div>
+              <div><span className="text-muted-foreground">Schlüssel:</span> <span className="font-mono">••••{k.secret.slice(-4)}</span></div>
+              <div className="sm:col-span-2"><span className="text-muted-foreground">Genutzt von:</span> {k.workshops.map((w) => w.name).join(", ") || "—"}</div>
+            </CardContent>
+          </Card>
+        ))}
       </TabsContent>
 
       <TabsContent value="audit" className="space-y-4">

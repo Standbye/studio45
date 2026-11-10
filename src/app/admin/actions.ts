@@ -13,6 +13,8 @@ export type ActionState = {
   ok: boolean;
   error?: string;
   hinweis?: string;
+  /** Hat geklappt, aber nicht wie eingestellt (z. B. Fast Mode greift nicht) */
+  warnung?: string;
   startPassword?: string;
   username?: string;
 };
@@ -93,9 +95,13 @@ export async function testApiKeyAction(_prev: ActionState, formData: FormData): 
     { protocol: v.protocol, secret: v.secret, baseUrl: v.baseUrl, schnell: v.tempo === "schnell" },
     v.modelKid
   );
-  await audit(admin.id, "verbindung.tested", `${v.label}: ${ergebnis.ok ? "ok" : "Fehler"}`);
+  await audit(
+    admin.id,
+    "verbindung.tested",
+    `${v.label}: ${ergebnis.ok ? (ergebnis.warnung ? "ok, aber Fast Mode greift nicht" : "ok") : "Fehler"}`
+  );
   return ergebnis.ok
-    ? { ok: true, hinweis: ergebnis.detail }
+    ? { ok: true, hinweis: ergebnis.detail, warnung: ergebnis.warnung }
     : { ok: false, error: ergebnis.detail };
 }
 

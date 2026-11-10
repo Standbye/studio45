@@ -201,7 +201,10 @@ function extractHtml(text: string): string | null {
 }
 
 /** Kurzer Testaufruf, um eine Verbindung im Admin zu prüfen. */
-export async function testeVerbindung(v: Verbindung, model: string): Promise<{ ok: boolean; detail: string }> {
+export async function testeVerbindung(
+  v: Verbindung,
+  model: string
+): Promise<{ ok: boolean; detail: string; warnung?: string }> {
   const antwort = await rufeModell(
     v,
     model,
@@ -212,14 +215,18 @@ export async function testeVerbindung(v: Verbindung, model: string): Promise<{ o
   if (antwort.error) return { ok: false, detail: antwort.error.slice(0, 300) };
   const text = antwort.text.trim().slice(0, 80);
   if (!text) return { ok: false, detail: "Leere Antwort vom Dienst." };
-  const tempo = !v.schnell
-    ? ""
-    : (v.protocol === "openai" ? "openai" : "anthropic") !== "anthropic"
-      ? " · Fast Mode gibt es nur im Anthropic-Protokoll, hier wird im normalen Tempo gebaut."
-      : antwort.tempo === "fast"
-        ? " · Fast Mode aktiv."
-        : ` · Fast Mode nicht verfügbar, es wird im normalen Tempo gebaut${antwort.tempoHinweis ? ` (${antwort.tempoHinweis})` : ""}.`;
-  return { ok: true, detail: `Antwort: „${text}" (${antwort.tokensIn + antwort.tokensOut} Tokens)${tempo}` };
+  const detail = `Antwort: „${text}" (${antwort.tokensIn + antwort.tokensOut} Tokens)`;
+  if (!v.schnell) return { ok: true, detail };
+  if (v.protocol === "openai") {
+    return { ok: true, detail, warnung: "Fast Mode gibt es nur im Anthropic-Protokoll. Mit dieser Verbindung wird im normalen Tempo gebaut." };
+  }
+  if (antwort.tempo === "fast") return { ok: true, detail: `${detail} · Fast Mode aktiv.` };
+  // Die Verbindung antwortet, aber nicht im verlangten Tempo — das soll niemand übersehen
+  return {
+    ok: true,
+    detail,
+    warnung: `Der Fast Mode greift nicht, es wird im normalen Tempo gebaut. Meist passt das Modell nicht (Fast Mode gibt es z. B. für claude-opus-5-5).${antwort.tempoHinweis ? ` Meldung des Dienstes: ${antwort.tempoHinweis}` : ""}`,
+  };
 }
 
 // ---------------------------------------------------------------------------

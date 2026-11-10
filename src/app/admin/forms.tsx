@@ -419,13 +419,15 @@ export function EditApiKeyDialog({
 export function TestApiKeyButton({ id }: { id: string }) {
   const [state, action, pending] = useActionState(testApiKeyAction, IDLE);
   return (
-    <form action={action} className="inline-flex items-center gap-2">
+    <form action={action} className="inline-flex flex-wrap items-center gap-2">
       <input type="hidden" name="id" value={id} />
+      {/* Meldungen in voller Länge und vor dem Knopf: Sie brechen um, statt die Knöpfe zu verschieben */}
+      {state.hinweis && <span role="status" className="max-w-sm text-xs text-emerald-700">✓ {state.hinweis}</span>}
+      {state.warnung && <span role="alert" className="max-w-sm text-xs font-semibold text-amber-700">⚠ {state.warnung}</span>}
+      {state.error && <span role="alert" className="max-w-sm text-xs text-destructive">✗ {state.error}</span>}
       <Button type="submit" size="sm" variant="ghost" disabled={pending}>
         {pending ? "testet …" : "Testen"}
       </Button>
-      {state.hinweis && <span className="text-xs text-emerald-600">✓ {state.hinweis}</span>}
-      {state.error && <span className="text-xs text-destructive" title={state.error}>✗ {state.error.slice(0, 60)}</span>}
     </form>
   );
 }
