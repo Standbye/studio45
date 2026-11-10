@@ -135,7 +135,6 @@ export function VortragBeamer({ workshop: w, gruppen, qr, merksatz }: Props) {
 
       <footer className="vb-fuss">
         <span>Mit der Kamera scannen oder antippen.</span>
-        <a href={`/w/${w.slug}/hub`}>Zur begehbaren Schule</a>
         {w.lernfallStufe > 0 && <a href={`/w/${w.slug}/lernfall`}>Lernfall: Findet den Fehler der KI</a>}
         <span className="marke">Studio45</span>
       </footer>
