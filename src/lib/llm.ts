@@ -12,6 +12,13 @@ const MAX_TOKENS = 32000; // Lehre aus dem Piloten: 8k schneidet Spiele mitten i
 // Mit „Gründlichkeit hoch" zählt das Nachdenken des Modells mit — mehr Luft, damit das Spiel
 // danach nicht abgeschnitten wird.
 const MAX_TOKENS_GRUENDLICH = 48000;
+// Neuere Modelle (Opus 5.5) denken vor dem Schreiben immer nach, und das Nachdenken zählt zur
+// Ausgabe. In der Voreinstellung des Dienstes hat es am 12.11.2026 bei einem ausführlichen
+// Wunsch rund 22.000 der 32.000 Tokens verbraucht: Der erste Bau wurde nach 109 Sekunden
+// abgeschnitten, der zweite brauchte 105 Sekunden. Mit „low" baut derselbe Wunsch in 34 bis
+// 38 Sekunden mit rund 11.000 Tokens, und die Spiele laufen fehlerfrei. Wer mehr Nachdenken
+// will, stellt an der Verbindung „Gründlichkeit hoch" ein.
+const DENKSTUFE_BAU = "low" as const;
 // Der Director's Cut baut aus allen Wünschen ein großes Gesamtspiel (oft in 3D) — er bekommt
 // sehr viel Ausgabe (Vorgabe Peter, 11.10.2026), aber ohne zusätzliches Nachdenken (siehe
 // buildFromSpec). Das ist eine Obergrenze, kein Ziel: Bezahlt wird, was das Spiel braucht.
@@ -63,9 +70,11 @@ async function rufeModell(
   maxTokens: number,
   gruendlich = false,
   /** Wird mit dem bisher empfangenen Text aufgerufen, während die Antwort hereinströmt */
-  beimSchreiben?: (bisher: string) => void
+  beimSchreiben?: (bisher: string) => void,
+  /** Kurz nachdenken, dann schreiben (siehe DENKSTUFE_BAU) — gilt nur ohne Gründlichkeit */
+  sparsam = false
 ): Promise<LlmAntwort> {
-  const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich, beimSchreiben);
+  const antwort = await rufeModellEinmal(v, model, anweisungen, userMsg, maxTokens, gruendlich, beimSchreiben, sparsam);
   if (!gruendlich) return antwort;
 
   // Nicht jedes Modell und jedes Gateway kennt die Gründlichkeits-Angabe. Lehnt der Dienst
@@ -90,7 +99,8 @@ async function rufeModellEinmal(
   userMsg: string,
   maxTokens: number,
   gruendlich: boolean,
-  beimSchreiben?: (bisher: string) => void
+  beimSchreiben?: (bisher: string) => void,
+  sparsam = false
 ): Promise<LlmAntwort> {
   const protokoll: Protokoll = v.protocol === "openai" ? "openai" : "anthropic";
   try {
@@ -105,14 +115,18 @@ async function rufeModellEinmal(
         // Nur der erste (lange, immer gleiche) Block profitiert vom Caching
         ...(i === 0 ? { cache_control: { type: "ephemeral" as const } } : {}),
       }));
-      const anfrage = async (schnell: boolean) => {
+      const anfrage = async (schnell: boolean, mitDenkstufe: boolean) => {
         // Streaming ist bei großen max_tokens Pflicht (sonst lehnt die API ab)
         const stream = client.messages.stream({
           model,
           max_tokens: maxTokens,
           system,
           messages: [{ role: "user", content: userMsg }],
-          ...(gruendlich ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } } : {}),
+          ...(gruendlich
+            ? { thinking: { type: "adaptive" as const }, output_config: { effort: "high" as const } }
+            : sparsam && mitDenkstufe
+              ? { output_config: { effort: DENKSTUFE_BAU } }
+              : {}),
           ...(schnell ? { speed: "fast" as const } : {}),
         });
         if (beimSchreiben) stream.on("text", (_delta, bisher) => beimSchreiben(bisher));
@@ -121,17 +135,25 @@ async function rufeModellEinmal(
       // Fast Mode gibt es nicht bei jedem Modell, und er hat ein eigenes Anfrage-Limit. Lehnt
       // der Dienst ihn ab, bauen wir im normalen Tempo — langsamer ist besser als gar nicht.
       let tempoHinweis: string | undefined;
-      let msg: Anthropic.Message;
-      if (v.schnell) {
+      const mitTempo = async (mitDenkstufe: boolean) => {
+        if (!v.schnell) return anfrage(false, mitDenkstufe);
         try {
-          msg = await anfrage(true);
+          return await anfrage(true, mitDenkstufe);
         } catch (err) {
           if (!(err instanceof Anthropic.APIError)) throw err;
           tempoHinweis = err.message.slice(0, 200);
-          msg = await anfrage(false);
+          return anfrage(false, mitDenkstufe);
         }
-      } else {
-        msg = await anfrage(false);
+      };
+      let msg: Anthropic.Message;
+      try {
+        msg = await mitTempo(true);
+      } catch (err) {
+        // Ältere Modelle und manche Gateways kennen die Angabe zur Denkstufe nicht und lehnen
+        // den Aufruf ab. Dann bauen wir ohne sie — langsamer ist besser als gar nicht.
+        if (!sparsam || gruendlich || !(err instanceof Anthropic.BadRequestError)) throw err;
+        tempoHinweis = undefined;
+        msg = await mitTempo(false);
       }
       return {
         text: msg.content
@@ -254,7 +276,7 @@ export async function buildOrEditGame(p: BuildParams): Promise<BuildResult> {
   const userMsg = `${stand}\n\n## Wunsch des Studios „${p.studioName || "?"}"\n\n${p.userPrompt.trim()}`;
 
   const gruendlich = Boolean(p.verbindung.gruendlich);
-  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich, p.beimSchreiben);
+  const antwort = await rufeModell(p.verbindung, p.model, teile, userMsg, gruendlich ? MAX_TOKENS_GRUENDLICH : MAX_TOKENS, gruendlich, p.beimSchreiben, !gruendlich);
   if (antwort.error) return { html: null, tokensIn: 0, tokensOut: 0, error: antwort.error };
   const html = extractHtml(antwort.text);
   return {
